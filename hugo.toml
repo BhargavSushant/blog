@@ -1,0 +1,87 @@
+baseURL = 'https://sushantbhargav.com/'
+languageCode = 'en-in'
+title = 'Sushant Bhargav'
+theme = 'PaperMod'
+
+enableRobotsTXT = true
+enableGitInfo = true
+buildDrafts = false
+buildFuture = false
+pygmentsUseClasses = true
+
+[pagination]
+  pagerSize = 10
+
+[minify]
+  disableXML = true
+  minifyOutput = true
+
+[params]
+  env = 'production'
+  description = 'Linux, infrastructure, and the gap between a spec and a system that survives production.'
+  author = 'Sushant Bhargav'
+  defaultTheme = 'auto'
+  ShowReadingTime = true
+  ShowShareButtons = false
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true
+  ShowWordCount = true
+  ShowRssButtonInSectionTermList = true
+  disableScrollToTop = false
+  hidemeta = false
+  comments = false
+
+  [params.homeInfoParams]
+    Title = "Sushant Bhargav"
+    Content = """
+Infrastructure engineer. Eight years of Linux, mostly the parts that only show up at 3am.
+
+I write about hardening, automation, and why plausible-looking configuration silently does nothing.
+"""
+
+  [[params.socialIcons]]
+    name = 'github'
+    url = 'https://github.com/BhargavSushant'
+
+  [[params.socialIcons]]
+    name = 'linkedin'
+    url = 'https://www.linkedin.com/in/sushantbhargav/'
+
+  [[params.socialIcons]]
+    name = 'rss'
+    url = 'index.xml'
+
+  [params.assets]
+    disableHLJS = true
+    favicon = '/favicon.ico'
+
+[menu]
+  [[menu.main]]
+    identifier = 'posts'
+    name = 'Posts'
+    url = '/posts/'
+    weight = 10
+  [[menu.main]]
+    identifier = 'about'
+    name = 'About'
+    url = '/about/'
+    weight = 20
+  [[menu.main]]
+    identifier = 'tags'
+    name = 'Tags'
+    url = '/tags/'
+    weight = 30
+
+[markup]
+  [markup.highlight]
+    noClasses = false
+    codeFences = true
+    guessSyntax = true
+    lineNos = false
+    style = 'github-dark'
+  [markup.goldmark.renderer]
+    unsafe = true
+
+[outputs]
+  home = ['HTML', 'RSS', 'JSON']
