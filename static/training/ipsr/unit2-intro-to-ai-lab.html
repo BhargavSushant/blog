@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IPSR Lab - Unit 2</title>
+<style>
+:root{
+  --bg:#FAF8F3; --surface:#FFFFFF; --surface2:#EFEBE1; --fg:#12110E; --muted:#44403A; --line:#B9B2A2; --line2:#D9D3C4;
+  --pri:#1F3FB5; --pri-soft:#DDE5FA; --sec:#9A4208; --sec-soft:#FBE3CC;
+  --good:#0F6A31; --good-soft:#D5F0DD; --warn:#744500; --warn-soft:#F9E8B8; --bad:#A31D12; --bad-soft:#FADAD5;
+  --code:#EFEBE1; --on:#FFFFFF; --grid:#CFC9BA; --shadow:0 1px 2px rgba(18,17,14,.08),0 6px 18px rgba(18,17,14,.06);
+  --c1:#1F3FB5; --c2:#9A4208; --c3:#0F6A31; --c4:#7A2A9C; --c5:#8A6D00; --c6:#B0235C;
+  --disp:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --body:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  --mono:ui-monospace,'Cascadia Code',Consolas,Menlo,monospace;
+  --zoom:1;
+}
+:root[data-theme="dark"]{
+  --bg:#0C0C0A; --surface:#181714; --surface2:#242320; --fg:#F7F4EA; --muted:#CFCABD; --line:#5B574B; --line2:#35332C;
+  --pri:#9DB1FF; --pri-soft:#1B2350; --sec:#FFAE6B; --sec-soft:#40240E;
+  --good:#6FE09A; --good-soft:#0F3320; --warn:#F5C964; --warn-soft:#3B2E0A; --bad:#FF9A8C; --bad-soft:#451A15;
+  --code:#1F1E1A; --on:#0C0C0A; --grid:#46433A; --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.3);
+  --c1:#9DB1FF; --c2:#FFAE6B; --c3:#6FE09A; --c4:#D9A0FF; --c5:#F0D060; --c6:#FF8FB8;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body);zoom:var(--zoom)}
+button,select,input{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:240px minmax(0,1fr) 310px;min-height:calc(100vh / var(--zoom))}
+.nav{background:var(--surface);border-right:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.brand{font-family:var(--disp);font-size:20px;line-height:1.15;margin:0 4px 4px}
+.brand small{display:block;font:12.5px var(--body);color:var(--muted);margin-top:4px}
+.nav ol{list-style:none;margin:16px 0 0;padding:0}
+.nav li button{width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;color:var(--fg)}
+.nav li button:hover{background:var(--surface2)}
+.nav li button[aria-current="true"]{background:var(--pri-soft);font-weight:600}
+.nav .n{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--muted);display:grid;place-items:center;font-size:12px;color:var(--muted)}
+.nav li.done .n{background:var(--good);color:var(--on);border-color:var(--good)}
+.nav .t{font-size:13.5px;line-height:1.3}
+.nav .hero .n{border-color:var(--sec);color:var(--sec)}
+.tools{margin:18px 4px 0;display:grid;gap:8px}
+.tools button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 10px;cursor:pointer;font-weight:600;text-align:left}
+.tools button:hover{border-color:var(--fg)}
+.tools .hint{font-size:12px;color:var(--muted)}
+main{padding:26px 30px 70px;min-width:0}
+.crumb{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.15;margin:4px 0 6px}
+h2{font-family:var(--disp);font-size:20px;margin:0 0 8px}
+h3{font-size:13.5px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.syl{display:inline-block;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0;box-shadow:var(--shadow)}
+.card.try{border-left:5px solid var(--pri)}
+.card.sec{border-left:5px solid var(--sec)}
+.lead{font-size:16.5px}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:5px;padding:2px 7px}
+.tag.p{background:var(--pri-soft);color:var(--pri)} .tag.s{background:var(--sec-soft);color:var(--sec)}
+.tag.g{background:var(--good-soft);color:var(--good)} .tag.w{background:var(--warn-soft);color:var(--warn)} .tag.b{background:var(--bad-soft);color:var(--bad)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--fg)}
+.btn.pri{background:var(--pri);color:var(--on);border-color:var(--pri)} .btn.sec{background:var(--sec);color:var(--on);border-color:var(--sec)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+table.dt{border-collapse:collapse;width:100%;font-size:13.5px}
+table.dt th{background:var(--surface2);text-align:left;padding:6px 9px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+table.dt td{padding:5px 9px;border-bottom:1px solid var(--line2);white-space:nowrap}
+table.dt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:340px}
+.tw.sm{max-height:none}
+.new{animation:pop .6s ease both}
+@keyframes pop{from{background:var(--sec-soft);transform:translateY(-4px);opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.new{animation:none}}
+.code{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:7px 10px;overflow:auto;white-space:pre-wrap;color:var(--fg)}
+code{font-family:var(--mono);font-size:.92em;background:var(--code);padding:1px 5px;border-radius:4px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.callout{border-radius:8px;padding:10px 14px;margin:10px 0;background:var(--surface2);border:1px solid var(--line2)}
+.callout.k{background:var(--sec-soft);border-color:transparent} .callout.i{background:var(--pri-soft);border-color:transparent}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:7px 13px;cursor:pointer;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--pri);color:var(--on)}
+.seg.s button[aria-pressed="true"]{background:var(--sec)}
+select,input[type=text],input[type=number]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px}
+input[type=range]{accent-color:var(--pri);vertical-align:middle}
+label.chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer;margin-right:12px}
+.live{background:var(--surface);border-left:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.live .tw{max-height:none}
+.opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;margin:6px 0;cursor:pointer}
+.opt:hover{border-color:var(--fg)} .opt.ok{background:var(--good-soft);border-color:var(--good)} .opt.no{background:var(--bad-soft);border-color:var(--bad)}
+.bar{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden;border:1px solid var(--line2)}
+.bar i{display:block;height:100%;background:var(--sec);transition:width .4s}
+.flow{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+.arrow{font-size:28px;color:var(--sec);text-align:center}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:12.5px;margin:2px 4px 2px 0;background:var(--surface)}
+td.ix{background:var(--bad-soft)} td.iy{background:var(--warn-soft)} td.iz{background:var(--pri-soft)} td.chg{background:var(--good-soft)}
+.cardsel{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi b{font-size:22px;display:block;font-variant-numeric:tabular-nums}
+.nextrow{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
+svg.chart{width:100%;height:auto;display:block;max-height:420px}
+svg.chart text{fill:var(--fg);font:12px var(--body)}
+svg.chart .ax{stroke:var(--muted);stroke-width:1}
+svg.chart .gr{stroke:var(--grid);stroke-width:1}
+svg.chart .lbl{fill:var(--muted)}
+.sheet{border-collapse:collapse;font-size:13.5px;font-family:var(--mono);width:100%}
+.sheet th{background:var(--surface2);border:1px solid var(--line);padding:3px 8px;text-align:center;font-weight:600;color:var(--muted)}
+.sheet td{border:1px solid var(--line);padding:0;min-width:80px}
+.sheet td input{width:100%;border:0;background:transparent;padding:4px 7px;font:inherit;border-radius:0}
+.sheet td.sel{outline:2px solid var(--pri);outline-offset:-2px}
+:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+@media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.live{grid-column:1/-1;position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
+@media (max-width:760px){.app{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav ol{display:flex;overflow:auto;gap:4px}.nav li{flex:none}.nav .t{display:none}main{padding:18px 16px 60px}.grid2,.grid3,.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+
+textarea,input[type=search]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px;font:inherit;color:var(--fg)}
+textarea.py{width:100%;font-family:var(--mono);font-size:13.5px;min-height:62px;resize:vertical;background:var(--code)}
+input.wide{width:100%;font-family:var(--mono)}
+.cell{border:1px solid var(--line);border-radius:10px;margin:10px 0;overflow:hidden;background:var(--surface)}
+.cell .hd{display:flex;gap:10px;align-items:center;background:var(--surface2);padding:5px 10px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.cell .bd{padding:8px 10px}
+.out{font-family:var(--mono);font-size:13px;white-space:pre-wrap;padding:6px 10px;border-top:1px dashed var(--line2);color:var(--fg)}
+.out.err{color:var(--bad);background:var(--bad-soft)}
+.out.ok{background:var(--good-soft)}
+.kv{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.kv span{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:2px 8px}
+.mk{background:var(--warn-soft);color:var(--fg);outline:2px solid var(--warn);border-radius:3px;padding:0 2px}
+.boxes{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
+.bx{min-width:38px;border:1px solid var(--line);border-radius:6px;text-align:center;background:var(--surface);padding:2px 6px;font-family:var(--mono)}
+.bx small{display:block;font-size:11px;color:var(--muted)}
+.bx.hi{background:var(--pri);color:var(--on);border-color:var(--pri)}
+.bx.hi small{color:var(--on)}
+.bx.ok{background:var(--good-soft);border-color:var(--good)}
+.bx.no{background:var(--bad-soft);border-color:var(--bad)}
+.bx.cur{background:var(--warn-soft);border-color:var(--warn)}
+.cmark{font-family:var(--mono);font-size:13px;line-height:1.65;background:var(--code);border:1px solid var(--line2);border-radius:8px;padding:8px 12px;white-space:pre}
+.cmark .ln{display:block;padding:0 4px;border-radius:3px}
+.cmark .ln.on{background:var(--warn-soft);outline:1px solid var(--warn)}
+.t{font-family:var(--mono)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:760px){.grid4{grid-template-columns:1fr 1fr}}
+.world{display:flex;gap:10px;margin:8px 0;flex-wrap:wrap}
+.sq{width:130px;height:90px;border:2px solid var(--line);border-radius:10px;display:grid;place-items:center;text-align:center;background:var(--surface);position:relative}
+.sq.dirty{background:var(--warn-soft);border-color:var(--warn)}
+.sq.here{outline:4px solid var(--pri)}
+.sq small{position:absolute;top:2px;left:6px;color:var(--muted)}
+.fnode{fill:var(--surface);stroke:var(--fg);stroke-width:2}
+.fnode.front{fill:var(--warn-soft);stroke:var(--warn)}
+.fnode.exp{fill:var(--good-soft);stroke:var(--good)}
+.fnode.cur{fill:var(--pri);stroke:var(--pri)}
+.fnode.path{fill:var(--sec-soft);stroke:var(--sec);stroke-width:3.5}
+.edge{stroke:var(--muted);stroke-width:2;fill:none}
+.edge.path{stroke:var(--sec);stroke-width:4}
+svg.g text{fill:var(--fg);font:600 14px var(--body);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+svg.g text.cur{fill:var(--on)}
+table.tt{border-collapse:collapse;font-family:var(--mono);font-size:13.5px}
+table.tt th,table.tt td{border:1px solid var(--line);padding:4px 10px;text-align:center}
+table.tt th{background:var(--surface2)}
+table.tt td.T{background:var(--good-soft)} table.tt td.F{background:var(--bad-soft)}
+.stack{display:flex;flex-direction:column-reverse;align-items:center;min-width:70px;border-bottom:4px solid var(--fg);padding:0 8px}
+.blk{width:56px;height:38px;border:2px solid var(--fg);border-radius:6px;display:grid;place-items:center;font-weight:700;margin-top:2px;background:var(--pri-soft)}
+.blk.held{background:var(--sec-soft);border-color:var(--sec)}
+.tag.big{font-size:13px;padding:3px 10px}
+.opt2{display:inline-block;margin:3px;padding:6px 12px;border:1px solid var(--line);background:var(--surface);border-radius:999px;cursor:pointer;font-weight:600}
+.opt2:hover{border-color:var(--fg)}
+.opt2.ok{background:var(--good-soft);border-color:var(--good)}
+.opt2.no{background:var(--bad-soft);border-color:var(--bad)}
+.opt2[aria-pressed=true]{background:var(--pri);color:var(--on);border-color:var(--pri)}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="nav" aria-label="Lessons">
+    <h2 class="brand">IPSR Lab<small>Unit 2, Introduction to AI<br>B.Tech Sem I, Introduction to Problem Solving and Reasoning</small></h2>
+    <ol id="navlist"></ol>
+    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
+  </nav>
+  <main id="stage" tabindex="-1"></main>
+  <aside class="live" aria-label="Live data"><h3>Quick reference: environments</h3><div id="livebox"></div></aside>
+</div>
+<script>
+"use strict";
+/* ===== helpers ===== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-US"):v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/(a.length-1))};
+const quant=(a,q)=>{const s=[...a].sort((x,y)=>x-y),p=(s.length-1)*q,l=Math.floor(p);return s[l]+(s[Math.min(l+1,s.length-1)]-s[l])*(p-l)};
+const mode=a=>{const c={};a.forEach(v=>c[v]=(c[v]||0)+1);const mx=Math.max(...Object.values(c));return Object.keys(c).filter(k=>c[k]===mx).join(", ")};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const groupBy=(rows,f)=>{const g={};rows.forEach(r=>{const k=f(r);(g[k]=g[k]||[]).push(r)});return g};
+const corr=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0,c=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2;c+=(y[i]-my)**2});return a/Math.sqrt(b*c)};
+const linfit=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2});const m=a/b;return {m,b:my-m*mx,r:corr(x,y)}};
+function table(rows,cols,opts={}){
+  const head=cols.map(c=>`<th>${esc(c[1])}</th>`).join("");
+  const body=rows.map((r,i)=>`<tr${opts.newFrom!=null&&i>=opts.newFrom?' class="new"':''}>`+cols.map(c=>{
+    const v=r[c[0]],cls=(typeof v==="number"?"num":"")+((opts.cellClass&&opts.cellClass(r,c[0],i))||"");
+    return `<td class="${cls.trim()}">${v===""||v==null?'<span class="muted">(blank)</span>':esc(typeof v==="number"?fmt(v,c[2]!=null?c[2]:(Number.isInteger(v)?0:2)):v)}</td>`}).join("")+"</tr>").join("");
+  return `<div class="tw${opts.small?' sm':''}"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+const QUIZ={};
+function quiz(id,q,opts,ans,why){QUIZ[id]={ans,why};
+  return `<div class="card"><h3>Quick check</h3><p style="margin:0 0 6px"><b>${q}</b></p>`+opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" style="margin-top:6px"></div></div>`;}
+function regQuiz(id,ans,why){QUIZ[id]={ans,why}}
+function seg(id,items,cls=""){return `<div class="seg ${cls}" id="${id}" role="group">`+items.map((x,i)=>`<button type="button" data-v="${x[0]}" aria-pressed="${i===0}">${x[1]}</button>`).join("")+`</div>`}
+function bindSeg(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)});return ()=>$$("[aria-pressed=true]",g)[0].dataset.v}
+const IN=n=>n.toLocaleString("en-US",{maximumFractionDigits:0});
+
+/* ===== SVG charts (colours come from CSS variables, so both themes work) ===== */
+const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
+const nice=(max)=>{const e=Math.pow(10,Math.floor(Math.log10(max||1))),f=max/e;const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*e};
+function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(lo+st*i);return out}
+const short=v=>Math.abs(v)>=100000?(v/100000).toFixed(1).replace(/\.0$/,"")+"L":Math.abs(v)>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":(Math.round(v*100)/100)+"";
+function chartBar(items,o={}){ // items:[{label,value,color}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...items.map(i=>i.value))*1.08),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  items.forEach((it,i)=>{const x=m.l+i*bw+bw*.15,w=bw*.7,y=sy(Math.max(it.value,mn));
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,sy(mn)-y)}" fill="${it.color||o.color||"var(--c1)"}" rx="2"><title>${esc(it.label)}: ${fmt(it.value)}</title></rect>`;
+    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:11px">${short(it.value)}</text>`;
+    const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  return s+"</svg>";}
+function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:o.legendRight?110:16,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...all)*1.08);
+  const sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  const step=Math.ceil(labels.length/(o.maxLabels||12));labels.forEach((l,i)=>{if(i%step===0)s+=`<text class="lbl" x="${sx(i)}" y="${H-m.b+16}" text-anchor="middle">${esc(l)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  series.forEach((se,k)=>{const c=se.color||PAL[k%6];let d="";se.vals.forEach((v,i)=>{if(v!=null)d+=(d?"L":"M")+sx(i).toFixed(1)+" "+sy(v).toFixed(1)});
+    if(o.area&&k===0)s+=`<path d="${d}L${sx(se.vals.length-1)} ${sy(mn)}L${sx(0)} ${sy(mn)}Z" fill="${c}" opacity=".18"/>`;
+    s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${se.w||2.5}" ${se.dash?'stroke-dasharray="6 4"':""} stroke-linejoin="round"/>`;
+    if(o.dots!==false&&!se.dash)se.vals.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${sx(i)}" cy="${sy(v)}" r="3.5" fill="${c}"><title>${esc(labels[i])}: ${fmt(v)}</title></circle>`});
+    if(o.legendRight)s+=`<text x="${W-m.r+8}" y="${m.t+14+k*16}" style="fill:${c};font-weight:600">${esc(se.name)}</text>`;
+    else if(series.length>1)s+=`<text x="${m.l+8+k*150}" y="${H-6}" style="fill:${c};font-weight:600">&#9632; ${esc(se.name)}</text>`});
+  (o.marks||[]).forEach(mk=>{s+=`<text x="${sx(mk.i)}" y="${sy(mk.v)-10}" text-anchor="middle" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
+  return s+"</svg>";}
+function chartScatter(pts,o={}){ // pts:[{x,y,r,color,label}]
+  const W=o.w||640,H=o.h||340,m={l:60,r:16,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||nice(Math.max(...ys)*1.05);
+  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(y0,y1).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  ticks(x0,x1).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${short(t)}</text>`);
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(y0)}" y2="${sy(y0)}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${sy(y0)}"/>`;
+  if(o.xlabel)s+=`<text class="lbl" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${esc(o.xlabel)}</text>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  if(o.fit){const f=o.fit;s+=`<line x1="${sx(x0)}" y1="${sy(f.m*x0+f.b)}" x2="${sx(x1)}" y2="${sy(f.m*x1+f.b)}" stroke="var(--sec)" stroke-width="2.5" stroke-dasharray="7 4"/>`}
+  pts.forEach(p=>{s+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="${p.r||4}" fill="${p.color||"var(--c1)"}" fill-opacity="${o.alpha||.65}" stroke="${p.color||"var(--c1)"}"><title>${esc(p.label||"")} (${fmt(p.x)}, ${fmt(p.y)})</title></circle>`;
+    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:11px">${esc(p.label)}</text>`});
+  return s+"</svg>";}
+function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart">`;
+  items.forEach((it,k)=>{const ang=it.value/tot*2*Math.PI,x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(a+ang),y2=cy+R*Math.sin(a+ang);
+    s+=`<path d="M${cx} ${cy}L${x1} ${y1}A${R} ${R} 0 ${ang>Math.PI?1:0} 1 ${x2} ${y2}Z" fill="${it.color||PAL[k%6]}" stroke="var(--surface)" stroke-width="2"><title>${esc(it.label)}: ${(100*it.value/tot).toFixed(1)}%</title></path>`;a+=ang;
+    s+=`<text x="250" y="${40+k*22}" style="fill:${it.color||PAL[k%6]};font-weight:700">&#9632; <tspan style="fill:var(--fg);font-weight:400">${esc(it.label)} ${(100*it.value/tot).toFixed(1)}%</tspan></text>`});
+  return s+"</svg>";}
+function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:short(lo+i*w),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+
+/* ===== lesson framework ===== */
+const L=[];
+function lesson(o){L.push(o)}
+let cur=0, done=new Set();
+const UKEY="dalab_"+(document.title||"x");
+try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e){}
+function go(i){
+  cur=Math.max(0,Math.min(L.length-1,i));
+  const l=L[cur],st=$("#stage");
+  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
+  $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
+  l.mount&&l.mount(st);
+  $$("[data-q]",st).forEach(b=>b.onclick=()=>{
+    const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
+    $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
+    b.classList.add(ok?"ok":"no");
+    $("#why-"+id,st).textContent=(ok?"Correct. ":"Not quite. ")+k.why;
+    if(ok){done.add(cur);try{localStorage.setItem(UKEY,JSON.stringify([...done]))}catch(e){}drawNav()}
+  });
+  drawNav(); window.scrollTo(0,0); st.focus({preventScroll:true});
+}
+function drawNav(){
+  $("#navlist").innerHTML=L.map((l,i)=>`<li class="${done.has(i)?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${done.has(i)?"&#10003;":i+1}</span><span class="t">${l.nav}</span></button></li>`).join("");
+  $$("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
+}
+/* theme + text size (for projectors) */
+(function(){
+  const R=document.documentElement;let theme=null,zi=0;const Z=[1,1.15,1.3];
+  try{theme=localStorage.getItem("dalab_theme")}catch(e){}
+  if(!theme)theme=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
+  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);
+    const b=$("#themeBtn"),z=$("#zoomBtn");if(b)b.innerHTML=theme==="dark"?"&#9728; Switch to LIGHT mode":"&#9790; Switch to DARK mode";if(z)z.textContent="Text size: "+Math.round(Z[zi]*100)+"%";}
+  window.addEventListener("DOMContentLoaded",()=>{
+    $("#themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("dalab_theme",theme)}catch(e){}apply()};
+    $("#zoomBtn").onclick=()=>{zi=(zi+1)%3;apply()};apply();
+    document.addEventListener("keydown",e=>{if(e.altKey&&(e.key==="d"||e.key==="D")){$("#themeBtn").click()}});
+  });
+  apply();
+})();
+
+/* ===== IPSR common: tiny Python-expression engine + stepper ===== */
+class PyErr extends Error{constructor(t,m){super(m);this.pt=t}}
+const V=(v,k)=>({v,k});
+const fRepr=n=>{if(Number.isNaN(n))return"nan";if(!isFinite(n))return n>0?"inf":"-inf";let s=String(n);if(/^-?\d+$/.test(s))s+=".0";return s};
+function pyRepr(x){if(x.k==="str")return"'"+x.v.replace(/'/g,"\\'")+"'";if(x.k==="bool")return x.v?"True":"False";if(x.k==="NoneType")return"None";if(x.k==="float")return fRepr(x.v);if(x.k==="list")return"["+x.v.map(pyRepr).join(", ")+"]";return String(x.v)}
+const pyStr=x=>x.k==="str"?x.v:pyRepr(x);
+const isNum=x=>x.k==="int"||x.k==="float"||x.k==="bool";
+const nv=x=>x.k==="bool"?V(+x.v,"int"):x;
+const truthy=x=>x.k==="str"?x.v.length>0:x.k==="NoneType"?false:x.k==="list"?x.v.length>0:!!x.v;
+function tokenize(src){
+  const re=/\s*(?:(\d+\.\d*|\.\d+|\d+)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|([A-Za-z_]\w*)|(\*\*|\/\/|==|!=|<=|>=|[-+*\/%<>(),=\[\]]))/y;
+  const out=[];let i=0;src=src.trim();
+  while(i<src.length){re.lastIndex=i;const m=re.exec(src);if(!m)throw new PyErr("SyntaxError","invalid syntax near '"+src.slice(i,i+6)+"'");
+    if(m[1]!==undefined)out.push({t:"num",v:m[1]});else if(m[2]!==undefined)out.push({t:"str",v:m[2].slice(1,-1)});
+    else if(m[3]!==undefined)out.push({t:["and","or","not","True","False","None"].includes(m[3])?"kw":"name",v:m[3]});else out.push({t:"op",v:m[4]});
+    i=re.lastIndex;while(src[i]===" ")i++}
+  return out}
+function parsePy(src){
+  const T=tokenize(src);let p=0;const pk=()=>T[p],nx=()=>T[p++];
+  const isOp=v=>pk()&&pk().t==="op"&&pk().v===v, isKw=v=>pk()&&pk().t==="kw"&&pk().v===v;
+  function or(){let l=and();while(isKw("or")){nx();l={t:"or",l,r:and()}}return l}
+  function and(){let l=not();while(isKw("and")){nx();l={t:"and",l,r:not()}}return l}
+  function not(){if(isKw("not")){nx();return{t:"un",op:"not",x:not()}}return cmp()}
+  function cmp(){let l=add();const ops=[],items=[l];while(pk()&&pk().t==="op"&&["==","!=","<",">","<=",">="].includes(pk().v)){ops.push(nx().v);items.push(add())}return ops.length?{t:"cmp",ops,items}:l}
+  function add(){let l=mul();while(isOp("+")||isOp("-")){const op=nx().v;l={t:"bin",op,l,r:mul()}}return l}
+  function mul(){let l=unary();while(isOp("*")||isOp("/")||isOp("//")||isOp("%")){const op=nx().v;l={t:"bin",op,l,r:unary()}}return l}
+  function unary(){if(isOp("-")||isOp("+")){const op=nx().v;return{t:"un",op,x:unary()}}return pow()}
+  function pow(){const b=atom();if(isOp("**")){nx();return{t:"bin",op:"**",l:b,r:unary()}}return b}
+  function atom(){const k=nx();if(!k)throw new PyErr("SyntaxError","unexpected end of expression");
+    if(k.t==="num")return{t:"val",val:/[.]/.test(k.v)?V(parseFloat(k.v),"float"):V(parseInt(k.v,10),"int")};
+    if(k.t==="str")return{t:"val",val:V(k.v,"str")};
+    if(k.t==="kw"){if(k.v==="True")return{t:"val",val:V(true,"bool")};if(k.v==="False")return{t:"val",val:V(false,"bool")};if(k.v==="None")return{t:"val",val:V(null,"NoneType")};throw new PyErr("SyntaxError","invalid syntax")}
+    if(k.t==="name"){if(isOp("(")){nx();const args=[];if(!isOp(")")){args.push(or());while(isOp(",")){nx();args.push(or())}}if(!isOp(")"))throw new PyErr("SyntaxError","'(' was never closed");nx();return{t:"call",name:k.v,args}}return{t:"name",name:k.v}}
+    if(k.t==="op"&&k.v==="("){const e=or();if(!isOp(")"))throw new PyErr("SyntaxError","'(' was never closed");nx();return e}
+    if(k.t==="op"&&k.v==="["){const items=[];if(!isOp("]")){items.push(or());while(isOp(",")){nx();items.push(or())}}if(!isOp("]"))throw new PyErr("SyntaxError","'[' was never closed");nx();return{t:"list",items}}
+    throw new PyErr("SyntaxError","invalid syntax near '"+k.v+"'")}
+  const e=or();if(p<T.length)throw new PyErr("SyntaxError","invalid syntax near '"+T[p].v+"'");return e}
+const tn=x=>x.k;
+function applyBin(op,a,b){
+  const A=isNum(a)?nv(a):a,B=isNum(b)?nv(b):b;
+  if(op==="+"){if(isNum(A)&&isNum(B))return V(A.v+B.v,A.k==="float"||B.k==="float"?"float":"int");
+    if(A.k==="str"&&B.k==="str")return V(A.v+B.v,"str");
+    if(A.k==="list"&&B.k==="list")return V(A.v.concat(B.v),"list");
+    if(A.k==="str")throw new PyErr("TypeError",`can only concatenate str (not "${tn(b)}") to str`);
+    throw new PyErr("TypeError",`unsupported operand type(s) for +: '${tn(a)}' and '${tn(b)}'`)}
+  if(op==="*"){if(isNum(A)&&isNum(B))return V(A.v*B.v,A.k==="float"||B.k==="float"?"float":"int");
+    if(A.k==="str"&&B.k==="int")return V(B.v>0?A.v.repeat(B.v):"","str");if(B.k==="str"&&A.k==="int")return V(A.v>0?B.v.repeat(A.v):"","str");
+    throw new PyErr("TypeError",`can't multiply sequence by non-int of type '${isNum(A)?tn(A):tn(B)}'`.replace(/^can't.*$/,m=>(A.k==="str"||B.k==="str")?m:`unsupported operand type(s) for *: '${tn(a)}' and '${tn(b)}'`))}
+  if(!isNum(A)||!isNum(B))throw new PyErr("TypeError",`unsupported operand type(s) for ${op}: '${tn(a)}' and '${tn(b)}'`);
+  const fl=A.k==="float"||B.k==="float";
+  if(op==="-")return V(A.v-B.v,fl?"float":"int");
+  if(op==="/"){if(B.v===0)throw new PyErr("ZeroDivisionError","division by zero");return V(A.v/B.v,"float")}
+  if(op==="//"){if(B.v===0)throw new PyErr("ZeroDivisionError",fl?"float floor division by zero":"integer division or modulo by zero");return V(Math.floor(A.v/B.v),fl?"float":"int")}
+  if(op==="%"){if(B.v===0)throw new PyErr("ZeroDivisionError",fl?"float modulo by zero":"integer modulo by zero");return V(A.v-B.v*Math.floor(A.v/B.v),fl?"float":"int")}
+  if(op==="**"){if(A.v===0&&B.v<0)throw new PyErr("ZeroDivisionError","0.0 cannot be raised to a negative power");const r=Math.pow(A.v,B.v);return V(r,(fl||B.v<0)?"float":"int")}
+  throw new PyErr("SyntaxError","unknown operator")}
+function applyCmp(op,a,b){const A=isNum(a)?nv(a):a,B=isNum(b)?nv(b):b;
+  if(op==="=="||op==="!="){let eq=(isNum(A)&&isNum(B))||(A.k===B.k)?(A.k==="list"?JSON.stringify(A.v)===JSON.stringify(B.v):A.v===B.v):false;return V(op==="=="?eq:!eq,"bool")}
+  if((isNum(A)&&isNum(B))||(A.k==="str"&&B.k==="str")){const x=A.v,y=B.v;return V(op==="<"?x<y:op===">"?x>y:op==="<="?x<=y:x>=y,"bool")}
+  throw new PyErr("TypeError",`'${op}' not supported between instances of '${tn(a)}' and '${tn(b)}'`)}
+const FUN={abs:a=>V(Math.abs(a[0].v),a[0].k==="bool"?"int":a[0].k),
+  round:a=>{const d=a[1]?a[1].v:0,f=Math.pow(10,d);let r=Math.round(a[0].v*f)/f;const x=a[0].v*f;if(Math.abs(x%1)===0.5)r=(Math.floor(x)%2===0?Math.floor(x):Math.ceil(x))/f;return a[1]?V(r,a[0].k):V(r,"int")},
+  int:a=>{if(a[0].k==="str"){if(!/^\s*[-+]?\d+\s*$/.test(a[0].v))throw new PyErr("ValueError",`invalid literal for int() with base 10: '${a[0].v}'`);return V(parseInt(a[0].v,10),"int")}return V(Math.trunc(a[0].v),"int")},
+  float:a=>{if(a[0].k==="str"){if(isNaN(parseFloat(a[0].v)))throw new PyErr("ValueError",`could not convert string to float: '${a[0].v}'`);return V(parseFloat(a[0].v),"float")}return V(+a[0].v,"float")},
+  str:a=>V(pyStr(a[0]),"str"),len:a=>{if(a[0].k!=="str"&&a[0].k!=="list")throw new PyErr("TypeError",`object of type '${tn(a[0])}' has no len()`);return V(a[0].v.length,"int")},
+  max:a=>a.reduce((m,x)=>applyCmp(">",x,m).v?x:m),min:a=>a.reduce((m,x)=>applyCmp("<",x,m).v?x:m),
+  bool:a=>V(truthy(a[0]),"bool"),type:a=>V(`<class '${a[0].k==="NoneType"?"NoneType":a[0].k}'>`,"str")};
+function evalPy(n,env,ctx){
+  switch(n.t){
+    case"val":return n.val;
+    case"name":if(env&&n.name in env)return env[n.name];throw new PyErr("NameError",`name '${n.name}' is not defined`);
+    case"list":return V(n.items.map(i=>evalPy(i,env,ctx)),"list");
+    case"un":{const x=evalPy(n.x,env,ctx);if(n.op==="not")return V(!truthy(x),"bool");if(!isNum(x))throw new PyErr("TypeError",`bad operand type for unary ${n.op}: '${tn(x)}'`);const y=nv(x);return n.op==="-"?V(-y.v,y.k):y}
+    case"bin":return applyBin(n.op,evalPy(n.l,env,ctx),evalPy(n.r,env,ctx));
+    case"and":{const l=evalPy(n.l,env,ctx);return truthy(l)?evalPy(n.r,env,ctx):l}
+    case"or":{const l=evalPy(n.l,env,ctx);return truthy(l)?l:evalPy(n.r,env,ctx)}
+    case"cmp":{let l=evalPy(n.items[0],env,ctx);for(let i=0;i<n.ops.length;i++){const r=evalPy(n.items[i+1],env,ctx);if(!applyCmp(n.ops[i],l,r).v)return V(false,"bool");l=r}return V(true,"bool")}
+    case"call":{const args=n.args.map(a=>evalPy(a,env,ctx));if(n.name==="print"){if(ctx)ctx.out.push(args.map(pyStr).join(" "));return V(null,"NoneType")}
+      if(!FUN[n.name])throw new PyErr("NameError",`name '${n.name}' is not defined`);try{return FUN[n.name](args)}catch(e){if(e instanceof PyErr)throw e;throw new PyErr("TypeError","bad arguments for "+n.name+"()")}}
+  }}
+function stripComment(s){let q=null;for(let i=0;i<s.length;i++){const c=s[i];if(q){if(c===q)q=null}else if(c==='"'||c==="'")q=c;else if(c==="#")return s.slice(0,i)}return s}
+/* run a few lines like a notebook cell; returns {out:[lines], val, err} */
+function runCell(src,env){const ctx={out:[]};let last=null;
+  try{for(const raw of src.split("\n")){const line=stripComment(raw).trim();if(!line)continue;
+    const m=line.match(/^([A-Za-z_]\w*)\s*=(?!=)\s*(.+)$/);
+    if(m){env[m[1]]=evalPy(parsePy(m[2]),env,ctx);last=null}else{const v=evalPy(parsePy(line),env,ctx);last=/^print\s*\(/.test(line)?null:v}}
+    return{out:ctx.out,val:last}}
+  catch(e){if(e instanceof PyErr)return{out:ctx.out,err:e.pt+": "+e.message,et:e.pt};throw e}}
+/* printing an AST with minimal brackets, for step-by-step evaluation */
+const PREC={or:1,and:2,not:3,cmp:4,bin:{"+":6,"-":6,"*":7,"/":7,"//":7,"%":7,"**":9},un:8,atom:10};
+function prc(n){if(n.t==="or")return 1;if(n.t==="and")return 2;if(n.t==="un")return n.op==="not"?3:8;if(n.t==="cmp")return 4;if(n.t==="bin")return PREC.bin[n.op];return 10}
+function astStr(n,hl){
+  const wrap=(c,min,strict)=>{const s=astStr(c,hl);const p=prc(c);return(p<min||(strict&&p===min))?"("+s+")":s};
+  let s;
+  switch(n.t){
+    case"val":s=esc(pyRepr(n.val));break;
+    case"name":s=esc(n.name);break;
+    case"list":s="["+n.items.map(i=>astStr(i,hl)).join(", ")+"]";break;
+    case"call":s=esc(n.name)+"("+n.args.map(a=>astStr(a,hl)).join(", ")+")";break;
+    case"un":s=(n.op==="not"?"not ":n.op)+wrap(n.x,n.op==="not"?3:8,false);break;
+    case"bin":{const p=prc(n);s=n.op==="**"?wrap(n.l,p,true)+" ** "+wrap(n.r,8,false):wrap(n.l,p,false)+" "+esc(n.op)+" "+wrap(n.r,p,true);break}
+    case"and":s=wrap(n.l,2,false)+" and "+wrap(n.r,2,true);break;
+    case"or":s=wrap(n.l,1,false)+" or "+wrap(n.r,1,true);break;
+    case"cmp":s=n.items.map((x,i)=>wrap(x,5,false)+(i<n.ops.length?" "+esc(n.ops[i])+" ":"")).join("");break;
+  }
+  return n===hl?`<span class="mk">${s}</span>`:s}
+/* find next reducible node (postorder, left first, honours short-circuit); returns {node, replace(fn)} via path */
+function nextReducible(n,env){
+  const isV=x=>x.t==="val";
+  function rec(n){
+    if(isV(n))return null;
+    if(n.t==="name")return{node:n,note:"look up the value of the name"};
+    if(n.t==="and"||n.t==="or"){
+      if(!isV(n.l)){const r=rec(n.l);if(r)return r;return null}
+      const sc=n.t==="and"?!truthy(n.l.val):truthy(n.l.val);
+      if(sc)return{node:n,short:true,note:"short-circuit: the left side already decides, the right side is NOT evaluated"};
+      if(!isV(n.r)){const r=rec(n.r);if(r)return r;return null}
+      return{node:n,note:"left side did not decide, so the right side is used"}}
+    const kids=n.t==="bin"?[n.l,n.r]:n.t==="un"?[n.x]:n.t==="cmp"?n.items:n.t==="call"?n.args:n.t==="list"?n.items:[];
+    for(const k of kids){const r=rec(k);if(r)return r}
+    return{node:n,note:n.t==="bin"?"do "+n.op:n.t==="un"?"apply "+n.op:n.t==="cmp"?"compare":n.t==="call"?"call "+n.name+"()":"build the list"}}
+  return rec(n)}
+function replaceNode(root,target,val){if(root===target)return{t:"val",val};
+  for(const k of["l","r","x"])if(root[k])root[k]=replaceNode(root[k],target,val);
+  for(const k of["items","args"])if(root[k])root[k]=root[k].map(c=>replaceNode(c,target,val));return root}
+function evalSteps(src,env){
+  let ast=parsePy(src);const steps=[{html:astStr(ast),note:"start: the whole expression"}];let guard=0;
+  while(ast.t!=="val"&&guard++<60){const r=nextReducible(ast,env);if(!r)break;
+    const before=astStr(ast,r.node);
+    let v;const ctx={out:[]};
+    if(r.short)v=r.node.l.val;else if(r.node.t==="and"||r.node.t==="or")v=r.node.t==="and"?(truthy(r.node.l.val)?r.node.r.val:r.node.l.val):(truthy(r.node.l.val)?r.node.l.val:r.node.r.val);
+    else if(r.node.t==="name"){v=evalPy(r.node,env,ctx)}
+    else{const tmp=JSON.parse(JSON.stringify(r.node));v=evalPy(r.node,env,ctx)}
+    ast=replaceNode(ast,r.node,v);
+    steps.push({html:astStr(ast),before,note:r.note+" = "+esc(pyRepr(v))});}
+  return{steps,result:ast.val}}
+/* generic stepper widget */
+function stepper(root,sel,getSteps,draw){
+  const box=$(sel,root);let i=0,steps=getSteps();
+  box.innerHTML=`<div class="row"><button class="btn sm" type="button" data-a="b">Back</button><button class="btn pri sm" type="button" data-a="n">Step</button><button class="btn sm" type="button" data-a="a">Run all</button><button class="btn sm" type="button" data-a="r">Reset</button><span class="small muted" data-a="c"></span></div><div data-a="v"></div>`;
+  const v=$("[data-a=v]",box),c=$("[data-a=c]",box);
+  function show(){c.textContent=`step ${i} of ${steps.length-1}`;v.innerHTML=draw(steps[i],i,steps)}
+  $("[data-a=b]",box).onclick=()=>{if(i>0){i--;show()}};
+  $("[data-a=n]",box).onclick=()=>{if(i<steps.length-1){i++;show()}};
+  $("[data-a=a]",box).onclick=()=>{i=steps.length-1;show()};
+  $("[data-a=r]",box).onclick=()=>{i=0;show()};
+  show();
+  return{reset(){steps=getSteps();i=0;show()}}}
+const chips=(id,items,sel)=>`<div id="${id}">`+items.map((x,k)=>`<button type="button" class="opt2" data-v="${esc(x)}" aria-pressed="${k===sel}">${esc(x)}</button>`).join("")+`</div>`;
+function bindChips(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)})}
+/* seeded random, so every run of a demo is repeatable */
+function rng(seed){let s=seed>>>0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+const q2=n=>String(n).padStart(2," ");
+
+const CODE=s=>`<div class="code">${esc(s)}</div>`;
+const KV=o=>`<div class="kv">`+Object.entries(o).map(([k,v])=>`<span>${esc(k)} = ${esc(v)}</span>`).join("")+`</div>`;
+
+/* ===== IPSR Unit 2: Introduction to AI ===== */
+const NBREF=n=>`<span class="small muted">Notebook: IPSR_Unit2_Lab.ipynb, sections ${n}</span>`;
+
+/* 1 definitions, with and without AI */
+const MSGS=[[0,0,0],[1,1,0],[0,2,0],[4,1,1],[3,6,1],[5,7,1],[1,0,0],[2,5,1],[6,2,1],[0,1,0]];
+const QUAD={"Thinking humanly":{def:"Build programs that think the way people think (model the mind).",ex:"Cognitive science, brain simulation",test:"Compare the program's reasoning steps with a person's."},
+ "Thinking rationally":{def:"Use correct reasoning (logic) to reach conclusions from premises.",ex:"Theorem provers, expert-system rules",test:"Is every conclusion logically valid?"},
+ "Acting humanly":{def:"Behave so a person cannot tell the machine from a human.",ex:"Chatbots, voice assistants",test:"The Turing Test."},
+ "Acting rationally":{def:"Choose the action that gives the best expected outcome for a goal (a rational agent).",ex:"Robot vacuum, route planners, game players",test:"Does the agent achieve the best result it can with what it knows?"}};
+lesson({nav:"What is AI?",title:"Artificial Intelligence: definitions, with and without AI",syl:"Artificial Intelligence: definitions; Programming with and without AI",
+html:()=>`<p class="lead">There is no single definition of AI. Russell and Norvig sort them into four ideas: <b>thinking</b> or <b>acting</b>, each <b>humanly</b> or <b>rationally</b>. This course follows <b>acting rationally</b>: build <b>agents</b> that do the right thing for their goal.</p>
+<div class="card try"><h3>Try it: the four ideas</h3><div class="grid2" id="quad">${Object.keys(QUAD).map(k=>`<button type="button" class="cardsel opt2" data-k="${k}" style="border-radius:10px;text-align:left"><b>${k}</b></button>`).join("")}</div><div id="qd" class="callout k"></div></div>
+<div class="card try"><h3>Programming with and without AI</h3>
+<p class="small muted"><b>Without AI</b> you write the rule. <b>With AI (machine learning)</b> you give examples and the program finds the rule. Task: spam or not? Each message is described by its number of links and number of CAPITAL words. Score = links + capitals.</p>
+<div class="row"><b>Learned rule:</b> spam if score &gt;= <input type="range" id="thr" min="0" max="13" value="3"> <b id="thrv">3</b> <button class="btn pri" type="button" id="learn">Learn the best threshold from the data</button></div>
+<div id="spam"></div>
+<p class="small muted">Click a <b>label</b> cell to flip it, then press Learn again: the rule moves with the data. A hand-written rule never moves unless a person edits it.</p></div>
+${quiz("i2q1","In the machine-learning approach, what does the programmer supply?",["The exact rules","Examples with correct answers","Nothing"],1,"The programmer supplies labelled examples (data); the learning algorithm finds the rule. In traditional programming the programmer writes the rule.")}
+${NBREF("2.1 and 2.2")}`,
+mount(r){let sel="Acting rationally";function q(){$$("[data-k]",r).forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===sel));const d=QUAD[sel];$("#qd",r).innerHTML=`<b>${sel}.</b> ${d.def}<br><span class="small">Example: ${d.ex}. How to check it: ${d.test}</span>${sel==="Acting rationally"?'<br><span class="tag g">The approach of this course</span>':""}`}
+  $$("[data-k]",r).forEach(b=>b.onclick=()=>{sel=b.dataset.k;q()});q();
+  const lab=MSGS.map(m=>m[2]);const acc=t=>MSGS.filter((m,i)=>((m[0]+m[1])>=t)===!!lab[i]).length;
+  function best(){let b=0,bt=0;for(let t=0;t<=13;t++){const a=acc(t);if(a>b){b=a;bt=t}}return bt}
+  function draw(){const t=+$("#thr",r).value;$("#thrv",r).textContent=t;const hand=m=>m[0]>=3||m[1]>=5;
+    const handAcc=MSGS.filter((m,i)=>hand(m)===!!lab[i]).length;
+    $("#spam",r).innerHTML=`<table class="dt"><thead><tr><th>#</th><th>links</th><th>capitals</th><th>score</th><th>label (true)</th><th>hand rule</th><th>learned rule</th></tr></thead><tbody>${MSGS.map((m,i)=>{const s=m[0]+m[1],lp=s>=t,hp=hand(m);return`<tr><td>${i+1}</td><td class="num">${m[0]}</td><td class="num">${m[1]}</td><td class="num">${s}</td><td><button type="button" class="btn sm" data-fl="${i}">${lab[i]?"spam":"ok"}</button></td><td>${hp?"spam":"ok"} ${hp===!!lab[i]?"&#10003;":"<b>&#10007;</b>"}</td><td>${lp?"spam":"ok"} ${lp===!!lab[i]?"&#10003;":"<b>&#10007;</b>"}</td></tr>`}).join("")}</tbody></table>
+     <div class="grid2" style="margin-top:8px"><div class="kpi"><span class="small muted">Hand-written rule (links &gt;= 3 or capitals &gt;= 5)</span><b>${handAcc} / ${MSGS.length}</b></div><div class="kpi"><span class="small muted">Learned rule (score &gt;= ${t})</span><b>${acc(t)} / ${MSGS.length}</b></div></div>`;
+    $$("[data-fl]",r).forEach(b=>b.onclick=()=>{lab[+b.dataset.fl]^=1;draw()})}
+  $("#thr",r).oninput=draw;$("#learn",r).onclick=()=>{$("#thr",r).value=best();draw()};draw()}});
+
+/* 2 applications */
+const APPS=[
+ {d:"Healthcare",e:"Screening X-rays and scans for disease",c:["Perception","Learning"],p:"P: correct findings, fewer missed cases. S: image pixels. A: flag region, report."},
+ {d:"Transport",e:"Self-driving cars, route finding in maps",c:["Perception","Search and planning"],p:"P: safe, fast, legal trip. S: camera, GPS, lidar. A: steer, brake, accelerate."},
+ {d:"Finance",e:"Spotting fraudulent card payments",c:["Learning"],p:"P: fraud caught, few false alarms. S: transaction data. A: approve, block, ask for OTP."},
+ {d:"Education",e:"Adaptive tutoring that picks the next question",c:["Knowledge","Learning"],p:"P: student improvement. S: answers, time taken. A: next question, hint."},
+ {d:"Agriculture",e:"Finding crop disease from a phone photo",c:["Perception"],p:"P: correct diagnosis. S: photo. A: show disease name and advice."},
+ {d:"Customer care",e:"Chatbots that answer common questions",c:["Language","Knowledge"],p:"P: issues solved, user happy. S: typed text. A: reply, hand over to a person."},
+ {d:"Games",e:"Chess and Go programs",c:["Search and planning"],p:"P: win. S: board position. A: legal moves."},
+ {d:"Manufacturing",e:"Robots that pick and sort parts",c:["Perception","Search and planning"],p:"P: parts in the right bins. S: camera, joint sensors. A: arm and hand."},
+ {d:"Language",e:"Translation and speech-to-text",c:["Language","Learning"],p:"P: accurate translation. S: audio or text. A: output text."},
+ {d:"Search and e-commerce",e:"Recommending products or videos",c:["Learning"],p:"P: clicks, purchases. S: browsing history. A: ranked list shown."}];
+lesson({nav:"Applications of AI",title:"Applications of AI",syl:"Applications of AI",
+html:()=>`<p class="lead">AI is not one thing. Most real systems combine a few abilities: <b>perception</b> (see or hear), <b>language</b>, <b>learning</b> from data, <b>search and planning</b>, and <b>knowledge</b> (stored facts and rules). Filter by ability, open a card, and notice the PEAS summary: every application is an agent in an environment.</p>
+<div class="card try"><h3>Try it: filter the applications</h3>${chips("af",["All","Perception","Language","Learning","Search and planning","Knowledge"],0)}<div id="apps" style="margin-top:10px"></div></div>
+<div class="callout i small"><b>Narrow vs general AI.</b> Everything in the list is <b>narrow AI</b>: very good at one task, useless outside it. A system that can learn any task like a person (general AI) does not exist yet.</div>
+${quiz("i2q2","A phone app that names a plant from a photo mainly uses which ability?",["Search and planning","Perception (vision) and learning","Logical knowledge"],1,"It recognises patterns in pixels (perception) using a model learned from many labelled photos.")}
+${NBREF("2.3")}`,
+mount(r){function draw(f){const L=APPS.filter(a=>f==="All"||a.c.includes(f));$("#apps",r).innerHTML=L.map(a=>`<details class="cardsel" style="margin:6px 0"><summary><b>${a.d}</b>: ${a.e} ${a.c.map(c=>`<span class="tag p">${c}</span>`).join(" ")}</summary><p class="small" style="margin:6px 0 0">${a.p}</p></details>`).join("")}
+  bindChips(r,"af",draw);draw("All")}});
+
+/* 3 Turing test */
+const TQ=[["What is 17 times 23?","Hmm, give me a second... 391.","Please go on."],["What did you have for breakfast?","Just tea and a paratha, I was running late.","Why do you ask about breakfast?"],["Can you cross a road with your eyes closed?","Ha, not unless I want to be a headline.","Tell me more about the road."],["How do you feel about Monday exams?","Honestly nervous, I have not revised enough.","Why do you feel Monday exams?"],["Say something that is not true.","I am the king of Bhopal.","Please go on."]];
+const ELIZA=[[/\b(hello|hi|hey)\b/i,()=>"Hello! How are you today?"],[/\bI am (.*)/i,m=>`Why do you say you are ${m[1]}?`],[/\bI feel (.*)/i,m=>`Why do you feel ${m[1]}?`],[/\bmy (mother|father|friend|teacher)\b/i,m=>`Tell me more about your ${m[1]}.`],[/\b(sad|happy|angry|tired)\b/i,m=>`Why do you feel ${m[1]}?`],[/\b(bye|goodbye)\b/i,()=>"Goodbye! Talk soon."]];
+const elizaReply=t=>{for(const [re,f] of ELIZA){const m=t.match(re);if(m)return f(m)}return"Please go on."};
+lesson({hero:true,nav:"Turing Test",title:"The Turing Test",syl:"Turing Test",
+html:()=>`<p class="lead">Alan Turing (1950) asked: can a machine <b>behave</b> so well that a human judge, chatting only by text, cannot tell it from a person? If the judge is fooled, the machine passes. The test measures <b>behaviour</b>, not understanding. A tiny pattern-matching chatbot (ELIZA style) shows how a few rules can look clever, and how one good question exposes it.</p>
+<div class="card try"><h3>Try it: talk to the bot</h3><div id="chat" style="max-height:220px;overflow:auto" class="small"></div><div class="row"><input type="text" id="cin" class="wide" style="max-width:340px" placeholder="Type a message and press Enter" autocomplete="off"><button class="btn pri" type="button" id="csend">Send</button></div>${chips("cs",["Hi there","I am tired","My mother called","What is 17 times 23?","I feel nervous about exams"],-1)}</div>
+<div class="card try"><h3>You are the judge</h3><p class="small muted">For each question, two hidden respondents answer: one is a person, one is the bot. Click the answer you think came from the <b>machine</b>.</p><div id="jg"></div></div>
+<div class="callout i small">The bot only matches patterns. It has no idea what a number, a breakfast or a road is. Modern chatbots are far more fluent, which is why people now argue about whether the Turing Test is still a good measure of intelligence.</div>
+${quiz("i2q3","What does the Turing Test measure?",["Whether the machine understands","Whether the machine's behaviour is indistinguishable from a human's in conversation","How fast the machine thinks"],1,"It is a behavioural test: if the judge cannot tell, the machine passes, whatever happens inside.")}
+${NBREF("2.4")}`,
+mount(r){const chat=$("#chat",r);function say(t){chat.insertAdjacentHTML("beforeend",`<div><b>You:</b> ${esc(t)}</div><div><b>Bot:</b> ${esc(elizaReply(t))}</div>`);chat.scrollTop=1e5}
+  const send=()=>{const i=$("#cin",r);if(i.value.trim()){say(i.value.trim());i.value=""}};$("#csend",r).onclick=send;$("#cin",r).onkeydown=e=>{if(e.key==="Enter")send()};bindChips(r,"cs",v=>say(v));
+  const rd=rng(7);let score=0,asked=0;const order=TQ.map(()=>rd()<.5);
+  function jg(){$("#jg",r).innerHTML=TQ.map((q,i)=>{const bf=order[i];const a=bf?[q[2],q[1]]:[q[1],q[2]];return`<div class="card" style="margin:8px 0"><b>Q${i+1}. ${esc(q[0])}</b><div class="row"><button type="button" class="opt" data-j="${i}" data-a="0">A: ${esc(a[0])}</button><button type="button" class="opt" data-j="${i}" data-a="1">B: ${esc(a[1])}</button></div><div class="small" id="jr${i}"></div></div>`}).join("")+`<div class="callout k" id="jsc">Score: 0 of ${TQ.length} answered correctly</div>`;
+    $$("[data-j]",r).forEach(b=>b.onclick=()=>{const i=+b.dataset.j,pick=+b.dataset.a;const mach=order[i]?0:1;const done=$("#jr"+i,r).dataset.d;if(done)return;$("#jr"+i,r).dataset.d=1;asked++;const ok=pick===mach;if(ok)score++;
+      $("#jr"+i,r).innerHTML=ok?'<span class="tag g">Correct</span> The bot gave the pattern-matched reply.':`<span class="tag b">Fooled</span> The machine was ${mach?"B":"A"}.`;$("#jsc",r).textContent=`Score: ${score} of ${TQ.length} answered correctly (${asked} answered)`})}
+  jg()}});
+
+/* 4 constraints, agents and environments */
+lesson({nav:"Agents and environments",title:"Environment constraints, agents and environments",syl:"Environment constraints; Agents and environments",
+html:()=>`<p class="lead">An <b>agent</b> perceives its <b>environment</b> through <b>sensors</b> and acts on it through <b>actuators</b>. The loop never stops: percept in, action out, environment changes. The environment sets <b>constraints</b>: noisy sensors, limited view, limited time, memory and energy, and rules the agent must obey.</p>
+<div class="card"><h3>The agent loop</h3><div class="flow"><div class="cardsel"><b>Environment</b><br><span class="small">room, road, game, web</span></div><div class="arrow">&harr;</div><div class="cardsel"><b>Agent</b><br><span class="small">sensors &rarr; program &rarr; actuators</span></div></div><p class="small muted">Percepts flow from the environment to the agent; actions flow back.</p></div>
+<div class="card try"><h3>Try it: a thermostat agent in a noisy world</h3><p class="small muted">The agent reads a noisy temperature sensor and switches a heater. Outside it is 10&deg;C. The room loses heat; the heater adds heat. The target is 22&deg;C.</p>
+<div class="row">sensor noise <input type="range" id="tn" min="0" max="3" step="0.1" value="1"> <b id="tnv">1.0</b> &nbsp; heater ON below <input type="number" id="ton" value="21" style="width:65px"> OFF above <input type="number" id="toff" value="23" style="width:65px"> <button class="btn" type="button" id="tnew">New random noise</button></div>
+<div id="tch"></div><div id="tsum" class="callout k small"></div></div>
+<div class="card"><h3>Typical environment constraints</h3><table class="dt"><thead><tr><th>Constraint</th><th>Example</th><th>What the agent can do</th></tr></thead><tbody><tr><td>Partial view</td><td>Vacuum sees only its own square</td><td>Remember what it saw (state)</td></tr><tr><td>Noisy sensors</td><td>Temperature reading jumps &plusmn;1.5</td><td>Average several readings</td></tr><tr><td>Time limit</td><td>A car must brake in 0.5 s</td><td>Use fast rules</td></tr><tr><td>Limited memory or energy</td><td>Phone, drone battery</td><td>Simple models, save power</td></tr><tr><td>Rules and safety</td><td>Traffic law</td><td>Restrict allowed actions</td></tr></tbody></table></div>
+${quiz("i2q4","Averaging many noisy sensor readings helps because:",["Noise is the same each time","Random errors partly cancel out","It makes the sensor faster"],1,"Random noise goes up and down, so errors cancel when you average. Systematic errors (a miscalibrated sensor) do not.")}
+${NBREF("2.5 and 2.6")}`,
+mount(r){let seed=5;function sim(){const noise=+$("#tn",r).value,on=+$("#ton",r).value,off=+$("#toff",r).value,rd=rng(seed);$("#tnv",r).textContent=noise.toFixed(1);
+    const gauss=()=>{let u=0,v=0;while(!u)u=rd();v=rd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+    let t=18,heat=false,sw=0;const T=[],S=[],H=[];for(let k=0;k<50;k++){const s=t+gauss()*noise;const was=heat;if(s<on)heat=true;else if(s>off)heat=false;if(was!==heat)sw++;t+=(heat?1.4:0)-0.1*(t-10);T.push(+t.toFixed(2));S.push(+s.toFixed(2));H.push(heat?1:0)}
+    $("#tch",r).innerHTML=chartLine([{name:"true temperature",vals:T,color:"var(--c1)"},{name:"what the sensor says",vals:S,color:"var(--c2)",dash:true}],T.map((_,i)=>String(i)),{w:640,h:280,min:0,max:30,dots:false,maxLabels:10});
+    const late=T.slice(15);$("#tsum",r).innerHTML=`Heater switched <b>${sw}</b> times in 50 steps. After warm-up, true temperature stayed between <b>${Math.min(...late).toFixed(1)}</b> and <b>${Math.max(...late).toFixed(1)}</b>. ${sw>14?"Lots of switching: with noisy sensors and thresholds close together the heater keeps clicking. Widen the gap between ON and OFF (hysteresis).":"A wide gap between ON and OFF thresholds keeps the switching calm."}`}
+  ["tn","ton","toff"].forEach(i=>$("#"+i,r).oninput=sim);$("#tnew",r).onclick=()=>{seed+=11;sim()};sim()}});
+
+/* 5 environment properties */
+const PROPS=[["Observable","Fully","Partially","Can the agent see everything relevant?"],["Deterministic","Deterministic","Stochastic","Is the next state fully fixed by the state and action?"],["Episodes","Episodic","Sequential","Do today's choices affect later ones?"],["Change","Static","Dynamic","Does the world change while the agent thinks?"],["Values","Discrete","Continuous","Finite set of states and actions, or smooth ranges?"],["Agents","Single","Multi","Are other agents involved?"]];
+const ENVS=[
+ {n:"Crossword puzzle",a:[0,0,1,0,0,0],w:"All squares visible, no chance, answers build on each other, nothing moves, one solver."},
+ {n:"Chess",a:[0,0,1,0,0,1],w:"Whole board visible, no chance, each move shapes the rest, the board waits for you, an opponent plays."},
+ {n:"Poker",a:[1,1,1,0,0,1],w:"Others' cards are hidden, cards are dealt by chance, rounds link together, several players."},
+ {n:"Taxi driving",a:[1,1,1,1,1,1],w:"You see only nearby, traffic is unpredictable, a route is a chain of choices, the road changes every second, speed and steering are continuous, other drivers."},
+ {n:"Medical diagnosis",a:[1,1,1,1,1,0],w:"Hidden causes, patients respond unpredictably, treatments have lasting effects, the patient's condition changes, measurements are continuous, one doctor-agent."},
+ {n:"Image labelling (photo given)",a:[0,0,0,0,0,0],w:"The whole photo is given, the same photo gives the same answer, each photo is independent, a photo does not change, a finite label list, one agent."},
+ {n:"Part-picking robot",a:[1,1,0,1,1,0],w:"Camera sees only part of the scene, grips can slip, each part is handled independently, the belt keeps moving, positions are continuous, one robot."},
+ {n:"VacBot (local dirt sensor, dirt reappears)",a:[1,1,1,1,0,0],w:"It sees only its own square, dirt can appear at random, cleaning now affects later dirt, the world changes while it acts, finite squares and actions, one robot."}];
+lesson({hero:true,nav:"Environment properties",title:"Environment properties",syl:"Environment properties",
+html:()=>`<p class="lead">Six questions classify any environment. The answers decide how hard the agent's job is: a <b>fully observable, deterministic, episodic, static, discrete, single-agent</b> world is easy; <b>partially observable, stochastic, sequential, dynamic, continuous, multi-agent</b> (a taxi in traffic) is the hardest.</p>
+<div class="card try"><h3>Classify the environment</h3><p class="small muted">Pick an environment, answer all six, then press Check. Reasons appear after checking.</p>${chips("ev",ENVS.map(e=>e.n),0)}<div id="evb"></div></div>
+<div class="card"><h3>The six properties</h3><table class="dt"><thead><tr><th>Property</th><th>Easy end</th><th>Hard end</th><th>Question</th></tr></thead><tbody>${PROPS.map(p=>`<tr><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td class="small" style="white-space:normal">${p[3]}</td></tr>`).join("")}</tbody></table></div>
+${quiz("i2q5","A game of poker is:",["Fully observable","Partially observable and stochastic","Single-agent"],1,"Other players' cards are hidden (partially observable), the deal is random (stochastic) and there are several players.")}
+${NBREF("2.7")}`,
+mount(r){let tot=0,right=0;function load(name){const e=ENVS.find(x=>x.n===name);const ans=Array(6).fill(null);
+    $("#evb",r).innerHTML=`<table class="dt"><tbody>${PROPS.map((p,i)=>`<tr><td><b>${p[0]}</b></td><td><button type="button" class="opt2" data-i="${i}" data-v="0">${p[1]}</button><button type="button" class="opt2" data-i="${i}" data-v="1">${p[2]}</button></td><td class="res small" id="rs${i}" style="white-space:normal"></td></tr>`).join("")}</tbody></table><div class="row"><button class="btn pri" type="button" id="evc">Check my answers</button></div><div id="evs"></div>`;
+    $$("[data-i]",r).forEach(b=>b.onclick=()=>{const i=+b.dataset.i;ans[i]=+b.dataset.v;$$(`[data-i="${i}"]`,r).forEach(x=>x.setAttribute("aria-pressed",x===b))});
+    $("#evc",r).onclick=()=>{let ok=0;ans.forEach((a,i)=>{const good=a===e.a[i];if(good)ok++;$("#rs"+i,r).innerHTML=a===null?'<span class="tag w">not answered</span>':good?'<span class="tag g">right</span>':`<span class="tag b">no: ${PROPS[i][e.a[i]+1]}</span>`});
+      $("#evs",r).innerHTML=`<div class="callout k"><b>${ok} of 6.</b> ${esc(e.w)}</div>`}}
+  bindChips(r,"ev",load);load(ENVS[0].n)}});
+
+/* 6 PEAS, PAGE and VacBot */
+const PEAS={"Self-driving taxi":["safe, fast, legal, comfortable trip, low fuel","roads, traffic, pedestrians, weather","steering, accelerator, brake, indicators, horn","cameras, GPS, speedometer, lidar"],
+ "Medical diagnosis":["healthy patient, low cost","patient, hospital, staff","display of questions, tests, treatments","keyboard entry of symptoms and test results"],
+ "VacBot":["rooms cleaned over time minus energy used","two squares A and B that may be dirty","Left, Right, Suck","location sensor, dirt sensor"],
+ "Exam-paper checker":["marks agree with the teacher, fast","answer sheets, marking scheme","score display, report","scanner, text reader"],
+ "Smart street light":["safe lighting, low power use","street, pedestrians, vehicles, daylight","dim, brighten, switch off","light sensor, motion sensor"]};
+function simVac(kind,seed,p,steps){const rd=rng(seed),rd2=rng(seed+101);let dirt={A:rd()<.7,B:rd()<.7},loc="A",score=0,since={A:-99,B:-99},bel={A:null,B:null};const tr=[{loc,dirt:{...dirt},act:"(start)",score,why:""}];
+  for(let t=0;t<steps;t++){const d=dirt[loc];let act,why;
+    if(kind==="Reflex"){act=d?"Suck":loc==="A"?"Right":"Left";why=d?"dirty here: Suck":"clean here: go to the other square"}
+    else if(kind==="Random"){const c=["Suck","Left","Right"];act=c[Math.floor(rd2()*3)];why="no rule, a random choice"}
+    else{bel[loc]=d;since[loc]=t;const fresh=s=>bel[s]!==null&&t-since[s]<4;if(d){act="Suck";bel[loc]=false;why="dirty here: Suck (remember it is now clean)"}else if(fresh("A")&&fresh("B")&&bel.A===false&&bel.B===false){act="NoOp";why="my memory says both clean (recently checked): save energy"}else{act=loc==="A"?"Right":"Left";why="not sure about the other square: go and look"}}
+    if(act==="Suck"){if(dirt[loc])score+=10;dirt[loc]=false}else if(act==="Right"){loc="B";score-=1}else if(act==="Left"){loc="A";score-=1}
+    for(const s of["A","B"]){const x=rd();if(!dirt[s]&&x<p)dirt[s]=true}tr.push({loc,dirt:{...dirt},act,score,why})}
+  return tr}
+lesson({hero:true,nav:"PEAS, PAGE and VacBot",title:"PEAS, PAGE and the VacBot example",syl:"PEAS description of task environments; PAGE descriptions; Example: VacBot with PEAS",
+html:()=>`<p class="lead">Before building an agent, describe its task. <b>PEAS</b>: <b>P</b>erformance measure, <b>E</b>nvironment, <b>A</b>ctuators, <b>S</b>ensors. <b>PAGE</b> is the same idea from the agent's side: <b>P</b>ercepts, <b>A</b>ctions, <b>G</b>oals, <b>E</b>nvironment. P&nbsp;of&nbsp;PAGE = S of PEAS; A of PAGE = A of PEAS; G = Performance measure.</p>
+<div class="card try"><h3>Description cards</h3>${chips("pc",Object.keys(PEAS),2)}<div class="row">View: ${seg("pv",[["peas","PEAS"],["page","PAGE"]])}</div><div id="pt"></div></div>
+<div class="card try"><h3>Your turn: describe your own agent</h3><div class="grid2"><div>Agent name <input type="text" id="mn" value="Attendance marker" class="wide"><br>Performance measure <input type="text" id="mp" value="every student marked correctly, fast" class="wide"></div><div>Environment <input type="text" id="me" value="classroom, students entering" class="wide"><br>Actuators <input type="text" id="ma" value="screen display, register entry" class="wide"><br>Sensors <input type="text" id="ms" value="camera, ID card reader" class="wide"></div></div><div id="mo"></div></div>
+<div class="card try"><h3>VacBot simulator</h3><p class="small muted">World: squares A and B. Performance measure: <b>+10</b> for each dirty square cleaned, <b>-1</b> for each move. Dirt can reappear. Choose an agent and step through it.</p>
+<div class="row">Agent: ${seg("va",[["Reflex","Simple reflex"],["Model","Model-based"],["Random","Random"]])} dirt reappears with chance <input type="range" id="vp" min="0" max="0.3" step="0.01" value="0.05"> <b id="vpv">0.05</b></div><div id="vs"></div><div class="row"><button class="btn pri" type="button" id="vcmp">Compare all three agents over 40 steps</button></div><div id="vcmpo"></div></div>
+${quiz("i2q6","In PEAS, 'rooms cleaned minus energy used' is the:",["Environment","Performance measure","Sensors"],1,"The performance measure says how success is judged. Design it first: a badly chosen measure (e.g. 'amount of dirt sucked') can be gamed.")}
+${NBREF("2.8, 2.9 and 2.10")}`,
+mount(r){let pk="VacBot",view="peas";const paint=()=>{const d=PEAS[pk];const rows=view==="peas"?[["Performance measure",d[0]],["Environment",d[1]],["Actuators",d[2]],["Sensors",d[3]]]:[["Percepts",d[3]],["Actions",d[2]],["Goals",d[0]],["Environment",d[1]]];$("#pt",r).innerHTML=`<table class="dt"><tbody>${rows.map(x=>`<tr><td><b>${x[0]}</b></td><td style="white-space:normal">${esc(x[1])}</td></tr>`).join("")}</tbody></table>`};
+  bindChips(r,"pc",v=>{pk=v;paint()});bindSeg(r,"pv",v=>{view=v;paint()});paint();
+  function mine(){const g=i=>esc($("#"+i,r).value);$("#mo",r).innerHTML=`<table class="dt" style="margin-top:8px"><thead><tr><th colspan="2">PEAS: ${g("mn")}</th></tr></thead><tbody><tr><td><b>P</b>erformance</td><td style="white-space:normal">${g("mp")}</td></tr><tr><td><b>E</b>nvironment</td><td style="white-space:normal">${g("me")}</td></tr><tr><td><b>A</b>ctuators</td><td style="white-space:normal">${g("ma")}</td></tr><tr><td><b>S</b>ensors</td><td style="white-space:normal">${g("ms")}</td></tr></tbody></table>`}
+  ["mn","mp","me","ma","ms"].forEach(i=>$("#"+i,r).oninput=mine);mine();
+  let kind="Reflex",ctl=null;const P=()=>+$("#vp",r).value;
+  function vac(){$("#vpv",r).textContent=P().toFixed(2);ctl=stepper(r,"#vs",()=>simVac(kind,3,P(),40),(s,i,all)=>`<div class="world">${["A","B"].map(q=>`<div class="sq ${s.dirt[q]?"dirty":""} ${s.loc===q?"here":""}"><small>${q}</small><span>${s.dirt[q]?"DIRTY":"clean"}${s.loc===q?"<br><b>[ VacBot ]</b>":""}</span></div>`).join("")}<div class="kpi" style="min-width:130px"><span class="small muted">Score</span><b>${s.score}</b></div></div><div class="small">${i?`Step ${i}: action <b>${s.act}</b>. <span class="muted">${esc(s.why)}</span>`:"Start: VacBot in A."}</div>`)}
+  bindSeg(r,"va",v=>{kind=v;vac()});$("#vp",r).oninput=vac;vac();
+  $("#vcmp",r).onclick=()=>{const ser=[["Reflex","var(--c1)"],["Model","var(--c2)"],["Random","var(--c3)"]].map(([k,c])=>({name:k==="Model"?"Model-based":k==="Reflex"?"Simple reflex":"Random",vals:simVac(k,3,P(),40).map(x=>x.score),color:c}));
+    $("#vcmpo",r).innerHTML=chartLine(ser,ser[0].vals.map((_,i)=>String(i)),{w:640,h:280,min:Math.floor(Math.min(0,...ser.flatMap(s=>s.vals))/10)*10,max:Math.ceil((Math.max(30,...ser.flatMap(s=>s.vals))+1)/10)*10,dots:false,maxLabels:10})+`<div class="callout k small">Final scores: ${ser.map(s=>`${s.name} <b>${s.vals[s.vals.length-1]}</b>`).join(", ")}. The reflex agent keeps walking after the rooms are clean (each move costs 1). The model-based agent remembers and rests. Raise the dirt chance: resting costs it a little, because new dirt appears while it waits.</div>`}}});
+
+/* live pane */
+function renderLive(){$("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">Keep this open while teaching.</p><h4 style="margin:6px 0">Six environment properties</h4><table class="dt"><tbody>${PROPS.map(p=>`<tr><td><b>${p[0]}</b></td><td class="small" style="white-space:normal">${p[1]} / ${p[2]}</td></tr>`).join("")}</tbody></table><h4 style="margin:12px 0 6px">PEAS template</h4><div class="code">P  performance measure\nE  environment\nA  actuators\nS  sensors</div><h4 style="margin:12px 0 6px">PAGE template</h4><div class="code">P  percepts\nA  actions\nG  goals\nE  environment</div>`}
+
+renderLive();go(0);
+
+</script>
+</body>
+</html>

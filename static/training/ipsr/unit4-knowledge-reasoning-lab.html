@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IPSR Lab - Unit 4</title>
+<style>
+:root{
+  --bg:#FAF8F3; --surface:#FFFFFF; --surface2:#EFEBE1; --fg:#12110E; --muted:#44403A; --line:#B9B2A2; --line2:#D9D3C4;
+  --pri:#1F3FB5; --pri-soft:#DDE5FA; --sec:#9A4208; --sec-soft:#FBE3CC;
+  --good:#0F6A31; --good-soft:#D5F0DD; --warn:#744500; --warn-soft:#F9E8B8; --bad:#A31D12; --bad-soft:#FADAD5;
+  --code:#EFEBE1; --on:#FFFFFF; --grid:#CFC9BA; --shadow:0 1px 2px rgba(18,17,14,.08),0 6px 18px rgba(18,17,14,.06);
+  --c1:#1F3FB5; --c2:#9A4208; --c3:#0F6A31; --c4:#7A2A9C; --c5:#8A6D00; --c6:#B0235C;
+  --disp:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --body:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  --mono:ui-monospace,'Cascadia Code',Consolas,Menlo,monospace;
+  --zoom:1;
+}
+:root[data-theme="dark"]{
+  --bg:#0C0C0A; --surface:#181714; --surface2:#242320; --fg:#F7F4EA; --muted:#CFCABD; --line:#5B574B; --line2:#35332C;
+  --pri:#9DB1FF; --pri-soft:#1B2350; --sec:#FFAE6B; --sec-soft:#40240E;
+  --good:#6FE09A; --good-soft:#0F3320; --warn:#F5C964; --warn-soft:#3B2E0A; --bad:#FF9A8C; --bad-soft:#451A15;
+  --code:#1F1E1A; --on:#0C0C0A; --grid:#46433A; --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.3);
+  --c1:#9DB1FF; --c2:#FFAE6B; --c3:#6FE09A; --c4:#D9A0FF; --c5:#F0D060; --c6:#FF8FB8;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body);zoom:var(--zoom)}
+button,select,input{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:240px minmax(0,1fr) 310px;min-height:calc(100vh / var(--zoom))}
+.nav{background:var(--surface);border-right:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.brand{font-family:var(--disp);font-size:20px;line-height:1.15;margin:0 4px 4px}
+.brand small{display:block;font:12.5px var(--body);color:var(--muted);margin-top:4px}
+.nav ol{list-style:none;margin:16px 0 0;padding:0}
+.nav li button{width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;color:var(--fg)}
+.nav li button:hover{background:var(--surface2)}
+.nav li button[aria-current="true"]{background:var(--pri-soft);font-weight:600}
+.nav .n{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--muted);display:grid;place-items:center;font-size:12px;color:var(--muted)}
+.nav li.done .n{background:var(--good);color:var(--on);border-color:var(--good)}
+.nav .t{font-size:13.5px;line-height:1.3}
+.nav .hero .n{border-color:var(--sec);color:var(--sec)}
+.tools{margin:18px 4px 0;display:grid;gap:8px}
+.tools button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 10px;cursor:pointer;font-weight:600;text-align:left}
+.tools button:hover{border-color:var(--fg)}
+.tools .hint{font-size:12px;color:var(--muted)}
+main{padding:26px 30px 70px;min-width:0}
+.crumb{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.15;margin:4px 0 6px}
+h2{font-family:var(--disp);font-size:20px;margin:0 0 8px}
+h3{font-size:13.5px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.syl{display:inline-block;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0;box-shadow:var(--shadow)}
+.card.try{border-left:5px solid var(--pri)}
+.card.sec{border-left:5px solid var(--sec)}
+.lead{font-size:16.5px}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:5px;padding:2px 7px}
+.tag.p{background:var(--pri-soft);color:var(--pri)} .tag.s{background:var(--sec-soft);color:var(--sec)}
+.tag.g{background:var(--good-soft);color:var(--good)} .tag.w{background:var(--warn-soft);color:var(--warn)} .tag.b{background:var(--bad-soft);color:var(--bad)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--fg)}
+.btn.pri{background:var(--pri);color:var(--on);border-color:var(--pri)} .btn.sec{background:var(--sec);color:var(--on);border-color:var(--sec)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+table.dt{border-collapse:collapse;width:100%;font-size:13.5px}
+table.dt th{background:var(--surface2);text-align:left;padding:6px 9px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+table.dt td{padding:5px 9px;border-bottom:1px solid var(--line2);white-space:nowrap}
+table.dt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:340px}
+.tw.sm{max-height:none}
+.new{animation:pop .6s ease both}
+@keyframes pop{from{background:var(--sec-soft);transform:translateY(-4px);opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.new{animation:none}}
+.code{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:7px 10px;overflow:auto;white-space:pre-wrap;color:var(--fg)}
+code{font-family:var(--mono);font-size:.92em;background:var(--code);padding:1px 5px;border-radius:4px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.callout{border-radius:8px;padding:10px 14px;margin:10px 0;background:var(--surface2);border:1px solid var(--line2)}
+.callout.k{background:var(--sec-soft);border-color:transparent} .callout.i{background:var(--pri-soft);border-color:transparent}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:7px 13px;cursor:pointer;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--pri);color:var(--on)}
+.seg.s button[aria-pressed="true"]{background:var(--sec)}
+select,input[type=text],input[type=number]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px}
+input[type=range]{accent-color:var(--pri);vertical-align:middle}
+label.chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer;margin-right:12px}
+.live{background:var(--surface);border-left:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.live .tw{max-height:none}
+.opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;margin:6px 0;cursor:pointer}
+.opt:hover{border-color:var(--fg)} .opt.ok{background:var(--good-soft);border-color:var(--good)} .opt.no{background:var(--bad-soft);border-color:var(--bad)}
+.bar{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden;border:1px solid var(--line2)}
+.bar i{display:block;height:100%;background:var(--sec);transition:width .4s}
+.flow{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+.arrow{font-size:28px;color:var(--sec);text-align:center}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:12.5px;margin:2px 4px 2px 0;background:var(--surface)}
+td.ix{background:var(--bad-soft)} td.iy{background:var(--warn-soft)} td.iz{background:var(--pri-soft)} td.chg{background:var(--good-soft)}
+.cardsel{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi b{font-size:22px;display:block;font-variant-numeric:tabular-nums}
+.nextrow{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
+svg.chart{width:100%;height:auto;display:block;max-height:420px}
+svg.chart text{fill:var(--fg);font:12px var(--body)}
+svg.chart .ax{stroke:var(--muted);stroke-width:1}
+svg.chart .gr{stroke:var(--grid);stroke-width:1}
+svg.chart .lbl{fill:var(--muted)}
+.sheet{border-collapse:collapse;font-size:13.5px;font-family:var(--mono);width:100%}
+.sheet th{background:var(--surface2);border:1px solid var(--line);padding:3px 8px;text-align:center;font-weight:600;color:var(--muted)}
+.sheet td{border:1px solid var(--line);padding:0;min-width:80px}
+.sheet td input{width:100%;border:0;background:transparent;padding:4px 7px;font:inherit;border-radius:0}
+.sheet td.sel{outline:2px solid var(--pri);outline-offset:-2px}
+:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+@media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.live{grid-column:1/-1;position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
+@media (max-width:760px){.app{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav ol{display:flex;overflow:auto;gap:4px}.nav li{flex:none}.nav .t{display:none}main{padding:18px 16px 60px}.grid2,.grid3,.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+
+textarea,input[type=search]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px;font:inherit;color:var(--fg)}
+textarea.py{width:100%;font-family:var(--mono);font-size:13.5px;min-height:62px;resize:vertical;background:var(--code)}
+input.wide{width:100%;font-family:var(--mono)}
+.cell{border:1px solid var(--line);border-radius:10px;margin:10px 0;overflow:hidden;background:var(--surface)}
+.cell .hd{display:flex;gap:10px;align-items:center;background:var(--surface2);padding:5px 10px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.cell .bd{padding:8px 10px}
+.out{font-family:var(--mono);font-size:13px;white-space:pre-wrap;padding:6px 10px;border-top:1px dashed var(--line2);color:var(--fg)}
+.out.err{color:var(--bad);background:var(--bad-soft)}
+.out.ok{background:var(--good-soft)}
+.kv{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.kv span{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:2px 8px}
+.mk{background:var(--warn-soft);color:var(--fg);outline:2px solid var(--warn);border-radius:3px;padding:0 2px}
+.boxes{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
+.bx{min-width:38px;border:1px solid var(--line);border-radius:6px;text-align:center;background:var(--surface);padding:2px 6px;font-family:var(--mono)}
+.bx small{display:block;font-size:11px;color:var(--muted)}
+.bx.hi{background:var(--pri);color:var(--on);border-color:var(--pri)}
+.bx.hi small{color:var(--on)}
+.bx.ok{background:var(--good-soft);border-color:var(--good)}
+.bx.no{background:var(--bad-soft);border-color:var(--bad)}
+.bx.cur{background:var(--warn-soft);border-color:var(--warn)}
+.cmark{font-family:var(--mono);font-size:13px;line-height:1.65;background:var(--code);border:1px solid var(--line2);border-radius:8px;padding:8px 12px;white-space:pre}
+.cmark .ln{display:block;padding:0 4px;border-radius:3px}
+.cmark .ln.on{background:var(--warn-soft);outline:1px solid var(--warn)}
+.t{font-family:var(--mono)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:760px){.grid4{grid-template-columns:1fr 1fr}}
+.world{display:flex;gap:10px;margin:8px 0;flex-wrap:wrap}
+.sq{width:130px;height:90px;border:2px solid var(--line);border-radius:10px;display:grid;place-items:center;text-align:center;background:var(--surface);position:relative}
+.sq.dirty{background:var(--warn-soft);border-color:var(--warn)}
+.sq.here{outline:4px solid var(--pri)}
+.sq small{position:absolute;top:2px;left:6px;color:var(--muted)}
+.fnode{fill:var(--surface);stroke:var(--fg);stroke-width:2}
+.fnode.front{fill:var(--warn-soft);stroke:var(--warn)}
+.fnode.exp{fill:var(--good-soft);stroke:var(--good)}
+.fnode.cur{fill:var(--pri);stroke:var(--pri)}
+.fnode.path{fill:var(--sec-soft);stroke:var(--sec);stroke-width:3.5}
+.edge{stroke:var(--muted);stroke-width:2;fill:none}
+.edge.path{stroke:var(--sec);stroke-width:4}
+svg.g text{fill:var(--fg);font:600 14px var(--body);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+svg.g text.cur{fill:var(--on)}
+table.tt{border-collapse:collapse;font-family:var(--mono);font-size:13.5px}
+table.tt th,table.tt td{border:1px solid var(--line);padding:4px 10px;text-align:center}
+table.tt th{background:var(--surface2)}
+table.tt td.T{background:var(--good-soft)} table.tt td.F{background:var(--bad-soft)}
+.stack{display:flex;flex-direction:column-reverse;align-items:center;min-width:70px;border-bottom:4px solid var(--fg);padding:0 8px}
+.blk{width:56px;height:38px;border:2px solid var(--fg);border-radius:6px;display:grid;place-items:center;font-weight:700;margin-top:2px;background:var(--pri-soft)}
+.blk.held{background:var(--sec-soft);border-color:var(--sec)}
+.tag.big{font-size:13px;padding:3px 10px}
+.opt2{display:inline-block;margin:3px;padding:6px 12px;border:1px solid var(--line);background:var(--surface);border-radius:999px;cursor:pointer;font-weight:600}
+.opt2:hover{border-color:var(--fg)}
+.opt2.ok{background:var(--good-soft);border-color:var(--good)}
+.opt2.no{background:var(--bad-soft);border-color:var(--bad)}
+.opt2[aria-pressed=true]{background:var(--pri);color:var(--on);border-color:var(--pri)}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="nav" aria-label="Lessons">
+    <h2 class="brand">IPSR Lab<small>Unit 4, Knowledge and Reasoning<br>B.Tech Sem I, Introduction to Problem Solving and Reasoning</small></h2>
+    <ol id="navlist"></ol>
+    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
+  </nav>
+  <main id="stage" tabindex="-1"></main>
+  <aside class="live" aria-label="Live data"><h3>Quick reference: logic symbols</h3><div id="livebox"></div></aside>
+</div>
+<script>
+"use strict";
+/* ===== helpers ===== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-US"):v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/(a.length-1))};
+const quant=(a,q)=>{const s=[...a].sort((x,y)=>x-y),p=(s.length-1)*q,l=Math.floor(p);return s[l]+(s[Math.min(l+1,s.length-1)]-s[l])*(p-l)};
+const mode=a=>{const c={};a.forEach(v=>c[v]=(c[v]||0)+1);const mx=Math.max(...Object.values(c));return Object.keys(c).filter(k=>c[k]===mx).join(", ")};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const groupBy=(rows,f)=>{const g={};rows.forEach(r=>{const k=f(r);(g[k]=g[k]||[]).push(r)});return g};
+const corr=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0,c=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2;c+=(y[i]-my)**2});return a/Math.sqrt(b*c)};
+const linfit=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2});const m=a/b;return {m,b:my-m*mx,r:corr(x,y)}};
+function table(rows,cols,opts={}){
+  const head=cols.map(c=>`<th>${esc(c[1])}</th>`).join("");
+  const body=rows.map((r,i)=>`<tr${opts.newFrom!=null&&i>=opts.newFrom?' class="new"':''}>`+cols.map(c=>{
+    const v=r[c[0]],cls=(typeof v==="number"?"num":"")+((opts.cellClass&&opts.cellClass(r,c[0],i))||"");
+    return `<td class="${cls.trim()}">${v===""||v==null?'<span class="muted">(blank)</span>':esc(typeof v==="number"?fmt(v,c[2]!=null?c[2]:(Number.isInteger(v)?0:2)):v)}</td>`}).join("")+"</tr>").join("");
+  return `<div class="tw${opts.small?' sm':''}"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+const QUIZ={};
+function quiz(id,q,opts,ans,why){QUIZ[id]={ans,why};
+  return `<div class="card"><h3>Quick check</h3><p style="margin:0 0 6px"><b>${q}</b></p>`+opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" style="margin-top:6px"></div></div>`;}
+function regQuiz(id,ans,why){QUIZ[id]={ans,why}}
+function seg(id,items,cls=""){return `<div class="seg ${cls}" id="${id}" role="group">`+items.map((x,i)=>`<button type="button" data-v="${x[0]}" aria-pressed="${i===0}">${x[1]}</button>`).join("")+`</div>`}
+function bindSeg(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)});return ()=>$$("[aria-pressed=true]",g)[0].dataset.v}
+const IN=n=>n.toLocaleString("en-US",{maximumFractionDigits:0});
+
+/* ===== SVG charts (colours come from CSS variables, so both themes work) ===== */
+const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
+const nice=(max)=>{const e=Math.pow(10,Math.floor(Math.log10(max||1))),f=max/e;const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*e};
+function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(lo+st*i);return out}
+const short=v=>Math.abs(v)>=100000?(v/100000).toFixed(1).replace(/\.0$/,"")+"L":Math.abs(v)>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":(Math.round(v*100)/100)+"";
+function chartBar(items,o={}){ // items:[{label,value,color}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...items.map(i=>i.value))*1.08),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  items.forEach((it,i)=>{const x=m.l+i*bw+bw*.15,w=bw*.7,y=sy(Math.max(it.value,mn));
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,sy(mn)-y)}" fill="${it.color||o.color||"var(--c1)"}" rx="2"><title>${esc(it.label)}: ${fmt(it.value)}</title></rect>`;
+    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:11px">${short(it.value)}</text>`;
+    const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  return s+"</svg>";}
+function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:o.legendRight?110:16,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...all)*1.08);
+  const sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  const step=Math.ceil(labels.length/(o.maxLabels||12));labels.forEach((l,i)=>{if(i%step===0)s+=`<text class="lbl" x="${sx(i)}" y="${H-m.b+16}" text-anchor="middle">${esc(l)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  series.forEach((se,k)=>{const c=se.color||PAL[k%6];let d="";se.vals.forEach((v,i)=>{if(v!=null)d+=(d?"L":"M")+sx(i).toFixed(1)+" "+sy(v).toFixed(1)});
+    if(o.area&&k===0)s+=`<path d="${d}L${sx(se.vals.length-1)} ${sy(mn)}L${sx(0)} ${sy(mn)}Z" fill="${c}" opacity=".18"/>`;
+    s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${se.w||2.5}" ${se.dash?'stroke-dasharray="6 4"':""} stroke-linejoin="round"/>`;
+    if(o.dots!==false&&!se.dash)se.vals.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${sx(i)}" cy="${sy(v)}" r="3.5" fill="${c}"><title>${esc(labels[i])}: ${fmt(v)}</title></circle>`});
+    if(o.legendRight)s+=`<text x="${W-m.r+8}" y="${m.t+14+k*16}" style="fill:${c};font-weight:600">${esc(se.name)}</text>`;
+    else if(series.length>1)s+=`<text x="${m.l+8+k*150}" y="${H-6}" style="fill:${c};font-weight:600">&#9632; ${esc(se.name)}</text>`});
+  (o.marks||[]).forEach(mk=>{s+=`<text x="${sx(mk.i)}" y="${sy(mk.v)-10}" text-anchor="middle" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
+  return s+"</svg>";}
+function chartScatter(pts,o={}){ // pts:[{x,y,r,color,label}]
+  const W=o.w||640,H=o.h||340,m={l:60,r:16,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||nice(Math.max(...ys)*1.05);
+  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(y0,y1).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  ticks(x0,x1).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${short(t)}</text>`);
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(y0)}" y2="${sy(y0)}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${sy(y0)}"/>`;
+  if(o.xlabel)s+=`<text class="lbl" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${esc(o.xlabel)}</text>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  if(o.fit){const f=o.fit;s+=`<line x1="${sx(x0)}" y1="${sy(f.m*x0+f.b)}" x2="${sx(x1)}" y2="${sy(f.m*x1+f.b)}" stroke="var(--sec)" stroke-width="2.5" stroke-dasharray="7 4"/>`}
+  pts.forEach(p=>{s+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="${p.r||4}" fill="${p.color||"var(--c1)"}" fill-opacity="${o.alpha||.65}" stroke="${p.color||"var(--c1)"}"><title>${esc(p.label||"")} (${fmt(p.x)}, ${fmt(p.y)})</title></circle>`;
+    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:11px">${esc(p.label)}</text>`});
+  return s+"</svg>";}
+function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart">`;
+  items.forEach((it,k)=>{const ang=it.value/tot*2*Math.PI,x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(a+ang),y2=cy+R*Math.sin(a+ang);
+    s+=`<path d="M${cx} ${cy}L${x1} ${y1}A${R} ${R} 0 ${ang>Math.PI?1:0} 1 ${x2} ${y2}Z" fill="${it.color||PAL[k%6]}" stroke="var(--surface)" stroke-width="2"><title>${esc(it.label)}: ${(100*it.value/tot).toFixed(1)}%</title></path>`;a+=ang;
+    s+=`<text x="250" y="${40+k*22}" style="fill:${it.color||PAL[k%6]};font-weight:700">&#9632; <tspan style="fill:var(--fg);font-weight:400">${esc(it.label)} ${(100*it.value/tot).toFixed(1)}%</tspan></text>`});
+  return s+"</svg>";}
+function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:short(lo+i*w),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+
+/* ===== lesson framework ===== */
+const L=[];
+function lesson(o){L.push(o)}
+let cur=0, done=new Set();
+const UKEY="dalab_"+(document.title||"x");
+try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e){}
+function go(i){
+  cur=Math.max(0,Math.min(L.length-1,i));
+  const l=L[cur],st=$("#stage");
+  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
+  $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
+  l.mount&&l.mount(st);
+  $$("[data-q]",st).forEach(b=>b.onclick=()=>{
+    const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
+    $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
+    b.classList.add(ok?"ok":"no");
+    $("#why-"+id,st).textContent=(ok?"Correct. ":"Not quite. ")+k.why;
+    if(ok){done.add(cur);try{localStorage.setItem(UKEY,JSON.stringify([...done]))}catch(e){}drawNav()}
+  });
+  drawNav(); window.scrollTo(0,0); st.focus({preventScroll:true});
+}
+function drawNav(){
+  $("#navlist").innerHTML=L.map((l,i)=>`<li class="${done.has(i)?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${done.has(i)?"&#10003;":i+1}</span><span class="t">${l.nav}</span></button></li>`).join("");
+  $$("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
+}
+/* theme + text size (for projectors) */
+(function(){
+  const R=document.documentElement;let theme=null,zi=0;const Z=[1,1.15,1.3];
+  try{theme=localStorage.getItem("dalab_theme")}catch(e){}
+  if(!theme)theme=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
+  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);
+    const b=$("#themeBtn"),z=$("#zoomBtn");if(b)b.innerHTML=theme==="dark"?"&#9728; Switch to LIGHT mode":"&#9790; Switch to DARK mode";if(z)z.textContent="Text size: "+Math.round(Z[zi]*100)+"%";}
+  window.addEventListener("DOMContentLoaded",()=>{
+    $("#themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("dalab_theme",theme)}catch(e){}apply()};
+    $("#zoomBtn").onclick=()=>{zi=(zi+1)%3;apply()};apply();
+    document.addEventListener("keydown",e=>{if(e.altKey&&(e.key==="d"||e.key==="D")){$("#themeBtn").click()}});
+  });
+  apply();
+})();
+
+/* ===== IPSR common: tiny Python-expression engine + stepper ===== */
+class PyErr extends Error{constructor(t,m){super(m);this.pt=t}}
+const V=(v,k)=>({v,k});
+const fRepr=n=>{if(Number.isNaN(n))return"nan";if(!isFinite(n))return n>0?"inf":"-inf";let s=String(n);if(/^-?\d+$/.test(s))s+=".0";return s};
+function pyRepr(x){if(x.k==="str")return"'"+x.v.replace(/'/g,"\\'")+"'";if(x.k==="bool")return x.v?"True":"False";if(x.k==="NoneType")return"None";if(x.k==="float")return fRepr(x.v);if(x.k==="list")return"["+x.v.map(pyRepr).join(", ")+"]";return String(x.v)}
+const pyStr=x=>x.k==="str"?x.v:pyRepr(x);
+const isNum=x=>x.k==="int"||x.k==="float"||x.k==="bool";
+const nv=x=>x.k==="bool"?V(+x.v,"int"):x;
+const truthy=x=>x.k==="str"?x.v.length>0:x.k==="NoneType"?false:x.k==="list"?x.v.length>0:!!x.v;
+function tokenize(src){
+  const re=/\s*(?:(\d+\.\d*|\.\d+|\d+)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|([A-Za-z_]\w*)|(\*\*|\/\/|==|!=|<=|>=|[-+*\/%<>(),=\[\]]))/y;
+  const out=[];let i=0;src=src.trim();
+  while(i<src.length){re.lastIndex=i;const m=re.exec(src);if(!m)throw new PyErr("SyntaxError","invalid syntax near '"+src.slice(i,i+6)+"'");
+    if(m[1]!==undefined)out.push({t:"num",v:m[1]});else if(m[2]!==undefined)out.push({t:"str",v:m[2].slice(1,-1)});
+    else if(m[3]!==undefined)out.push({t:["and","or","not","True","False","None"].includes(m[3])?"kw":"name",v:m[3]});else out.push({t:"op",v:m[4]});
+    i=re.lastIndex;while(src[i]===" ")i++}
+  return out}
+function parsePy(src){
+  const T=tokenize(src);let p=0;const pk=()=>T[p],nx=()=>T[p++];
+  const isOp=v=>pk()&&pk().t==="op"&&pk().v===v, isKw=v=>pk()&&pk().t==="kw"&&pk().v===v;
+  function or(){let l=and();while(isKw("or")){nx();l={t:"or",l,r:and()}}return l}
+  function and(){let l=not();while(isKw("and")){nx();l={t:"and",l,r:not()}}return l}
+  function not(){if(isKw("not")){nx();return{t:"un",op:"not",x:not()}}return cmp()}
+  function cmp(){let l=add();const ops=[],items=[l];while(pk()&&pk().t==="op"&&["==","!=","<",">","<=",">="].includes(pk().v)){ops.push(nx().v);items.push(add())}return ops.length?{t:"cmp",ops,items}:l}
+  function add(){let l=mul();while(isOp("+")||isOp("-")){const op=nx().v;l={t:"bin",op,l,r:mul()}}return l}
+  function mul(){let l=unary();while(isOp("*")||isOp("/")||isOp("//")||isOp("%")){const op=nx().v;l={t:"bin",op,l,r:unary()}}return l}
+  function unary(){if(isOp("-")||isOp("+")){const op=nx().v;return{t:"un",op,x:unary()}}return pow()}
+  function pow(){const b=atom();if(isOp("**")){nx();return{t:"bin",op:"**",l:b,r:unary()}}return b}
+  function atom(){const k=nx();if(!k)throw new PyErr("SyntaxError","unexpected end of expression");
+    if(k.t==="num")return{t:"val",val:/[.]/.test(k.v)?V(parseFloat(k.v),"float"):V(parseInt(k.v,10),"int")};
+    if(k.t==="str")return{t:"val",val:V(k.v,"str")};
+    if(k.t==="kw"){if(k.v==="True")return{t:"val",val:V(true,"bool")};if(k.v==="False")return{t:"val",val:V(false,"bool")};if(k.v==="None")return{t:"val",val:V(null,"NoneType")};throw new PyErr("SyntaxError","invalid syntax")}
+    if(k.t==="name"){if(isOp("(")){nx();const args=[];if(!isOp(")")){args.push(or());while(isOp(",")){nx();args.push(or())}}if(!isOp(")"))throw new PyErr("SyntaxError","'(' was never closed");nx();return{t:"call",name:k.v,args}}return{t:"name",name:k.v}}
+    if(k.t==="op"&&k.v==="("){const e=or();if(!isOp(")"))throw new PyErr("SyntaxError","'(' was never closed");nx();return e}
+    if(k.t==="op"&&k.v==="["){const items=[];if(!isOp("]")){items.push(or());while(isOp(",")){nx();items.push(or())}}if(!isOp("]"))throw new PyErr("SyntaxError","'[' was never closed");nx();return{t:"list",items}}
+    throw new PyErr("SyntaxError","invalid syntax near '"+k.v+"'")}
+  const e=or();if(p<T.length)throw new PyErr("SyntaxError","invalid syntax near '"+T[p].v+"'");return e}
+const tn=x=>x.k;
+function applyBin(op,a,b){
+  const A=isNum(a)?nv(a):a,B=isNum(b)?nv(b):b;
+  if(op==="+"){if(isNum(A)&&isNum(B))return V(A.v+B.v,A.k==="float"||B.k==="float"?"float":"int");
+    if(A.k==="str"&&B.k==="str")return V(A.v+B.v,"str");
+    if(A.k==="list"&&B.k==="list")return V(A.v.concat(B.v),"list");
+    if(A.k==="str")throw new PyErr("TypeError",`can only concatenate str (not "${tn(b)}") to str`);
+    throw new PyErr("TypeError",`unsupported operand type(s) for +: '${tn(a)}' and '${tn(b)}'`)}
+  if(op==="*"){if(isNum(A)&&isNum(B))return V(A.v*B.v,A.k==="float"||B.k==="float"?"float":"int");
+    if(A.k==="str"&&B.k==="int")return V(B.v>0?A.v.repeat(B.v):"","str");if(B.k==="str"&&A.k==="int")return V(A.v>0?B.v.repeat(A.v):"","str");
+    throw new PyErr("TypeError",`can't multiply sequence by non-int of type '${isNum(A)?tn(A):tn(B)}'`.replace(/^can't.*$/,m=>(A.k==="str"||B.k==="str")?m:`unsupported operand type(s) for *: '${tn(a)}' and '${tn(b)}'`))}
+  if(!isNum(A)||!isNum(B))throw new PyErr("TypeError",`unsupported operand type(s) for ${op}: '${tn(a)}' and '${tn(b)}'`);
+  const fl=A.k==="float"||B.k==="float";
+  if(op==="-")return V(A.v-B.v,fl?"float":"int");
+  if(op==="/"){if(B.v===0)throw new PyErr("ZeroDivisionError","division by zero");return V(A.v/B.v,"float")}
+  if(op==="//"){if(B.v===0)throw new PyErr("ZeroDivisionError",fl?"float floor division by zero":"integer division or modulo by zero");return V(Math.floor(A.v/B.v),fl?"float":"int")}
+  if(op==="%"){if(B.v===0)throw new PyErr("ZeroDivisionError",fl?"float modulo by zero":"integer modulo by zero");return V(A.v-B.v*Math.floor(A.v/B.v),fl?"float":"int")}
+  if(op==="**"){if(A.v===0&&B.v<0)throw new PyErr("ZeroDivisionError","0.0 cannot be raised to a negative power");const r=Math.pow(A.v,B.v);return V(r,(fl||B.v<0)?"float":"int")}
+  throw new PyErr("SyntaxError","unknown operator")}
+function applyCmp(op,a,b){const A=isNum(a)?nv(a):a,B=isNum(b)?nv(b):b;
+  if(op==="=="||op==="!="){let eq=(isNum(A)&&isNum(B))||(A.k===B.k)?(A.k==="list"?JSON.stringify(A.v)===JSON.stringify(B.v):A.v===B.v):false;return V(op==="=="?eq:!eq,"bool")}
+  if((isNum(A)&&isNum(B))||(A.k==="str"&&B.k==="str")){const x=A.v,y=B.v;return V(op==="<"?x<y:op===">"?x>y:op==="<="?x<=y:x>=y,"bool")}
+  throw new PyErr("TypeError",`'${op}' not supported between instances of '${tn(a)}' and '${tn(b)}'`)}
+const FUN={abs:a=>V(Math.abs(a[0].v),a[0].k==="bool"?"int":a[0].k),
+  round:a=>{const d=a[1]?a[1].v:0,f=Math.pow(10,d);let r=Math.round(a[0].v*f)/f;const x=a[0].v*f;if(Math.abs(x%1)===0.5)r=(Math.floor(x)%2===0?Math.floor(x):Math.ceil(x))/f;return a[1]?V(r,a[0].k):V(r,"int")},
+  int:a=>{if(a[0].k==="str"){if(!/^\s*[-+]?\d+\s*$/.test(a[0].v))throw new PyErr("ValueError",`invalid literal for int() with base 10: '${a[0].v}'`);return V(parseInt(a[0].v,10),"int")}return V(Math.trunc(a[0].v),"int")},
+  float:a=>{if(a[0].k==="str"){if(isNaN(parseFloat(a[0].v)))throw new PyErr("ValueError",`could not convert string to float: '${a[0].v}'`);return V(parseFloat(a[0].v),"float")}return V(+a[0].v,"float")},
+  str:a=>V(pyStr(a[0]),"str"),len:a=>{if(a[0].k!=="str"&&a[0].k!=="list")throw new PyErr("TypeError",`object of type '${tn(a[0])}' has no len()`);return V(a[0].v.length,"int")},
+  max:a=>a.reduce((m,x)=>applyCmp(">",x,m).v?x:m),min:a=>a.reduce((m,x)=>applyCmp("<",x,m).v?x:m),
+  bool:a=>V(truthy(a[0]),"bool"),type:a=>V(`<class '${a[0].k==="NoneType"?"NoneType":a[0].k}'>`,"str")};
+function evalPy(n,env,ctx){
+  switch(n.t){
+    case"val":return n.val;
+    case"name":if(env&&n.name in env)return env[n.name];throw new PyErr("NameError",`name '${n.name}' is not defined`);
+    case"list":return V(n.items.map(i=>evalPy(i,env,ctx)),"list");
+    case"un":{const x=evalPy(n.x,env,ctx);if(n.op==="not")return V(!truthy(x),"bool");if(!isNum(x))throw new PyErr("TypeError",`bad operand type for unary ${n.op}: '${tn(x)}'`);const y=nv(x);return n.op==="-"?V(-y.v,y.k):y}
+    case"bin":return applyBin(n.op,evalPy(n.l,env,ctx),evalPy(n.r,env,ctx));
+    case"and":{const l=evalPy(n.l,env,ctx);return truthy(l)?evalPy(n.r,env,ctx):l}
+    case"or":{const l=evalPy(n.l,env,ctx);return truthy(l)?l:evalPy(n.r,env,ctx)}
+    case"cmp":{let l=evalPy(n.items[0],env,ctx);for(let i=0;i<n.ops.length;i++){const r=evalPy(n.items[i+1],env,ctx);if(!applyCmp(n.ops[i],l,r).v)return V(false,"bool");l=r}return V(true,"bool")}
+    case"call":{const args=n.args.map(a=>evalPy(a,env,ctx));if(n.name==="print"){if(ctx)ctx.out.push(args.map(pyStr).join(" "));return V(null,"NoneType")}
+      if(!FUN[n.name])throw new PyErr("NameError",`name '${n.name}' is not defined`);try{return FUN[n.name](args)}catch(e){if(e instanceof PyErr)throw e;throw new PyErr("TypeError","bad arguments for "+n.name+"()")}}
+  }}
+function stripComment(s){let q=null;for(let i=0;i<s.length;i++){const c=s[i];if(q){if(c===q)q=null}else if(c==='"'||c==="'")q=c;else if(c==="#")return s.slice(0,i)}return s}
+/* run a few lines like a notebook cell; returns {out:[lines], val, err} */
+function runCell(src,env){const ctx={out:[]};let last=null;
+  try{for(const raw of src.split("\n")){const line=stripComment(raw).trim();if(!line)continue;
+    const m=line.match(/^([A-Za-z_]\w*)\s*=(?!=)\s*(.+)$/);
+    if(m){env[m[1]]=evalPy(parsePy(m[2]),env,ctx);last=null}else{const v=evalPy(parsePy(line),env,ctx);last=/^print\s*\(/.test(line)?null:v}}
+    return{out:ctx.out,val:last}}
+  catch(e){if(e instanceof PyErr)return{out:ctx.out,err:e.pt+": "+e.message,et:e.pt};throw e}}
+/* printing an AST with minimal brackets, for step-by-step evaluation */
+const PREC={or:1,and:2,not:3,cmp:4,bin:{"+":6,"-":6,"*":7,"/":7,"//":7,"%":7,"**":9},un:8,atom:10};
+function prc(n){if(n.t==="or")return 1;if(n.t==="and")return 2;if(n.t==="un")return n.op==="not"?3:8;if(n.t==="cmp")return 4;if(n.t==="bin")return PREC.bin[n.op];return 10}
+function astStr(n,hl){
+  const wrap=(c,min,strict)=>{const s=astStr(c,hl);const p=prc(c);return(p<min||(strict&&p===min))?"("+s+")":s};
+  let s;
+  switch(n.t){
+    case"val":s=esc(pyRepr(n.val));break;
+    case"name":s=esc(n.name);break;
+    case"list":s="["+n.items.map(i=>astStr(i,hl)).join(", ")+"]";break;
+    case"call":s=esc(n.name)+"("+n.args.map(a=>astStr(a,hl)).join(", ")+")";break;
+    case"un":s=(n.op==="not"?"not ":n.op)+wrap(n.x,n.op==="not"?3:8,false);break;
+    case"bin":{const p=prc(n);s=n.op==="**"?wrap(n.l,p,true)+" ** "+wrap(n.r,8,false):wrap(n.l,p,false)+" "+esc(n.op)+" "+wrap(n.r,p,true);break}
+    case"and":s=wrap(n.l,2,false)+" and "+wrap(n.r,2,true);break;
+    case"or":s=wrap(n.l,1,false)+" or "+wrap(n.r,1,true);break;
+    case"cmp":s=n.items.map((x,i)=>wrap(x,5,false)+(i<n.ops.length?" "+esc(n.ops[i])+" ":"")).join("");break;
+  }
+  return n===hl?`<span class="mk">${s}</span>`:s}
+/* find next reducible node (postorder, left first, honours short-circuit); returns {node, replace(fn)} via path */
+function nextReducible(n,env){
+  const isV=x=>x.t==="val";
+  function rec(n){
+    if(isV(n))return null;
+    if(n.t==="name")return{node:n,note:"look up the value of the name"};
+    if(n.t==="and"||n.t==="or"){
+      if(!isV(n.l)){const r=rec(n.l);if(r)return r;return null}
+      const sc=n.t==="and"?!truthy(n.l.val):truthy(n.l.val);
+      if(sc)return{node:n,short:true,note:"short-circuit: the left side already decides, the right side is NOT evaluated"};
+      if(!isV(n.r)){const r=rec(n.r);if(r)return r;return null}
+      return{node:n,note:"left side did not decide, so the right side is used"}}
+    const kids=n.t==="bin"?[n.l,n.r]:n.t==="un"?[n.x]:n.t==="cmp"?n.items:n.t==="call"?n.args:n.t==="list"?n.items:[];
+    for(const k of kids){const r=rec(k);if(r)return r}
+    return{node:n,note:n.t==="bin"?"do "+n.op:n.t==="un"?"apply "+n.op:n.t==="cmp"?"compare":n.t==="call"?"call "+n.name+"()":"build the list"}}
+  return rec(n)}
+function replaceNode(root,target,val){if(root===target)return{t:"val",val};
+  for(const k of["l","r","x"])if(root[k])root[k]=replaceNode(root[k],target,val);
+  for(const k of["items","args"])if(root[k])root[k]=root[k].map(c=>replaceNode(c,target,val));return root}
+function evalSteps(src,env){
+  let ast=parsePy(src);const steps=[{html:astStr(ast),note:"start: the whole expression"}];let guard=0;
+  while(ast.t!=="val"&&guard++<60){const r=nextReducible(ast,env);if(!r)break;
+    const before=astStr(ast,r.node);
+    let v;const ctx={out:[]};
+    if(r.short)v=r.node.l.val;else if(r.node.t==="and"||r.node.t==="or")v=r.node.t==="and"?(truthy(r.node.l.val)?r.node.r.val:r.node.l.val):(truthy(r.node.l.val)?r.node.l.val:r.node.r.val);
+    else if(r.node.t==="name"){v=evalPy(r.node,env,ctx)}
+    else{const tmp=JSON.parse(JSON.stringify(r.node));v=evalPy(r.node,env,ctx)}
+    ast=replaceNode(ast,r.node,v);
+    steps.push({html:astStr(ast),before,note:r.note+" = "+esc(pyRepr(v))});}
+  return{steps,result:ast.val}}
+/* generic stepper widget */
+function stepper(root,sel,getSteps,draw){
+  const box=$(sel,root);let i=0,steps=getSteps();
+  box.innerHTML=`<div class="row"><button class="btn sm" type="button" data-a="b">Back</button><button class="btn pri sm" type="button" data-a="n">Step</button><button class="btn sm" type="button" data-a="a">Run all</button><button class="btn sm" type="button" data-a="r">Reset</button><span class="small muted" data-a="c"></span></div><div data-a="v"></div>`;
+  const v=$("[data-a=v]",box),c=$("[data-a=c]",box);
+  function show(){c.textContent=`step ${i} of ${steps.length-1}`;v.innerHTML=draw(steps[i],i,steps)}
+  $("[data-a=b]",box).onclick=()=>{if(i>0){i--;show()}};
+  $("[data-a=n]",box).onclick=()=>{if(i<steps.length-1){i++;show()}};
+  $("[data-a=a]",box).onclick=()=>{i=steps.length-1;show()};
+  $("[data-a=r]",box).onclick=()=>{i=0;show()};
+  show();
+  return{reset(){steps=getSteps();i=0;show()}}}
+const chips=(id,items,sel)=>`<div id="${id}">`+items.map((x,k)=>`<button type="button" class="opt2" data-v="${esc(x)}" aria-pressed="${k===sel}">${esc(x)}</button>`).join("")+`</div>`;
+function bindChips(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)})}
+/* seeded random, so every run of a demo is repeatable */
+function rng(seed){let s=seed>>>0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+const q2=n=>String(n).padStart(2," ");
+
+const CODE=s=>`<div class="code">${esc(s)}</div>`;
+const KV=o=>`<div class="kv">`+Object.entries(o).map(([k,v])=>`<span>${esc(k)} = ${esc(v)}</span>`).join("")+`</div>`;
+
+/* ===== IPSR Unit 4: Knowledge and Reasoning ===== */
+const NBREF=n=>`<span class="small muted">Notebook: IPSR_Unit4_Lab.ipynb, sections ${n}</span>`;
+function matcher(root,sel,items,opts){const box=$(sel,root);let got=0,tried=new Set();
+  box.innerHTML=items.map((it,i)=>`<div class="card" style="margin:8px 0"><b>${it.q}</b><div style="margin-top:4px">${opts.map((o,k)=>`<button type="button" class="opt2" data-m="${i}" data-k="${k}">${o}</button>`).join("")}</div><div class="small" data-r="${i}" style="margin-top:4px"></div></div>`).join("")+`<div class="callout k small" data-sc></div>`;
+  const sc=()=>$("[data-sc]",box).textContent=`Right first time: ${got} of ${items.length}`;sc();
+  $$("[data-m]",box).forEach(b=>b.onclick=()=>{const i=+b.dataset.m,k=+b.dataset.k,it=items[i],ok=k===it.a;if(!tried.has(i)){tried.add(i);if(ok)got++;sc()}
+    $$(`[data-m="${i}"]`,box).forEach(x=>x.classList.remove("ok","no"));b.classList.add(ok?"ok":"no");$(`[data-r="${i}"]`,box).textContent=ok?"Right. "+it.why:"Not this one. Try another."})}
+
+/* ---- propositional logic engine ---- */
+function lexLogic(src){let s=src.replace(/<->|<=>|↔/g," IFF ").replace(/->|=>|→/g," IMPLIES ").replace(/¬|~|!/g," NOT ").replace(/∧|&&|&/g," AND ").replace(/∨|\|\||\|/g," OR ");
+  const T=[];const re=/\s*(\(|\)|[A-Za-z_][A-Za-z_0-9]*)/y;let i=0;s=s.trim();while(i<s.length){re.lastIndex=i;const m=re.exec(s);if(!m)throw new Error("Unexpected character near '"+s.slice(i,i+4)+"'");const w=m[1],lw=w.toLowerCase();T.push(["iff","implies","not","and","or"].includes(lw)?{k:lw.toUpperCase()}:w==="("||w===")"?{k:w}:{k:"V",v:w});i=re.lastIndex;while(s[i]===" ")i++}return T}
+function parseLogic(src){const T=lexLogic(src);let p=0;const pk=()=>T[p]&&T[p].k;
+  function iff(){let l=imp();while(pk()==="IFF"){p++;l={t:"iff",l,r:imp()}}return l}
+  function imp(){const l=or();if(pk()==="IMPLIES"){p++;return{t:"imp",l,r:imp()}}return l}
+  function or(){let l=and();while(pk()==="OR"){p++;l={t:"or",l,r:and()}}return l}
+  function and(){let l=not();while(pk()==="AND"){p++;l={t:"and",l,r:not()}}return l}
+  function not(){if(pk()==="NOT"){p++;return{t:"not",x:not()}}return atom()}
+  function atom(){const k=T[p++];if(!k)throw new Error("The formula ends too early");if(k.k==="V"){if(/^true$/i.test(k.v))return{t:"c",v:true};if(/^false$/i.test(k.v))return{t:"c",v:false};return{t:"v",v:k.v}}if(k.k==="("){const e=iff();if(pk()!==")")throw new Error("Missing closing bracket");p++;return e}throw new Error("Unexpected '"+k.k.toLowerCase()+"'")}
+  const e=iff();if(p<T.length)throw new Error("Unexpected symbol after the formula");return e}
+const lvars=(n,s=new Set())=>{if(n.t==="v")s.add(n.v);for(const k of["l","r","x"])if(n[k])lvars(n[k],s);return s};
+const leval=(n,env)=>n.t==="v"?env[n.v]:n.t==="c"?n.v:n.t==="not"?!leval(n.x,env):n.t==="and"?leval(n.l,env)&&leval(n.r,env):n.t==="or"?leval(n.l,env)||leval(n.r,env):n.t==="imp"?!leval(n.l,env)||leval(n.r,env):leval(n.l,env)===leval(n.r,env);
+const models=names=>{const out=[];for(let k=0;k<(1<<names.length);k++){const e={};names.forEach((n,i)=>e[n]=!!(k&(1<<(names.length-1-i))));out.push(e)}return out};
+const TF=b=>b?"T":"F";
+
+/* 1 KR and reasoning, knowledge vs belief, types */
+lesson({nav:"Knowledge and reasoning",title:"Knowledge representation, reasoning, knowledge vs belief, types of knowledge",syl:"Objectives, knowledge representation and reasoning, types of reasoning methods; Knowledge vs belief; Types of knowledge",
+html:()=>`<p class="lead"><b>Knowledge representation (KR)</b> is how facts and rules are stored so a program can use them. <b>Reasoning</b> is deriving new facts from stored ones. An intelligent agent needs both: a store that is expressive and a procedure that is correct.</p>
+<div class="card try"><h3>Types of reasoning: classify the argument</h3>
+<table class="dt"><thead><tr><th>Type</th><th>Direction</th><th>Certain?</th></tr></thead><tbody><tr><td><b>Deductive</b></td><td>general rule to specific case</td><td>yes, if the premises are true</td></tr><tr><td><b>Inductive</b></td><td>many cases to a general rule</td><td>no, only probable</td></tr><tr><td><b>Abductive</b></td><td>effect to the best explanation</td><td>no, a plausible guess</td></tr></tbody></table><div id="rm"></div></div>
+<div class="card try"><h3>Knowledge versus belief</h3><p class="small muted"><b>Knowledge</b> = a belief that is <b>true</b> and <b>justified</b>. <b>Belief</b> is only what the agent holds to be true. Set the three switches.</p>
+<div class="row">The door really is: ${seg("kw",[["open","open"],["closed","closed"]])} The agent believes it is: ${seg("kb",[["open","open"],["closed","closed"]],"s")} The agent has evidence (it looked): ${seg("kj",[["yes","yes"],["no","no"]])}</div><div id="kout"></div></div>
+<div class="card try"><h3>Types of knowledge: sort the statements</h3><div id="tm"></div></div>
+${quiz("i4q1","'The sun has risen every day so far, so it will rise tomorrow' is:",["Deductive","Inductive","Abductive"],1,"It generalises from many observations. It is probably true but not guaranteed, so it is inductive.")}
+${NBREF("4.1, 4.2 and 4.3")}`,
+mount(r){matcher(r,"#rm",[{q:"All birds have wings. A sparrow is a bird. So a sparrow has wings.",a:0,why:"A general rule applied to a specific case: deductive."},{q:"Every swan I have seen is white, so all swans are white.",a:1,why:"From specific cases to a general rule: inductive."},{q:"The grass is wet, so it probably rained.",a:2,why:"Effect to the most likely cause: abductive."},{q:"Every metal I tested expands when heated, so metals expand when heated.",a:1,why:"Generalising from tests: inductive."},{q:"The patient has a fever and a rash, so measles is the best explanation.",a:2,why:"Best explanation of the symptoms: abductive."}],["Deductive","Inductive","Abductive"]);
+  let w="open",b="open",j="yes";const draw=()=>{const tr=w===b;let cls,msg;if(tr&&j==="yes"){cls="g";msg="KNOWLEDGE: the belief is true and justified."}else if(tr){cls="w";msg="A TRUE BELIEF BUT NOT KNOWLEDGE: it happens to be right, but there is no evidence behind it (a lucky guess)."}else if(j==="yes"){cls="b";msg="A FALSE BELIEF, even though it looked justified. The world changed or the evidence was old. The agent must revise its belief."}else{cls="b";msg="A FALSE, UNJUSTIFIED BELIEF."}
+    $("#kout",r).innerHTML=`<div class="grid3"><div class="kpi"><span class="small muted">World</span><b>${w}</b></div><div class="kpi"><span class="small muted">Belief</span><b>${b}</b></div><div class="kpi"><span class="small muted">Evidence</span><b>${j}</b></div></div><div class="callout k"><span class="tag ${cls} big">${cls==="g"?"knowledge":cls==="w"?"lucky":"wrong"}</span> ${msg}</div>${!tr?`<p class="small">Belief revision: after a new percept shows the door is ${w}, the agent updates its belief to ${w}. A knowledge base is really a set of beliefs that must be revised.</p>`:""}`};
+  bindSeg(r,"kw",v=>{w=v;draw()});bindSeg(r,"kb",v=>{b=v;draw()});bindSeg(r,"kj",v=>{j=v;draw()});draw();
+  matcher(r,"#tm",[{q:"Paris is the capital of France.",a:0,why:"A fact about the world: declarative."},{q:"To solve a quadratic equation, compute the discriminant, then the roots.",a:1,why:"How to do something: procedural."},{q:"I am weak at probability, so I should revise it first.",a:2,why:"Knowledge about one's own knowledge: meta-knowledge."},{q:"If the engine will not start, check the battery first.",a:3,why:"A rule of thumb that usually works: heuristic."},{q:"A car has an engine, four wheels and a steering system.",a:4,why:"How things are made of or related to each other: structural."}],["Declarative","Procedural","Meta","Heuristic","Structural"])}});
+
+/* 2 logical agents: KB agent */
+lesson({nav:"Knowledge-based agents",title:"Logical agents and knowledge-based agents",syl:"Logical agents, knowledge-based agents",
+html:()=>`<p class="lead">A <b>knowledge-based agent</b> keeps a <b>knowledge base (KB)</b>: sentences in a formal language. Its loop is: <b>TELL</b> the KB what it perceived, <b>ASK</b> the KB what to do, then <b>TELL</b> the KB the action it took. The agent never needs to be reprogrammed for new facts; it just TELLs them.</p>
+<div class="card try"><h3>Try it: a pit-finding explorer (inspired by the Wumpus world)</h3><p class="small muted">Some squares hide pits. The explorer starts at (1,1), which is safe. A square with a <b>breeze</b> has a pit in at least one neighbouring square (up, down, left, right). Choose what you found, then click squares to TELL the KB. The KB then ASKs which squares are safe.</p>
+<div class="row">${seg("km",[["nb","Visited: no breeze"],["br","Visited: breeze"],["clear","Clear"]])}</div><div id="wg"></div><div id="wlog"></div></div>
+<div class="grid2"><div class="card"><h3>The agent loop</h3><div class="code">def kb_agent(percept):\n    TELL(kb, make_percept_sentence(percept, t))\n    action = ASK(kb, make_action_query(t))\n    TELL(kb, make_action_sentence(action, t))\n    t = t + 1\n    return action</div></div><div class="card"><h3>Two rules the KB holds</h3><ul class="small"><li>No breeze at a square &rArr; <b>no pit</b> in any neighbour.</li><li>Breeze at a square &rArr; <b>at least one pit</b> among its neighbours.</li></ul></div></div>
+${quiz("i4q2","In the TELL/ASK loop, what does the agent do first on each step?",["ASK what to do","TELL the KB the new percept","Act"],1,"It records the percept (TELL), then asks what action follows (ASK), then records the action (TELL).")}
+${NBREF("4.4")}`,
+mount(r){const mark={"1,1":"nb"};let mode="nb";const nb=(x,y)=>[[x+1,y],[x-1,y],[x,y+1],[x,y-1]].filter(([a,b])=>a>=1&&a<=4&&b>=1&&b<=4);
+  function infer(){const safe=new Set(),pit=new Set(),log=[];Object.entries(mark).forEach(([k,v])=>{const[x,y]=k.split(",").map(Number);safe.add(k);if(v==="nb")nb(x,y).forEach(([a,b])=>safe.add(a+","+b))});
+    const maybe=new Set();Object.entries(mark).forEach(([k,v])=>{if(v!=="br")return;const[x,y]=k.split(",").map(Number);const c=nb(x,y).map(([a,b])=>a+","+b).filter(q=>!safe.has(q));if(c.length===1)pit.add(c[0]);else c.forEach(q=>maybe.add(q))});
+    pit.forEach(q=>maybe.delete(q));return{safe,pit,maybe}}
+  function draw(){const{safe,pit,maybe}=infer();let h='<table class="tt" style="margin:8px 0">';for(let y=4;y>=1;y--){h+="<tr>";for(let x=1;x<=4;x++){const k=x+","+y,m=mark[k];let cls="",txt="?";if(m==="nb"){cls="T";txt="visited<br>no breeze"}else if(m==="br"){cls="F";txt="visited<br>BREEZE"}else if(pit.has(k)){cls="F";txt="PIT!"}else if(safe.has(k)){cls="T";txt="safe"}else if(maybe.has(k)){cls="";txt="maybe<br>pit"}
+      h+=`<td class="${cls}" style="width:110px;height:62px;cursor:pointer" data-sq="${k}"><small class="muted">(${x},${y})</small><br>${txt}</td>`}h+="</tr>"}
+    $("#wg",r).innerHTML=h+"</table>";
+    $$("[data-sq]",r).forEach(td=>td.onclick=()=>{const k=td.dataset.sq;if(k==="1,1")return;if(mode==="clear")delete mark[k];else mark[k]=mode;draw()});
+    const L=[];Object.entries(mark).forEach(([k,v])=>L.push(`TELL: ${v==="nb"?"no breeze":"breeze"} at (${k})`));L.push("ASK: which squares are safe?");L.push("&rarr; safe: "+([...safe].filter(q=>!mark[q]).map(q=>"("+q+")").join(" ")||"none new"));if(pit.size)L.push("&rarr; pit for certain: "+[...pit].map(q=>"("+q+")").join(" "));
+    $("#wlog",r).innerHTML=`<div class="code">${L.join("\n")}</div>`}
+  bindSeg(r,"km",v=>mode=v);draw()}});
+
+/* 3 propositional logic */
+const PRE=["P -> Q","(P -> Q) <-> (~Q -> ~P)","~(P & Q) <-> (~P | ~Q)","P | ~P","P & ~P","((P -> Q) & P) -> Q","P -> (Q -> P)"];
+lesson({hero:true,nav:"Propositional logic",title:"Propositional logic, truth tables, pros and cons",syl:"Propositional logic, truth table; Pros and cons of propositional logic",
+html:()=>`<p class="lead"><b>Propositional logic</b> works with statements that are true or false (P, Q, R). Connectives: <code>~</code> not, <code>&amp;</code> and, <code>|</code> or, <code>-&gt;</code> implies, <code>&lt;-&gt;</code> if and only if. A <b>truth table</b> lists every assignment and the value of the formula. <code>P -&gt; Q</code> is false only when P is true and Q is false.</p>
+<div class="card try"><h3>Truth table generator</h3>${chips("pp",PRE,0)}<div class="row"><input type="text" id="pf" class="wide" style="max-width:420px" value="P -> Q"><button class="btn pri" type="button" id="pgo">Build table</button></div><div id="pt"></div></div>
+<div class="card try"><h3>Are two formulas equivalent?</h3><div class="row"><input type="text" id="e1" class="wide" style="max-width:260px" value="P -> Q"> <b>vs</b> <input type="text" id="e2" class="wide" style="max-width:260px" value="~P | Q"></div><div id="eo"></div></div>
+<div class="card try"><h3>Does the knowledge base entail the question?</h3><p class="small muted">KB entails a query if the query is true in <b>every</b> model where all KB sentences are true. Separate KB sentences with a semicolon.</p><div class="row">KB: <input type="text" id="kbf" class="wide" style="max-width:300px" value="P -> Q; Q -> R; P"> Query: <input type="text" id="kq" class="wide" style="max-width:120px" value="R"></div><div id="ko"></div></div>
+<div class="grid2"><div class="card"><h3>Pros</h3><ul class="small"><li>Simple and precise.</li><li>Decidable: a truth table always settles it.</li><li>Easy to program.</li></ul></div><div class="card"><h3>Cons</h3><ul class="small"><li>No objects or relations. "Every student" must be written once per student.</li><li>Rules repeat for every square, person or time step, so the KB gets huge.</li><li>n symbols mean 2<sup>n</sup> rows: 20 symbols is over a million rows.</li></ul></div></div>
+${quiz("i4q3","When is <code>P -&gt; Q</code> false?",["P false, Q true","P true, Q false","Both false"],1,"An implication only fails when the promise (P) holds and the result (Q) does not.")}
+${NBREF("4.5 and 4.6")}`,
+mount(r){function tt(){const f=$("#pf",r).value;try{const ast=parseLogic(f),names=[...lvars(ast)].sort();if(names.length>5)throw new Error("Use at most 5 symbols");const M=models(names),vals=M.map(e=>leval(ast,e));const all=vals.every(Boolean),none=!vals.some(Boolean);
+      $("#pt",r).innerHTML=`<table class="tt"><thead><tr>${names.map(n=>`<th>${esc(n)}</th>`).join("")}<th>${esc(f)}</th></tr></thead><tbody>${M.map((e,i)=>`<tr>${names.map(n=>`<td class="${TF(e[n])}">${TF(e[n])}</td>`).join("")}<td class="${TF(vals[i])}"><b>${TF(vals[i])}</b></td></tr>`).join("")}</tbody></table><div class="callout k small">${all?"<b>Tautology</b>: true in every row (always true).":none?"<b>Contradiction</b>: false in every row (never true).":"<b>Contingent</b>: true in some rows and false in others (satisfiable)."}</div>`}catch(e){$("#pt",r).innerHTML=`<div class="out err">${esc(e.message)}</div>`}}
+  bindChips(r,"pp",v=>{$("#pf",r).value=v;tt()});$("#pgo",r).onclick=tt;$("#pf",r).onkeydown=e=>{if(e.key==="Enter")tt()};tt();
+  function eq(){try{const a=parseLogic($("#e1",r).value),b=parseLogic($("#e2",r).value),names=[...new Set([...lvars(a),...lvars(b)])].sort(),M=models(names);const bad=M.filter(e=>leval(a,e)!==leval(b,e));
+      $("#eo",r).innerHTML=`<div class="callout ${bad.length?"i":"k"}">${bad.length?`<b>Not equivalent.</b> They differ when ${names.map(n=>n+"="+TF(bad[0][n])).join(", ")}: the first is ${TF(leval(a,bad[0]))}, the second ${TF(leval(b,bad[0]))}.`:`<b>Equivalent.</b> They have the same value in all ${M.length} rows.`}</div>`}catch(e){$("#eo",r).innerHTML=`<div class="out err">${esc(e.message)}</div>`}}
+  ["e1","e2"].forEach(i=>$("#"+i,r).oninput=eq);eq();
+  function en(){try{const kb=$("#kbf",r).value.split(";").filter(s=>s.trim()).map(parseLogic),q=parseLogic($("#kq",r).value),names=[...new Set([...kb.flatMap(k=>[...lvars(k)]),...lvars(q)])].sort(),M=models(names).filter(e=>kb.every(k=>leval(k,e)));
+      const ent=M.every(e=>leval(q,e));$("#ko",r).innerHTML=`<div class="small">Models where every KB sentence is true: ${M.length}${M.length?" ("+M.map(e=>"{"+names.map(n=>n+"="+TF(e[n])).join(",")+"}").join(" ")+")":""}</div><div class="callout ${ent&&M.length?"k":"i"}">${!M.length?"The KB is contradictory: it entails everything.":ent?"<b>Yes, KB entails the query</b>: it is true in all of those models.":"<b>No.</b> There is a model where the KB holds but the query is false."}</div>`}catch(e){$("#ko",r).innerHTML=`<div class="out err">${esc(e.message)}</div>`}}
+  ["kbf","kq"].forEach(i=>$("#"+i,r).oninput=en);en()}});
+
+/* 4 chaining */
+const RB={"Letters (the notebook example)":{rules:"A, B -> C\nC -> D\nD, E -> F\nX -> Y",facts:"A, B, E",goal:"F"},
+ "Car will not start":{rules:"no_fuel -> engine_dead\nbattery_flat -> no_lights\nbattery_flat -> engine_dead\nno_lights, engine_dead -> need_jump_start\nloose_wire -> no_lights\nengine_dead -> wont_start",facts:"battery_flat",goal:"wont_start"},
+ "Many irrelevant rules":{rules:"a -> b\nb -> c\nc -> goal\nx1 -> x2\nx2 -> x3\nx3 -> x4\ny1 -> y2\ny2 -> y3\ny3 -> y4\nz1 -> z2",facts:"a, x1, y1, z1",goal:"goal"}};
+const parseRules=t=>t.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{const m=l.split("->");if(m.length!==2||!m[1].trim())throw new Error("Rule needs the form  A, B -> C   (got: "+l+")");return{c:m[0].split(/,|\band\b/i).map(s=>s.trim()).filter(Boolean),h:m[1].trim()}});
+const fwd=(rules,facts,goal)=>{const F=new Set(facts),steps=[{f:[...F],note:"Start with the known facts."}];let ch=true,fired=0;while(ch){ch=false;for(const r of rules){if(!F.has(r.h)&&r.c.every(c=>F.has(c))){F.add(r.h);fired++;steps.push({f:[...F],rule:r,note:`Rule [${r.c.join(", ")}] -> ${r.h} has all conditions known, so ${r.h} becomes a fact.`+(r.h===goal?" That is the goal.":"")});ch=true;break}}}
+  steps.push({f:[...F],note:F.has(goal)?`No rule can fire any more (a fixed point). Goal ${goal} was derived along the way, together with every other consequence.`:`No rule can fire. ${goal} was not derived.`,done:true});return{steps,fired,ok:F.has(goal),n:F.size}};
+const bwd=(rules,facts,goal)=>{const log=[];let tried=0;const F=new Set(facts);const rec=(g,d,stack)=>{if(F.has(g)){log.push({d,t:`${g}: known fact`,s:"ok"});return true}
+    if(stack.includes(g)){log.push({d,t:`${g}: already being proved (cycle), give up on this path`,s:"no"});return false}
+    for(const r of rules)if(r.h===g){tried++;log.push({d,t:`${g}: try rule [${r.c.join(", ")}] -> ${g}`,s:"try"});if(r.c.every(c=>rec(c,d+1,[...stack,g]))){log.push({d,t:`${g}: PROVED`,s:"ok"});return true}}
+    log.push({d,t:`${g}: cannot prove`,s:"no"});return false};const ok=rec(goal,0,[]);return{log,ok,tried}};
+lesson({hero:true,nav:"Forward and backward chaining",title:"Forward chaining, backward chaining and how they differ",syl:"Forward chaining; Backward chaining; Forward vs backward chaining",
+html:()=>`<p class="lead">Both methods use <b>rules</b> of the form <code>conditions -&gt; conclusion</code> (Horn clauses) and facts. <b>Forward chaining</b> is <b>data-driven</b>: start from known facts, fire every rule whose conditions are all known, add its conclusion, repeat. <b>Backward chaining</b> is <b>goal-driven</b>: start from the question, find a rule that concludes it, then try to prove that rule's conditions.</p>
+<div class="card try"><h3>Rule base</h3>${chips("rb",Object.keys(RB),0)}<div class="grid2"><div>Rules (one per line, <code>A, B -&gt; C</code>)<textarea id="rr" class="py" rows="7" spellcheck="false"></textarea></div><div>Known facts (comma separated)<input type="text" id="ff" class="wide"><br>Goal to prove<input type="text" id="gg" class="wide"></div></div><div id="rberr"></div></div>
+<div class="grid2"><div class="card try"><h3>Forward chaining</h3><div id="fw"></div></div><div class="card try"><h3>Backward chaining</h3><div id="bw"></div></div></div>
+<div class="card"><h3>Compare</h3><div id="cmp"></div><table class="dt" style="margin-top:8px"><thead><tr><th></th><th>Forward</th><th>Backward</th></tr></thead><tbody><tr><td>Starts from</td><td>known facts</td><td>the goal</td></tr><tr><td>Good when</td><td>many facts arrive and you want all consequences (monitoring, alarms)</td><td>there is one specific question (diagnosis, "can I prove X?")</td></tr><tr><td>Weakness</td><td>derives many facts nobody asked for</td><td>can loop on cyclic rules, needs a cycle check</td></tr></tbody></table></div>
+${quiz("i4q4","You want to know only whether the patient has flu. Which fits better?",["Forward chaining from every test result","Backward chaining from the goal 'flu'","Neither"],1,"Backward chaining asks only for the facts that matter to this one hypothesis.")}
+${NBREF("4.7, 4.8 and 4.9")}`,
+mount(r){function load(k){const d=RB[k];$("#rr",r).value=d.rules;$("#ff",r).value=d.facts;$("#gg",r).value=d.goal;run()}
+  function run(){let rules;$("#rberr",r).innerHTML="";try{rules=parseRules($("#rr",r).value)}catch(e){$("#rberr",r).innerHTML=`<div class="out err">${esc(e.message)}</div>`;return}
+    const facts=$("#ff",r).value.split(",").map(s=>s.trim()).filter(Boolean),goal=$("#gg",r).value.trim();const F=fwd(rules,facts,goal),B=bwd(rules,facts,goal);
+    stepper(r,"#fw",()=>F.steps,(s,i)=>`<div class="small"><b>Facts now:</b></div><div class="boxes">${s.f.map(x=>`<div class="bx ${x===goal?"ok":""}">${esc(x)}</div>`).join("")}</div><div class="callout ${s.done&&F.ok?"k":"i"} small">${esc(s.note)}</div>`);
+    stepper(r,"#bw",()=>B.log.map((_,i)=>B.log.slice(0,i+1)),(s,i)=>`<div class="code" style="max-height:260px">${s.map((l,k)=>`<span style="display:block;padding-left:${l.d*18}px;${k===s.length-1?"background:var(--warn-soft);":""}">${l.s==="ok"?"&#10003;":l.s==="no"?"&#10007;":"&rarr;"} ${esc(l.t)}</span>`).join("")}</div>${i===B.log.length-1?`<div class="callout ${B.ok?"k":"i"} small">${B.ok?"Proved "+esc(goal)+".":"Could not prove "+esc(goal)+"."}</div>`:""}`);
+    $("#cmp",r).innerHTML=`<div class="grid3"><div class="kpi"><span class="small muted">Rules in the base</span><b>${rules.length}</b></div><div class="kpi"><span class="small muted">Forward: rules fired</span><b>${F.fired}</b></div><div class="kpi"><span class="small muted">Backward: rules tried</span><b>${B.tried}</b></div></div><p class="small muted">Forward derived ${F.n-facts.length} new facts${F.ok?" and reached the goal":""}. Backward looked only at rules that could help prove "${esc(goal)}". Choose "Many irrelevant rules" to see the difference.</p>`}
+  bindChips(r,"rb",load);["rr","ff","gg"].forEach(i=>$("#"+i,r).oninput=run);load("Letters (the notebook example)")}});
+
+/* 5 FOL intro */
+lesson({nav:"First-order logic",title:"First-order logic, its advantages, and logics in general",syl:"First-order logic, pros of FOL, logics in general",
+html:()=>`<p class="lead"><b>First-order logic (FOL)</b> describes a world of <b>objects</b>, <b>relations</b> between them and <b>functions</b>, and adds <b>quantifiers</b>: <b>&forall;</b> (for all) and <b>&exist;</b> (there exists). Propositional logic needs a separate symbol for every fact; FOL says "all humans are mortal" in one sentence.</p>
+<div class="card try"><h3>Try it: how quickly propositional logic blows up</h3><p class="small muted">Rule: "if a square has a pit, every neighbouring square is breezy." On a grid of n &times; n squares:</p><div class="row">n = <input type="range" id="gn" min="2" max="12" value="4"> <b id="gnv">4</b></div><div id="gout"></div></div>
+<div class="card"><h3>Pros of FOL</h3><ul class="small"><li>More expressive: objects, relations, functions, quantifiers.</li><li>Compact: one rule covers every object.</li><li>Still precise and has sound inference rules.</li><li>Is the basis of many knowledge systems and databases.</li></ul></div>
+<div class="card"><h3>Logics in general</h3><table class="dt"><thead><tr><th>Logic</th><th>The world is made of</th><th>Truth values</th></tr></thead><tbody><tr><td>Propositional</td><td>facts</td><td>true, false</td></tr><tr><td>First-order</td><td>objects and relations</td><td>true, false</td></tr><tr><td>Temporal</td><td>objects, relations, time</td><td>true, false</td></tr><tr><td>Probabilistic</td><td>facts</td><td>degree of belief 0 to 1</td></tr><tr><td>Fuzzy</td><td>facts with a degree of truth</td><td>value 0 to 1</td></tr></tbody></table></div>
+<div class="card try"><h3>Match the English to FOL</h3><div id="fm"></div></div>
+${quiz("i4q5","Which needs one rule only in FOL but many in propositional logic?",["'It is raining'","'All squares next to a pit are breezy'","'P and Q'"],1,"A quantified sentence covers every square. Propositional logic must write it once per square.")}
+${NBREF("4.10")}`,
+mount(r){function g(){const n=+$("#gn",r).value;$("#gnv",r).textContent=n;const sq=n*n;let nb=0;for(let x=0;x<n;x++)for(let y=0;y<n;y++){nb+=(x>0)+(x<n-1)+(y>0)+(y<n-1)}
+    $("#gout",r).innerHTML=`<div class="grid3"><div class="kpi"><span class="small muted">Squares</span><b>${sq}</b></div><div class="kpi"><span class="small muted">Propositional sentences (one per pair of neighbours)</span><b>${nb}</b></div><div class="kpi"><span class="small muted">FOL sentences</span><b>1</b></div></div><div class="code">FOL:  forall x, y:  Pit(x) and Adjacent(x, y)  ->  Breezy(y)</div>`}
+  $("#gn",r).oninput=g;g();
+  matcher(r,"#fm",[{q:"Every student likes pizza.",a:0,why:"All students: a universal with an implication."},{q:"Some student likes pizza.",a:1,why:"There exists a student who likes pizza: an existential with AND."},{q:"No student likes exams.",a:2,why:"For all students, not liking exams."},{q:"Every dog is an animal.",a:0,why:"For all x, Dog(x) implies Animal(x)."}].map((x,i)=>x),["&forall;x Student(x) &rarr; Likes(x, Pizza)","&exist;x Student(x) &and; Likes(x, Pizza)","&forall;x Student(x) &rarr; &not;Likes(x, Exams)"].map(s=>s));}});
+
+/* 6 FOL syntax, truth, example */
+const PEOPLE=["Asha","Ravi","Meera","Karan"];
+const SENT=[{t:"&forall;x  Student(x) &rarr; Likes(x, Pizza)",q:"all",f:x=>!x.S||x.L,say:"Every student likes pizza"},
+ {t:"&exist;x  Student(x) &and; Likes(x, Pizza)",q:"some",f:x=>x.S&&x.L,say:"Some student likes pizza"},
+ {t:"&forall;x  Likes(x, Pizza) &rarr; Student(x)",q:"all",f:x=>!x.L||x.S,say:"Everyone who likes pizza is a student"},
+ {t:"&not;&exist;x  Teacher(x) &and; Likes(x, Pizza)",q:"none",f:x=>x.T&&x.L,say:"No teacher likes pizza"},
+ {t:"&forall;x  Student(x) &and; Likes(x, Pizza)  (a common mistake)",q:"all",f:x=>x.S&&x.L,say:"Everybody is a student and likes pizza"},
+ {t:"&exist;x  Student(x) &rarr; Teacher(x)  (a common mistake)",q:"some",f:x=>!x.S||x.T,say:"Almost always true: any non-student makes it true"}];
+lesson({hero:true,nav:"FOL syntax, truth, example",title:"Syntax and components of FOL, truth in FOL, and an example",syl:"Syntax and components of FOL; Truth in FOL; First-order logic example",
+html:()=>`<p class="lead">FOL sentences are built from <b>constants</b> (Socrates), <b>variables</b> (x), <b>predicates</b> (Human(x)), <b>functions</b> (FatherOf(x)), <b>connectives</b>, <b>quantifiers</b> and <b>equality</b>. A sentence is true or false <b>in a model</b>: a set of objects plus the meaning of each predicate. To check &forall; look at every object; to check &exist; look for one witness.</p>
+<div class="card"><h3>Components</h3><table class="dt"><thead><tr><th>Component</th><th>Example</th><th>Reads as</th></tr></thead><tbody><tr><td>Constant</td><td>Socrates, 3</td><td>one named object</td></tr><tr><td>Variable</td><td>x, y</td><td>stands for any object</td></tr><tr><td>Predicate</td><td>Human(x), Likes(x, y)</td><td>a property or relation (true/false)</td></tr><tr><td>Function</td><td>FatherOf(Ravi)</td><td>points to an object</td></tr><tr><td>Connectives</td><td>&not; &and; &or; &rarr; &harr;</td><td>not, and, or, implies, iff</td></tr><tr><td>Quantifiers</td><td>&forall;x, &exist;x</td><td>for all x, there exists x</td></tr></tbody></table><p class="small muted">Pattern to remember: <b>&forall; goes with &rarr;</b>, <b>&exist; goes with &and;</b>.</p></div>
+<div class="card try"><h3>Truth in a model</h3><p class="small muted">Tick the boxes to build the model (who is a student, likes pizza, is a teacher). Then pick a sentence.</p><div id="mt"></div><div class="row" id="sn"></div><div id="mo"></div></div>
+<div class="card try"><h3>Example: all humans are mortal</h3><div id="soc"></div></div>
+${quiz("i4q6","Which is the usual form for 'every student likes pizza'?",["&forall;x Student(x) &and; Likes(x, Pizza)","&forall;x Student(x) &rarr; Likes(x, Pizza)","&exist;x Student(x) &rarr; Likes(x, Pizza)"],1,"Use &rarr; with &forall;. With &and; you would be claiming that EVERYONE in the world is a student.")}
+${NBREF("4.11, 4.12 and 4.13")}`,
+mount(r){const M=PEOPLE.map((n,i)=>({n,S:i<3,L:i===0||i===2,T:i===3}));let si=0;
+  function draw(){$("#mt",r).innerHTML=`<table class="dt"><thead><tr><th>Object x</th><th>Student(x)</th><th>Likes(x, Pizza)</th><th>Teacher(x)</th></tr></thead><tbody>${M.map((m,i)=>`<tr><td><b>${m.n}</b></td>${["S","L","T"].map(k=>`<td><input type="checkbox" data-c="${i}${k}" ${m[k]?"checked":""} aria-label="${k} for ${m.n}"></td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    $$("[data-c]",r).forEach(c=>c.onchange=()=>{M[+c.dataset.c[0]][c.dataset.c[1]]=c.checked;ev()});
+    $("#sn",r).innerHTML=SENT.map((s,i)=>`<button type="button" class="opt2" data-s="${i}" aria-pressed="${i===si}">${s.t}</button>`).join("");$$("[data-s]",r).forEach(b=>b.onclick=()=>{si=+b.dataset.s;draw();ev()})}
+  function ev(){const s=SENT[si],vals=M.map(m=>s.f(m));let res,why;
+    if(s.q==="all"){res=vals.every(Boolean);const bad=M.find((m,i)=>!vals[i]);why=res?"The body is true for every object.":`Counterexample: <b>${bad.n}</b> makes the body false.`}
+    else if(s.q==="some"){res=vals.some(Boolean);const w=M.find((m,i)=>vals[i]);why=res?`Witness: <b>${w.n}</b> makes the body true.`:"No object makes the body true."}
+    else{res=!vals.some(Boolean);const w=M.find((m,i)=>vals[i]);why=res?"No object makes the body true, so the negated &exist; holds.":`<b>${w.n}</b> is a teacher who likes pizza, so the sentence fails.`}
+    $("#mo",r).innerHTML=`<table class="dt" style="margin-top:8px"><thead><tr><th>x</th><th>body of the sentence is</th></tr></thead><tbody>${M.map((m,i)=>`<tr><td>${m.n}</td><td class="${vals[i]?"":"muted"}"><b>${vals[i]?"true":"false"}</b></td></tr>`).join("")}</tbody></table><div class="callout ${res?"k":"i"}"><b>"${s.say}" is ${res?"TRUE":"FALSE"} in this model.</b> ${why}</div>`}
+  draw();ev();
+  stepper(r,"#soc",()=>[{k:["&forall;x Human(x) &rarr; Mortal(x)","Human(Socrates)"],n:"The knowledge base has a general rule and a fact."},{k:["&forall;x Human(x) &rarr; Mortal(x)","Human(Socrates)","Human(Socrates) &rarr; Mortal(Socrates)"],n:"Universal instantiation: replace x by the constant Socrates."},{k:["&forall;x Human(x) &rarr; Mortal(x)","Human(Socrates)","Human(Socrates) &rarr; Mortal(Socrates)","Mortal(Socrates)"],n:"Modus ponens: from P and P &rarr; Q, conclude Q. Socrates is mortal."}],(s,i)=>`<div class="code" style="white-space:pre-wrap">${s.k.map((x,j)=>`<span style="display:block;${j===s.k.length-1&&i?"background:var(--warn-soft);":""}">${j+1}. ${x}</span>`).join("")}</div><div class="callout k small">${s.n}</div>`)}});
+
+/* 7 planning intro + search vs planning */
+const ROOMS=["Hall","Lab"];
+function plActs(s){const[r,k,h]=s,o=[];for(const nr of ROOMS)if(nr!==r)o.push([`Go(${nr})`,[nr,h?nr:k,h],`pre: robot in ${r}   effect: robot in ${nr}${h?", key moves with the robot":""}`]);
+  if(!h&&r===k)o.push(["Pick(key)",[r,k,true],`pre: robot and key in ${r}, hand empty   effect: holding key`]);if(h)o.push(["Drop(key)",[r,r,false],`pre: holding key   effect: key in ${r}, hand empty`]);return o}
+function plSolve(st,goal){const q=[[st,[]]],seen=new Set([st.join()]);let n=0;while(q.length){const[s,p]=q.shift();n++;if(goal(s))return{plan:p,n};for(const[nm,ns,tx] of plActs(s)){if(!seen.has(ns.join())){seen.add(ns.join());q.push([ns,[...p,{nm,ns,tx}]])}}}return{plan:null,n}}
+const PLS={"Fetch the key to the Hall":{st:["Hall","Lab",false],g:s=>s[1]==="Hall"},"Move the key to the Lab, return to the Hall":{st:["Hall","Hall",false],g:s=>s[1]==="Lab"&&s[0]==="Hall"},"Already solved (empty plan)":{st:["Hall","Hall",false],g:s=>s[1]==="Hall"}};
+lesson({nav:"Classical planning, search vs planning",title:"Classical planning, and how planning differs from search",syl:"Classical planning, introduction; Search vs planning",
+html:()=>`<p class="lead"><b>Classical planning</b> finds a sequence of actions that takes the world from a start state to a goal, assuming it is <b>fully observable, deterministic, finite and static</b>. Each <b>action</b> has <b>preconditions</b> (what must be true to do it) and <b>effects</b> (what it changes). A <b>plan</b> is the list of actions.</p>
+<div class="card try"><h3>Try it: a planner for a robot, a key and two rooms</h3>${chips("ps",Object.keys(PLS),0)}<div id="pl"></div></div>
+<div class="card"><h3>Search versus planning</h3><table class="dt"><thead><tr><th></th><th>Ordinary search</th><th>Planning</th></tr></thead><tbody><tr><td>State</td><td>a black box</td><td>a set of logical facts</td></tr><tr><td>Actions</td><td>a function written in code</td><td>preconditions and effects, described in logic</td></tr><tr><td>Goal</td><td>tested by a function</td><td>described, so the planner can reason about it</td></tr><tr><td>Heuristics</td><td>handwritten for each problem</td><td>derived automatically from the description</td></tr><tr><td>Scale</td><td>struggles with huge state spaces</td><td>uses structure to cut the search</td></tr></tbody></table></div>
+${quiz("i4q7","In planning, an action's <b>precondition</b> says:",["What the action changes","What must be true before the action can be done","The cost of the action"],1,"Preconditions gate the action; effects describe the change.")}
+${NBREF("4.14 and 4.15")}`,
+mount(r){function load(k){const P=PLS[k],res=plSolve(P.st,P.g);const steps=[{s:P.st,nm:null,tx:"Start state."},...(res.plan||[]).map(x=>({s:x.ns,nm:x.nm,tx:x.tx}))];
+    stepper(r,"#pl",()=>steps,(s,i,all)=>`<div class="world">${ROOMS.map(q=>`<div class="sq ${s.s[0]===q?"here":""}"><small>${q}</small><span>${s.s[0]===q?"&#129302; robot ":""}${s.s[1]===q&&!s.s[2]?"&#128273; key":""}${s.s[2]&&s.s[0]===q?"<br>(holding &#128273;)":""}</span></div>`).join("")}</div><div class="small">${s.nm?`<b>Action ${i}: ${s.nm}</b><br><span class="muted">${esc(s.tx)}</span>`:"Start."}</div>${i===all.length-1?`<div class="callout k small">${res.plan?`Plan: ${res.plan.length?res.plan.map(x=>x.nm).join(" , "):"(nothing to do)"}. The blind search looked at ${res.n} states to find it.`:"No plan exists."}</div>`:""}`)}
+  bindChips(r,"ps",load);load(Object.keys(PLS)[0])}});
+
+/* 8 PDDL */
+const BL=["A","B","C"];
+function blActs(s){const o=[];const has=x=>s.has(x);for(const b of BL){if(has(`clear(${b})`)&&has(`ontable(${b})`)&&has("handempty"))o.push({n:`pickup(${b})`,pre:[`clear(${b})`,`ontable(${b})`,"handempty"],add:[`holding(${b})`],del:[`clear(${b})`,`ontable(${b})`,"handempty"]});
+    if(has(`holding(${b})`))o.push({n:`putdown(${b})`,pre:[`holding(${b})`],add:[`clear(${b})`,`ontable(${b})`,"handempty"],del:[`holding(${b})`]});
+    for(const c of BL)if(b!==c){if(has(`holding(${b})`)&&has(`clear(${c})`))o.push({n:`stack(${b},${c})`,pre:[`holding(${b})`,`clear(${c})`],add:[`on(${b},${c})`,`clear(${b})`,"handempty"],del:[`holding(${b})`,`clear(${c})`]});
+      if(has(`on(${b},${c})`)&&has(`clear(${b})`)&&has("handempty"))o.push({n:`unstack(${b},${c})`,pre:[`on(${b},${c})`,`clear(${b})`,"handempty"],add:[`holding(${b})`,`clear(${c})`],del:[`on(${b},${c})`,`clear(${b})`,"handempty"]})}}return o}
+const blApply=(s,a)=>{const n=new Set(s);a.del.forEach(x=>n.delete(x));a.add.forEach(x=>n.add(x));return n};
+const BINIT=["ontable(A)","on(B,A)","clear(B)","ontable(C)","clear(C)","handempty"];
+const BGOALS={"on(A,B)":["on(A,B)"],"on(B,C)":["on(B,C)"],"tower: A on B on C":["on(A,B)","on(B,C)"]};
+function blSolve(init,goal){const key=s=>[...s].sort().join("|");const q=[[new Set(init),[]]],seen=new Set([key(new Set(init))]);let n=0;while(q.length&&n<20000){const[s,p]=q.shift();n++;if(goal.every(g=>s.has(g)))return{plan:p,n};for(const a of blActs(s)){const ns=blApply(s,a),k=key(ns);if(!seen.has(k)){seen.add(k);q.push([ns,[...p,a.n]])}}}return{plan:null,n}}
+function blDraw(s){const held=BL.find(b=>s.has(`holding(${b})`));const stacks=BL.filter(b=>s.has(`ontable(${b})`)).map(b=>{const st=[b];let cur=b;for(;;){const up=BL.find(x=>s.has(`on(${x},${cur})`));if(!up)break;st.push(up);cur=up}return st});
+  return`<div class="row" style="align-items:flex-end;gap:18px">${stacks.map(st=>`<div class="stack">${st.map(b=>`<div class="blk">${b}</div>`).join("")}</div>`).join("")||'<span class="muted">(no stacks)</span>'}<div class="cardsel" style="min-width:110px"><span class="small muted">in hand</span><br>${held?`<div class="blk held">${held}</div>`:"(empty)"}</div></div>`}
+lesson({hero:true,nav:"PDDL: language of planning",title:"The language of planning problems (PDDL)",syl:"The language of planning problems (PDDL)",
+html:()=>`<p class="lead"><b>PDDL</b> (Planning Domain Definition Language) separates a <b>domain</b> (the predicates and the actions with preconditions and effects) from a <b>problem</b> (the objects, the initial state and the goal). Any planner can read any PDDL file. Below is the classic <b>blocks world</b>: you act as the planner, then let BFS do it.</p>
+<div class="grid2"><div class="card"><h3>Domain (excerpt)</h3><div class="code">(:action pickup\n  :parameters (?b)\n  :precondition (and (clear ?b) (ontable ?b) (handempty))\n  :effect (and (holding ?b)\n          (not (clear ?b)) (not (ontable ?b))\n          (not (handempty))))\n\n(:action stack\n  :parameters (?b ?c)\n  :precondition (and (holding ?b) (clear ?c))\n  :effect (and (on ?b ?c) (clear ?b) (handempty)\n          (not (holding ?b)) (not (clear ?c))))</div></div>
+<div class="card"><h3>Problem</h3><div class="code">(:objects A B C)\n(:init (ontable A) (on B A) (clear B)\n       (ontable C) (clear C) (handempty))\n(:goal (on A B))</div><p class="small muted">Predicates: <code>on(x,y)</code>, <code>ontable(x)</code>, <code>clear(x)</code> (nothing on top), <code>holding(x)</code>, <code>handempty</code>.</p></div></div>
+<div class="card try"><h3>Be the planner</h3><div class="row"><b>Goal:</b> ${chips("bg",Object.keys(BGOALS),0)} <button class="btn" type="button" id="brst">Reset blocks</button></div><div id="bw8"></div></div>
+<div class="card try"><h3>Let search find the plan</h3><div class="row"><button class="btn pri" type="button" id="bsol">Show the shortest plan from the start</button></div><div id="bso"></div></div>
+${quiz("i4q8","In PDDL, which part lists the initial state and the goal?",["The domain","The problem","The action"],1,"The domain describes the world's rules (actions). The problem gives the specific objects, initial state and goal.")}
+${NBREF("4.16")}`,
+mount(r){let goal="on(A,B)",S=new Set(BINIT),hist=[];function draw(){const g=BGOALS[goal],ok=g.every(x=>S.has(x)),acts=blActs(S);
+    $("#bw8",r).innerHTML=blDraw(S)+`<div class="callout ${ok?"k":"i"}">Goal: ${g.join(" and ")} &nbsp; ${ok?'<span class="tag g">GOAL REACHED in '+hist.length+' actions</span>':'<span class="tag w">not yet</span>'}</div><div class="small"><b>Applicable actions</b> (preconditions are true now). Click one:</div><div>${acts.map((a,i)=>`<button type="button" class="opt2" data-a="${i}" title="pre: ${a.pre.join(", ")}">${a.n}</button>`).join("")}</div><div class="small" style="margin-top:6px"><b>Actions so far:</b> ${hist.join(" , ")||"(none)"}</div>`;
+    $$("[data-a]",r).forEach(b=>b.onclick=()=>{const a=acts[+b.dataset.a];S=blApply(S,a);hist.push(a.n);draw()})}
+  bindChips(r,"bg",v=>{goal=v;draw()});$("#brst",r).onclick=()=>{S=new Set(BINIT);hist=[];draw()};draw();
+  $("#bsol",r).onclick=()=>{const res=blSolve(BINIT,BGOALS[goal]);$("#bso",r).innerHTML=res.plan?`<div class="code">${res.plan.map((p,i)=>`${i+1}. ${p}`).join("\n")||"(goal already true)"}</div><div class="small muted">Shortest plan: ${res.plan.length} actions. Breadth-first search examined ${res.n} states.</div>`:'<div class="out err">No plan found.</div>'}}});
+
+/* live pane */
+function renderLive(){$("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">Symbols and what to type in this lab.</p><table class="dt"><thead><tr><th>Symbol</th><th>Meaning</th><th>Type</th></tr></thead><tbody>${[["&not;","not","~ or not"],["&and;","and","&amp; or and"],["&or;","or","| or or"],["&rarr;","implies","-&gt;"],["&harr;","if and only if","&lt;-&gt;"],["&forall;","for all","(FOL only)"],["&exist;","there exists","(FOL only)"],["&#8872;","entails","(in words)"]].map(x=>`<tr><td><b>${x[0]}</b></td><td>${x[1]}</td><td class="small">${x[2]}</td></tr>`).join("")}</tbody></table><h4 style="margin:12px 0 6px">Remember</h4><div class="code">forall goes with  ->\nexists goes with  &\nP -> Q is false only when\nP is true and Q is false</div>`}
+
+renderLive();go(0);
+
+</script>
+</body>
+</html>

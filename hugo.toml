@@ -31,6 +31,7 @@ pygmentsUseClasses = true
   disableScrollToTop = false
   hidemeta = false
   comments = false
+  mainSections = ['posts']
 
   [params.homeInfoParams]
     Title = "Sushant Bhargav"
@@ -67,6 +68,11 @@ I write about hardening, automation, and why plausible-looking configuration sil
     name = 'About'
     url = '/about/'
     weight = 20
+  [[menu.main]]
+    identifier = 'training'
+    name = 'Training'
+    url = '/training/'
+    weight = 25
   [[menu.main]]
     identifier = 'tags'
     name = 'Tags'

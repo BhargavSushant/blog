@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IPSR Lab - Unit 1</title>
+<style>
+:root{
+  --bg:#FAF8F3; --surface:#FFFFFF; --surface2:#EFEBE1; --fg:#12110E; --muted:#44403A; --line:#B9B2A2; --line2:#D9D3C4;
+  --pri:#1F3FB5; --pri-soft:#DDE5FA; --sec:#9A4208; --sec-soft:#FBE3CC;
+  --good:#0F6A31; --good-soft:#D5F0DD; --warn:#744500; --warn-soft:#F9E8B8; --bad:#A31D12; --bad-soft:#FADAD5;
+  --code:#EFEBE1; --on:#FFFFFF; --grid:#CFC9BA; --shadow:0 1px 2px rgba(18,17,14,.08),0 6px 18px rgba(18,17,14,.06);
+  --c1:#1F3FB5; --c2:#9A4208; --c3:#0F6A31; --c4:#7A2A9C; --c5:#8A6D00; --c6:#B0235C;
+  --disp:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --body:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  --mono:ui-monospace,'Cascadia Code',Consolas,Menlo,monospace;
+  --zoom:1;
+}
+:root[data-theme="dark"]{
+  --bg:#0C0C0A; --surface:#181714; --surface2:#242320; --fg:#F7F4EA; --muted:#CFCABD; --line:#5B574B; --line2:#35332C;
+  --pri:#9DB1FF; --pri-soft:#1B2350; --sec:#FFAE6B; --sec-soft:#40240E;
+  --good:#6FE09A; --good-soft:#0F3320; --warn:#F5C964; --warn-soft:#3B2E0A; --bad:#FF9A8C; --bad-soft:#451A15;
+  --code:#1F1E1A; --on:#0C0C0A; --grid:#46433A; --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.3);
+  --c1:#9DB1FF; --c2:#FFAE6B; --c3:#6FE09A; --c4:#D9A0FF; --c5:#F0D060; --c6:#FF8FB8;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body);zoom:var(--zoom)}
+button,select,input{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:240px minmax(0,1fr) 310px;min-height:calc(100vh / var(--zoom))}
+.nav{background:var(--surface);border-right:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.brand{font-family:var(--disp);font-size:20px;line-height:1.15;margin:0 4px 4px}
+.brand small{display:block;font:12.5px var(--body);color:var(--muted);margin-top:4px}
+.nav ol{list-style:none;margin:16px 0 0;padding:0}
+.nav li button{width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;color:var(--fg)}
+.nav li button:hover{background:var(--surface2)}
+.nav li button[aria-current="true"]{background:var(--pri-soft);font-weight:600}
+.nav .n{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--muted);display:grid;place-items:center;font-size:12px;color:var(--muted)}
+.nav li.done .n{background:var(--good);color:var(--on);border-color:var(--good)}
+.nav .t{font-size:13.5px;line-height:1.3}
+.nav .hero .n{border-color:var(--sec);color:var(--sec)}
+.tools{margin:18px 4px 0;display:grid;gap:8px}
+.tools button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 10px;cursor:pointer;font-weight:600;text-align:left}
+.tools button:hover{border-color:var(--fg)}
+.tools .hint{font-size:12px;color:var(--muted)}
+main{padding:26px 30px 70px;min-width:0}
+.crumb{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.15;margin:4px 0 6px}
+h2{font-family:var(--disp);font-size:20px;margin:0 0 8px}
+h3{font-size:13.5px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.syl{display:inline-block;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0;box-shadow:var(--shadow)}
+.card.try{border-left:5px solid var(--pri)}
+.card.sec{border-left:5px solid var(--sec)}
+.lead{font-size:16.5px}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:5px;padding:2px 7px}
+.tag.p{background:var(--pri-soft);color:var(--pri)} .tag.s{background:var(--sec-soft);color:var(--sec)}
+.tag.g{background:var(--good-soft);color:var(--good)} .tag.w{background:var(--warn-soft);color:var(--warn)} .tag.b{background:var(--bad-soft);color:var(--bad)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--fg)}
+.btn.pri{background:var(--pri);color:var(--on);border-color:var(--pri)} .btn.sec{background:var(--sec);color:var(--on);border-color:var(--sec)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+table.dt{border-collapse:collapse;width:100%;font-size:13.5px}
+table.dt th{background:var(--surface2);text-align:left;padding:6px 9px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+table.dt td{padding:5px 9px;border-bottom:1px solid var(--line2);white-space:nowrap}
+table.dt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:340px}
+.tw.sm{max-height:none}
+.new{animation:pop .6s ease both}
+@keyframes pop{from{background:var(--sec-soft);transform:translateY(-4px);opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.new{animation:none}}
+.code{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:7px 10px;overflow:auto;white-space:pre-wrap;color:var(--fg)}
+code{font-family:var(--mono);font-size:.92em;background:var(--code);padding:1px 5px;border-radius:4px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.callout{border-radius:8px;padding:10px 14px;margin:10px 0;background:var(--surface2);border:1px solid var(--line2)}
+.callout.k{background:var(--sec-soft);border-color:transparent} .callout.i{background:var(--pri-soft);border-color:transparent}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:7px 13px;cursor:pointer;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--pri);color:var(--on)}
+.seg.s button[aria-pressed="true"]{background:var(--sec)}
+select,input[type=text],input[type=number]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px}
+input[type=range]{accent-color:var(--pri);vertical-align:middle}
+label.chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer;margin-right:12px}
+.live{background:var(--surface);border-left:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.live .tw{max-height:none}
+.opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;margin:6px 0;cursor:pointer}
+.opt:hover{border-color:var(--fg)} .opt.ok{background:var(--good-soft);border-color:var(--good)} .opt.no{background:var(--bad-soft);border-color:var(--bad)}
+.bar{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden;border:1px solid var(--line2)}
+.bar i{display:block;height:100%;background:var(--sec);transition:width .4s}
+.flow{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+.arrow{font-size:28px;color:var(--sec);text-align:center}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:12.5px;margin:2px 4px 2px 0;background:var(--surface)}
+td.ix{background:var(--bad-soft)} td.iy{background:var(--warn-soft)} td.iz{background:var(--pri-soft)} td.chg{background:var(--good-soft)}
+.cardsel{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi b{font-size:22px;display:block;font-variant-numeric:tabular-nums}
+.nextrow{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
+svg.chart{width:100%;height:auto;display:block;max-height:420px}
+svg.chart text{fill:var(--fg);font:12px var(--body)}
+svg.chart .ax{stroke:var(--muted);stroke-width:1}
+svg.chart .gr{stroke:var(--grid);stroke-width:1}
+svg.chart .lbl{fill:var(--muted)}
+.sheet{border-collapse:collapse;font-size:13.5px;font-family:var(--mono);width:100%}
+.sheet th{background:var(--surface2);border:1px solid var(--line);padding:3px 8px;text-align:center;font-weight:600;color:var(--muted)}
+.sheet td{border:1px solid var(--line);padding:0;min-width:80px}
+.sheet td input{width:100%;border:0;background:transparent;padding:4px 7px;font:inherit;border-radius:0}
+.sheet td.sel{outline:2px solid var(--pri);outline-offset:-2px}
+:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+@media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.live{grid-column:1/-1;position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
+@media (max-width:760px){.app{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav ol{display:flex;overflow:auto;gap:4px}.nav li{flex:none}.nav .t{display:none}main{padding:18px 16px 60px}.grid2,.grid3,.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+
+textarea,input[type=search]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px;font:inherit;color:var(--fg)}
+textarea.py{width:100%;font-family:var(--mono);font-size:13.5px;min-height:62px;resize:vertical;background:var(--code)}
+input.wide{width:100%;font-family:var(--mono)}
+.cell{border:1px solid var(--line);border-radius:10px;margin:10px 0;overflow:hidden;background:var(--surface)}
+.cell .hd{display:flex;gap:10px;align-items:center;background:var(--surface2);padding:5px 10px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.cell .bd{padding:8px 10px}
+.out{font-family:var(--mono);font-size:13px;white-space:pre-wrap;padding:6px 10px;border-top:1px dashed var(--line2);color:var(--fg)}
+.out.err{color:var(--bad);background:var(--bad-soft)}
+.out.ok{background:var(--good-soft)}
+.kv{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.kv span{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:2px 8px}
+.mk{background:var(--warn-soft);color:var(--fg);outline:2px solid var(--warn);border-radius:3px;padding:0 2px}
+.boxes{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
+.bx{min-width:38px;border:1px solid var(--line);border-radius:6px;text-align:center;background:var(--surface);padding:2px 6px;font-family:var(--mono)}
+.bx small{display:block;font-size:11px;color:var(--muted)}
+.bx.hi{background:var(--pri);color:var(--on);border-color:var(--pri)}
+.bx.hi small{color:var(--on)}
+.bx.ok{background:var(--good-soft);border-color:var(--good)}
+.bx.no{background:var(--bad-soft);border-color:var(--bad)}
+.bx.cur{background:var(--warn-soft);border-color:var(--warn)}
+.cmark{font-family:var(--mono);font-size:13px;line-height:1.65;background:var(--code);border:1px solid var(--line2);border-radius:8px;padding:8px 12px;white-space:pre}
+.cmark .ln{display:block;padding:0 4px;border-radius:3px}
+.cmark .ln.on{background:var(--warn-soft);outline:1px solid var(--warn)}
+.t{font-family:var(--mono)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:760px){.grid4{grid-template-columns:1fr 1fr}}
+.world{display:flex;gap:10px;margin:8px 0;flex-wrap:wrap}
+.sq{width:130px;height:90px;border:2px solid var(--line);border-radius:10px;display:grid;place-items:center;text-align:center;background:var(--surface);position:relative}
+.sq.dirty{background:var(--warn-soft);border-color:var(--warn)}
+.sq.here{outline:4px solid var(--pri)}
+.sq small{position:absolute;top:2px;left:6px;color:var(--muted)}
+.fnode{fill:var(--surface);stroke:var(--fg);stroke-width:2}
+.fnode.front{fill:var(--warn-soft);stroke:var(--warn)}
+.fnode.exp{fill:var(--good-soft);stroke:var(--good)}
+.fnode.cur{fill:var(--pri);stroke:var(--pri)}
+.fnode.path{fill:var(--sec-soft);stroke:var(--sec);stroke-width:3.5}
+.edge{stroke:var(--muted);stroke-width:2;fill:none}
+.edge.path{stroke:var(--sec);stroke-width:4}
+svg.g text{fill:var(--fg);font:600 14px var(--body);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+svg.g text.cur{fill:var(--on)}
+table.tt{border-collapse:collapse;font-family:var(--mono);font-size:13.5px}
+table.tt th,table.tt td{border:1px solid var(--line);padding:4px 10px;text-align:center}
+table.tt th{background:var(--surface2)}
+table.tt td.T{background:var(--good-soft)} table.tt td.F{background:var(--bad-soft)}
+.stack{display:flex;flex-direction:column-reverse;align-items:center;min-width:70px;border-bottom:4px solid var(--fg);padding:0 8px}
+.blk{width:56px;height:38px;border:2px solid var(--fg);border-radius:6px;display:grid;place-items:center;font-weight:700;margin-top:2px;background:var(--pri-soft)}
+.blk.held{background:var(--sec-soft);border-color:var(--sec)}
+.tag.big{font-size:13px;padding:3px 10px}
+.opt2{display:inline-block;margin:3px;padding:6px 12px;border:1px solid var(--line);background:var(--surface);border-radius:999px;cursor:pointer;font-weight:600}
+.opt2:hover{border-color:var(--fg)}
+.opt2.ok{background:var(--good-soft);border-color:var(--good)}
+.opt2.no{background:var(--bad-soft);border-color:var(--bad)}
+.opt2[aria-pressed=true]{background:var(--pri);color:var(--on);border-color:var(--pri)}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="nav" aria-label="Lessons">
+    <h2 class="brand">IPSR Lab<small>Unit 1, Python Basics<br>B.Tech Sem I, Introduction to Problem Solving and Reasoning</small></h2>
+    <ol id="navlist"></ol>
+    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
+  </nav>
+  <main id="stage" tabindex="-1"></main>
+  <aside class="live" aria-label="Live data"><h3>Live: mini Python</h3><div id="livebox"></div></aside>
+</div>
+<script>
+"use strict";
+/* ===== helpers ===== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-US"):v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/(a.length-1))};
+const quant=(a,q)=>{const s=[...a].sort((x,y)=>x-y),p=(s.length-1)*q,l=Math.floor(p);return s[l]+(s[Math.min(l+1,s.length-1)]-s[l])*(p-l)};
+const mode=a=>{const c={};a.forEach(v=>c[v]=(c[v]||0)+1);const mx=Math.max(...Object.values(c));return Object.keys(c).filter(k=>c[k]===mx).join(", ")};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const groupBy=(rows,f)=>{const g={};rows.forEach(r=>{const k=f(r);(g[k]=g[k]||[]).push(r)});return g};
+const corr=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0,c=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2;c+=(y[i]-my)**2});return a/Math.sqrt(b*c)};
+const linfit=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2});const m=a/b;return {m,b:my-m*mx,r:corr(x,y)}};
+function table(rows,cols,opts={}){
+  const head=cols.map(c=>`<th>${esc(c[1])}</th>`).join("");
+  const body=rows.map((r,i)=>`<tr${opts.newFrom!=null&&i>=opts.newFrom?' class="new"':''}>`+cols.map(c=>{
+    const v=r[c[0]],cls=(typeof v==="number"?"num":"")+((opts.cellClass&&opts.cellClass(r,c[0],i))||"");
+    return `<td class="${cls.trim()}">${v===""||v==null?'<span class="muted">(blank)</span>':esc(typeof v==="number"?fmt(v,c[2]!=null?c[2]:(Number.isInteger(v)?0:2)):v)}</td>`}).join("")+"</tr>").join("");
+  return `<div class="tw${opts.small?' sm':''}"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+const QUIZ={};
+function quiz(id,q,opts,ans,why){QUIZ[id]={ans,why};
+  return `<div class="card"><h3>Quick check</h3><p style="margin:0 0 6px"><b>${q}</b></p>`+opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" style="margin-top:6px"></div></div>`;}
+function regQuiz(id,ans,why){QUIZ[id]={ans,why}}
+function seg(id,items,cls=""){return `<div class="seg ${cls}" id="${id}" role="group">`+items.map((x,i)=>`<button type="button" data-v="${x[0]}" aria-pressed="${i===0}">${x[1]}</button>`).join("")+`</div>`}
+function bindSeg(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)});return ()=>$$("[aria-pressed=true]",g)[0].dataset.v}
+const IN=n=>n.toLocaleString("en-US",{maximumFractionDigits:0});
+
+/* ===== SVG charts (colours come from CSS variables, so both themes work) ===== */
+const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
+const nice=(max)=>{const e=Math.pow(10,Math.floor(Math.log10(max||1))),f=max/e;const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*e};
+function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(lo+st*i);return out}
+const short=v=>Math.abs(v)>=100000?(v/100000).toFixed(1).replace(/\.0$/,"")+"L":Math.abs(v)>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":(Math.round(v*100)/100)+"";
+function chartBar(items,o={}){ // items:[{label,value,color}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...items.map(i=>i.value))*1.08),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  items.forEach((it,i)=>{const x=m.l+i*bw+bw*.15,w=bw*.7,y=sy(Math.max(it.value,mn));
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,sy(mn)-y)}" fill="${it.color||o.color||"var(--c1)"}" rx="2"><title>${esc(it.label)}: ${fmt(it.value)}</title></rect>`;
+    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:11px">${short(it.value)}</text>`;
+    const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  return s+"</svg>";}
+function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:o.legendRight?110:16,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...all)*1.08);
+  const sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  const step=Math.ceil(labels.length/(o.maxLabels||12));labels.forEach((l,i)=>{if(i%step===0)s+=`<text class="lbl" x="${sx(i)}" y="${H-m.b+16}" text-anchor="middle">${esc(l)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  series.forEach((se,k)=>{const c=se.color||PAL[k%6];let d="";se.vals.forEach((v,i)=>{if(v!=null)d+=(d?"L":"M")+sx(i).toFixed(1)+" "+sy(v).toFixed(1)});
+    if(o.area&&k===0)s+=`<path d="${d}L${sx(se.vals.length-1)} ${sy(mn)}L${sx(0)} ${sy(mn)}Z" fill="${c}" opacity=".18"/>`;
+    s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${se.w||2.5}" ${se.dash?'stroke-dasharray="6 4"':""} stroke-linejoin="round"/>`;
+    if(o.dots!==false&&!se.dash)se.vals.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${sx(i)}" cy="${sy(v)}" r="3.5" fill="${c}"><title>${esc(labels[i])}: ${fmt(v)}</title></circle>`});
+    if(o.legendRight)s+=`<text x="${W-m.r+8}" y="${m.t+14+k*16}" style="fill:${c};font-weight:600">${esc(se.name)}</text>`;
+    else if(series.length>1)s+=`<text x="${m.l+8+k*150}" y="${H-6}" style="fill:${c};font-weight:600">&#9632; ${esc(se.name)}</text>`});
+  (o.marks||[]).forEach(mk=>{s+=`<text x="${sx(mk.i)}" y="${sy(mk.v)-10}" text-anchor="middle" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
+  return s+"</svg>";}
+function chartScatter(pts,o={}){ // pts:[{x,y,r,color,label}]
+  const W=o.w||640,H=o.h||340,m={l:60,r:16,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||nice(Math.max(...ys)*1.05);
+  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(y0,y1).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  ticks(x0,x1).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${short(t)}</text>`);
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(y0)}" y2="${sy(y0)}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${sy(y0)}"/>`;
+  if(o.xlabel)s+=`<text class="lbl" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${esc(o.xlabel)}</text>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  if(o.fit){const f=o.fit;s+=`<line x1="${sx(x0)}" y1="${sy(f.m*x0+f.b)}" x2="${sx(x1)}" y2="${sy(f.m*x1+f.b)}" stroke="var(--sec)" stroke-width="2.5" stroke-dasharray="7 4"/>`}
+  pts.forEach(p=>{s+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="${p.r||4}" fill="${p.color||"var(--c1)"}" fill-opacity="${o.alpha||.65}" stroke="${p.color||"var(--c1)"}"><title>${esc(p.label||"")} (${fmt(p.x)}, ${fmt(p.y)})</title></circle>`;
+    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:11px">${esc(p.label)}</text>`});
+  return s+"</svg>";}
+function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart">`;
+  items.forEach((it,k)=>{const ang=it.value/tot*2*Math.PI,x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(a+ang),y2=cy+R*Math.sin(a+ang);
+    s+=`<path d="M${cx} ${cy}L${x1} ${y1}A${R} ${R} 0 ${ang>Math.PI?1:0} 1 ${x2} ${y2}Z" fill="${it.color||PAL[k%6]}" stroke="var(--surface)" stroke-width="2"><title>${esc(it.label)}: ${(100*it.value/tot).toFixed(1)}%</title></path>`;a+=ang;
+    s+=`<text x="250" y="${40+k*22}" style="fill:${it.color||PAL[k%6]};font-weight:700">&#9632; <tspan style="fill:var(--fg);font-weight:400">${esc(it.label)} ${(100*it.value/tot).toFixed(1)}%</tspan></text>`});
+  return s+"</svg>";}
+function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:short(lo+i*w),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+
+/* ===== lesson framework ===== */
+const L=[];
+function lesson(o){L.push(o)}
+let cur=0, done=new Set();
+const UKEY="dalab_"+(document.title||"x");
+try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e){}
+function go(i){
+  cur=Math.max(0,Math.min(L.length-1,i));
+  const l=L[cur],st=$("#stage");
+  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
+  $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
+  l.mount&&l.mount(st);
+  $$("[data-q]",st).forEach(b=>b.onclick=()=>{
+    const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
+    $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
+    b.classList.add(ok?"ok":"no");
+    $("#why-"+id,st).textContent=(ok?"Correct. ":"Not quite. ")+k.why;
+    if(ok){done.add(cur);try{localStorage.setItem(UKEY,JSON.stringify([...done]))}catch(e){}drawNav()}
+  });
+  drawNav(); window.scrollTo(0,0); st.focus({preventScroll:true});
+}
+function drawNav(){
+  $("#navlist").innerHTML=L.map((l,i)=>`<li class="${done.has(i)?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${done.has(i)?"&#10003;":i+1}</span><span class="t">${l.nav}</span></button></li>`).join("");
+  $$("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
+}
+/* theme + text size (for projectors) */
+(function(){
+  const R=document.documentElement;let theme=null,zi=0;const Z=[1,1.15,1.3];
+  try{theme=localStorage.getItem("dalab_theme")}catch(e){}
+  if(!theme)theme=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
+  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);
+    const b=$("#themeBtn"),z=$("#zoomBtn");if(b)b.innerHTML=theme==="dark"?"&#9728; Switch to LIGHT mode":"&#9790; Switch to DARK mode";if(z)z.textContent="Text size: "+Math.round(Z[zi]*100)+"%";}
+  window.addEventListener("DOMContentLoaded",()=>{
+    $("#themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("dalab_theme",theme)}catch(e){}apply()};
+    $("#zoomBtn").onclick=()=>{zi=(zi+1)%3;apply()};apply();
+    document.addEventListener("keydown",e=>{if(e.altKey&&(e.key==="d"||e.key==="D")){$("#themeBtn").click()}});
+  });
+  apply();
+})();
+
+/* ===== IPSR common: tiny Python-expression engine + stepper ===== */
+class PyErr extends Error{constructor(t,m){super(m);this.pt=t}}
+const V=(v,k)=>({v,k});
+const fRepr=n=>{if(Number.isNaN(n))return"nan";if(!isFinite(n))return n>0?"inf":"-inf";let s=String(n);if(/^-?\d+$/.test(s))s+=".0";return s};
+function pyRepr(x){if(x.k==="str")return"'"+x.v.replace(/'/g,"\\'")+"'";if(x.k==="bool")return x.v?"True":"False";if(x.k==="NoneType")return"None";if(x.k==="float")return fRepr(x.v);if(x.k==="list")return"["+x.v.map(pyRepr).join(", ")+"]";return String(x.v)}
+const pyStr=x=>x.k==="str"?x.v:pyRepr(x);
+const isNum=x=>x.k==="int"||x.k==="float"||x.k==="bool";
+const nv=x=>x.k==="bool"?V(+x.v,"int"):x;
+const truthy=x=>x.k==="str"?x.v.length>0:x.k==="NoneType"?false:x.k==="list"?x.v.length>0:!!x.v;
+function tokenize(src){
+  const re=/\s*(?:(\d+\.\d*|\.\d+|\d+)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|([A-Za-z_]\w*)|(\*\*|\/\/|==|!=|<=|>=|[-+*\/%<>(),=\[\]]))/y;
+  const out=[];let i=0;src=src.trim();
+  while(i<src.length){re.lastIndex=i;const m=re.exec(src);if(!m)throw new PyErr("SyntaxError","invalid syntax near '"+src.slice(i,i+6)+"'");
+    if(m[1]!==undefined)out.push({t:"num",v:m[1]});else if(m[2]!==undefined)out.push({t:"str",v:m[2].slice(1,-1)});
+    else if(m[3]!==undefined)out.push({t:["and","or","not","True","False","None"].includes(m[3])?"kw":"name",v:m[3]});else out.push({t:"op",v:m[4]});
+    i=re.lastIndex;while(src[i]===" ")i++}
+  return out}
+function parsePy(src){
+  const T=tokenize(src);let p=0;const pk=()=>T[p],nx=()=>T[p++];
+  const isOp=v=>pk()&&pk().t==="op"&&pk().v===v, isKw=v=>pk()&&pk().t==="kw"&&pk().v===v;
+  function or(){let l=and();while(isKw("or")){nx();l={t:"or",l,r:and()}}return l}
+  function and(){let l=not();while(isKw("and")){nx();l={t:"and",l,r:not()}}return l}
+  function not(){if(isKw("not")){nx();return{t:"un",op:"not",x:not()}}return cmp()}
+  function cmp(){let l=add();const ops=[],items=[l];while(pk()&&pk().t==="op"&&["==","!=","<",">","<=",">="].includes(pk().v)){ops.push(nx().v);items.push(add())}return ops.length?{t:"cmp",ops,items}:l}
+  function add(){let l=mul();while(isOp("+")||isOp("-")){const op=nx().v;l={t:"bin",op,l,r:mul()}}return l}
+  function mul(){let l=unary();while(isOp("*")||isOp("/")||isOp("//")||isOp("%")){const op=nx().v;l={t:"bin",op,l,r:unary()}}return l}
+  function unary(){if(isOp("-")||isOp("+")){const op=nx().v;return{t:"un",op,x:unary()}}return pow()}
+  function pow(){const b=atom();if(isOp("**")){nx();return{t:"bin",op:"**",l:b,r:unary()}}return b}
+  function atom(){const k=nx();if(!k)throw new PyErr("SyntaxError","unexpected end of expression");
+    if(k.t==="num")return{t:"val",val:/[.]/.test(k.v)?V(parseFloat(k.v),"float"):V(parseInt(k.v,10),"int")};
+    if(k.t==="str")return{t:"val",val:V(k.v,"str")};
+    if(k.t==="kw"){if(k.v==="True")return{t:"val",val:V(true,"bool")};if(k.v==="False")return{t:"val",val:V(false,"bool")};if(k.v==="None")return{t:"val",val:V(null,"NoneType")};throw new PyErr("SyntaxError","invalid syntax")}
+    if(k.t==="name"){if(isOp("(")){nx();const args=[];if(!isOp(")")){args.push(or());while(isOp(",")){nx();args.push(or())}}if(!isOp(")"))throw new PyErr("SyntaxError","'(' was never closed");nx();return{t:"call",name:k.v,args}}return{t:"name",name:k.v}}
+    if(k.t==="op"&&k.v==="("){const e=or();if(!isOp(")"))throw new PyErr("SyntaxError","'(' was never closed");nx();return e}
+    if(k.t==="op"&&k.v==="["){const items=[];if(!isOp("]")){items.push(or());while(isOp(",")){nx();items.push(or())}}if(!isOp("]"))throw new PyErr("SyntaxError","'[' was never closed");nx();return{t:"list",items}}
+    throw new PyErr("SyntaxError","invalid syntax near '"+k.v+"'")}
+  const e=or();if(p<T.length)throw new PyErr("SyntaxError","invalid syntax near '"+T[p].v+"'");return e}
+const tn=x=>x.k;
+function applyBin(op,a,b){
+  const A=isNum(a)?nv(a):a,B=isNum(b)?nv(b):b;
+  if(op==="+"){if(isNum(A)&&isNum(B))return V(A.v+B.v,A.k==="float"||B.k==="float"?"float":"int");
+    if(A.k==="str"&&B.k==="str")return V(A.v+B.v,"str");
+    if(A.k==="list"&&B.k==="list")return V(A.v.concat(B.v),"list");
+    if(A.k==="str")throw new PyErr("TypeError",`can only concatenate str (not "${tn(b)}") to str`);
+    throw new PyErr("TypeError",`unsupported operand type(s) for +: '${tn(a)}' and '${tn(b)}'`)}
+  if(op==="*"){if(isNum(A)&&isNum(B))return V(A.v*B.v,A.k==="float"||B.k==="float"?"float":"int");
+    if(A.k==="str"&&B.k==="int")return V(B.v>0?A.v.repeat(B.v):"","str");if(B.k==="str"&&A.k==="int")return V(A.v>0?B.v.repeat(A.v):"","str");
+    throw new PyErr("TypeError",`can't multiply sequence by non-int of type '${isNum(A)?tn(A):tn(B)}'`.replace(/^can't.*$/,m=>(A.k==="str"||B.k==="str")?m:`unsupported operand type(s) for *: '${tn(a)}' and '${tn(b)}'`))}
+  if(!isNum(A)||!isNum(B))throw new PyErr("TypeError",`unsupported operand type(s) for ${op}: '${tn(a)}' and '${tn(b)}'`);
+  const fl=A.k==="float"||B.k==="float";
+  if(op==="-")return V(A.v-B.v,fl?"float":"int");
+  if(op==="/"){if(B.v===0)throw new PyErr("ZeroDivisionError","division by zero");return V(A.v/B.v,"float")}
+  if(op==="//"){if(B.v===0)throw new PyErr("ZeroDivisionError",fl?"float floor division by zero":"integer division or modulo by zero");return V(Math.floor(A.v/B.v),fl?"float":"int")}
+  if(op==="%"){if(B.v===0)throw new PyErr("ZeroDivisionError",fl?"float modulo by zero":"integer modulo by zero");return V(A.v-B.v*Math.floor(A.v/B.v),fl?"float":"int")}
+  if(op==="**"){if(A.v===0&&B.v<0)throw new PyErr("ZeroDivisionError","0.0 cannot be raised to a negative power");const r=Math.pow(A.v,B.v);return V(r,(fl||B.v<0)?"float":"int")}
+  throw new PyErr("SyntaxError","unknown operator")}
+function applyCmp(op,a,b){const A=isNum(a)?nv(a):a,B=isNum(b)?nv(b):b;
+  if(op==="=="||op==="!="){let eq=(isNum(A)&&isNum(B))||(A.k===B.k)?(A.k==="list"?JSON.stringify(A.v)===JSON.stringify(B.v):A.v===B.v):false;return V(op==="=="?eq:!eq,"bool")}
+  if((isNum(A)&&isNum(B))||(A.k==="str"&&B.k==="str")){const x=A.v,y=B.v;return V(op==="<"?x<y:op===">"?x>y:op==="<="?x<=y:x>=y,"bool")}
+  throw new PyErr("TypeError",`'${op}' not supported between instances of '${tn(a)}' and '${tn(b)}'`)}
+const FUN={abs:a=>V(Math.abs(a[0].v),a[0].k==="bool"?"int":a[0].k),
+  round:a=>{const d=a[1]?a[1].v:0,f=Math.pow(10,d);let r=Math.round(a[0].v*f)/f;const x=a[0].v*f;if(Math.abs(x%1)===0.5)r=(Math.floor(x)%2===0?Math.floor(x):Math.ceil(x))/f;return a[1]?V(r,a[0].k):V(r,"int")},
+  int:a=>{if(a[0].k==="str"){if(!/^\s*[-+]?\d+\s*$/.test(a[0].v))throw new PyErr("ValueError",`invalid literal for int() with base 10: '${a[0].v}'`);return V(parseInt(a[0].v,10),"int")}return V(Math.trunc(a[0].v),"int")},
+  float:a=>{if(a[0].k==="str"){if(isNaN(parseFloat(a[0].v)))throw new PyErr("ValueError",`could not convert string to float: '${a[0].v}'`);return V(parseFloat(a[0].v),"float")}return V(+a[0].v,"float")},
+  str:a=>V(pyStr(a[0]),"str"),len:a=>{if(a[0].k!=="str"&&a[0].k!=="list")throw new PyErr("TypeError",`object of type '${tn(a[0])}' has no len()`);return V(a[0].v.length,"int")},
+  max:a=>a.reduce((m,x)=>applyCmp(">",x,m).v?x:m),min:a=>a.reduce((m,x)=>applyCmp("<",x,m).v?x:m),
+  bool:a=>V(truthy(a[0]),"bool"),type:a=>V(`<class '${a[0].k==="NoneType"?"NoneType":a[0].k}'>`,"str")};
+function evalPy(n,env,ctx){
+  switch(n.t){
+    case"val":return n.val;
+    case"name":if(env&&n.name in env)return env[n.name];throw new PyErr("NameError",`name '${n.name}' is not defined`);
+    case"list":return V(n.items.map(i=>evalPy(i,env,ctx)),"list");
+    case"un":{const x=evalPy(n.x,env,ctx);if(n.op==="not")return V(!truthy(x),"bool");if(!isNum(x))throw new PyErr("TypeError",`bad operand type for unary ${n.op}: '${tn(x)}'`);const y=nv(x);return n.op==="-"?V(-y.v,y.k):y}
+    case"bin":return applyBin(n.op,evalPy(n.l,env,ctx),evalPy(n.r,env,ctx));
+    case"and":{const l=evalPy(n.l,env,ctx);return truthy(l)?evalPy(n.r,env,ctx):l}
+    case"or":{const l=evalPy(n.l,env,ctx);return truthy(l)?l:evalPy(n.r,env,ctx)}
+    case"cmp":{let l=evalPy(n.items[0],env,ctx);for(let i=0;i<n.ops.length;i++){const r=evalPy(n.items[i+1],env,ctx);if(!applyCmp(n.ops[i],l,r).v)return V(false,"bool");l=r}return V(true,"bool")}
+    case"call":{const args=n.args.map(a=>evalPy(a,env,ctx));if(n.name==="print"){if(ctx)ctx.out.push(args.map(pyStr).join(" "));return V(null,"NoneType")}
+      if(!FUN[n.name])throw new PyErr("NameError",`name '${n.name}' is not defined`);try{return FUN[n.name](args)}catch(e){if(e instanceof PyErr)throw e;throw new PyErr("TypeError","bad arguments for "+n.name+"()")}}
+  }}
+function stripComment(s){let q=null;for(let i=0;i<s.length;i++){const c=s[i];if(q){if(c===q)q=null}else if(c==='"'||c==="'")q=c;else if(c==="#")return s.slice(0,i)}return s}
+/* run a few lines like a notebook cell; returns {out:[lines], val, err} */
+function runCell(src,env){const ctx={out:[]};let last=null;
+  try{for(const raw of src.split("\n")){const line=stripComment(raw).trim();if(!line)continue;
+    const m=line.match(/^([A-Za-z_]\w*)\s*=(?!=)\s*(.+)$/);
+    if(m){env[m[1]]=evalPy(parsePy(m[2]),env,ctx);last=null}else{const v=evalPy(parsePy(line),env,ctx);last=/^print\s*\(/.test(line)?null:v}}
+    return{out:ctx.out,val:last}}
+  catch(e){if(e instanceof PyErr)return{out:ctx.out,err:e.pt+": "+e.message,et:e.pt};throw e}}
+/* printing an AST with minimal brackets, for step-by-step evaluation */
+const PREC={or:1,and:2,not:3,cmp:4,bin:{"+":6,"-":6,"*":7,"/":7,"//":7,"%":7,"**":9},un:8,atom:10};
+function prc(n){if(n.t==="or")return 1;if(n.t==="and")return 2;if(n.t==="un")return n.op==="not"?3:8;if(n.t==="cmp")return 4;if(n.t==="bin")return PREC.bin[n.op];return 10}
+function astStr(n,hl){
+  const wrap=(c,min,strict)=>{const s=astStr(c,hl);const p=prc(c);return(p<min||(strict&&p===min))?"("+s+")":s};
+  let s;
+  switch(n.t){
+    case"val":s=esc(pyRepr(n.val));break;
+    case"name":s=esc(n.name);break;
+    case"list":s="["+n.items.map(i=>astStr(i,hl)).join(", ")+"]";break;
+    case"call":s=esc(n.name)+"("+n.args.map(a=>astStr(a,hl)).join(", ")+")";break;
+    case"un":s=(n.op==="not"?"not ":n.op)+wrap(n.x,n.op==="not"?3:8,false);break;
+    case"bin":{const p=prc(n);s=n.op==="**"?wrap(n.l,p,true)+" ** "+wrap(n.r,8,false):wrap(n.l,p,false)+" "+esc(n.op)+" "+wrap(n.r,p,true);break}
+    case"and":s=wrap(n.l,2,false)+" and "+wrap(n.r,2,true);break;
+    case"or":s=wrap(n.l,1,false)+" or "+wrap(n.r,1,true);break;
+    case"cmp":s=n.items.map((x,i)=>wrap(x,5,false)+(i<n.ops.length?" "+esc(n.ops[i])+" ":"")).join("");break;
+  }
+  return n===hl?`<span class="mk">${s}</span>`:s}
+/* find next reducible node (postorder, left first, honours short-circuit); returns {node, replace(fn)} via path */
+function nextReducible(n,env){
+  const isV=x=>x.t==="val";
+  function rec(n){
+    if(isV(n))return null;
+    if(n.t==="name")return{node:n,note:"look up the value of the name"};
+    if(n.t==="and"||n.t==="or"){
+      if(!isV(n.l)){const r=rec(n.l);if(r)return r;return null}
+      const sc=n.t==="and"?!truthy(n.l.val):truthy(n.l.val);
+      if(sc)return{node:n,short:true,note:"short-circuit: the left side already decides, the right side is NOT evaluated"};
+      if(!isV(n.r)){const r=rec(n.r);if(r)return r;return null}
+      return{node:n,note:"left side did not decide, so the right side is used"}}
+    const kids=n.t==="bin"?[n.l,n.r]:n.t==="un"?[n.x]:n.t==="cmp"?n.items:n.t==="call"?n.args:n.t==="list"?n.items:[];
+    for(const k of kids){const r=rec(k);if(r)return r}
+    return{node:n,note:n.t==="bin"?"do "+n.op:n.t==="un"?"apply "+n.op:n.t==="cmp"?"compare":n.t==="call"?"call "+n.name+"()":"build the list"}}
+  return rec(n)}
+function replaceNode(root,target,val){if(root===target)return{t:"val",val};
+  for(const k of["l","r","x"])if(root[k])root[k]=replaceNode(root[k],target,val);
+  for(const k of["items","args"])if(root[k])root[k]=root[k].map(c=>replaceNode(c,target,val));return root}
+function evalSteps(src,env){
+  let ast=parsePy(src);const steps=[{html:astStr(ast),note:"start: the whole expression"}];let guard=0;
+  while(ast.t!=="val"&&guard++<60){const r=nextReducible(ast,env);if(!r)break;
+    const before=astStr(ast,r.node);
+    let v;const ctx={out:[]};
+    if(r.short)v=r.node.l.val;else if(r.node.t==="and"||r.node.t==="or")v=r.node.t==="and"?(truthy(r.node.l.val)?r.node.r.val:r.node.l.val):(truthy(r.node.l.val)?r.node.l.val:r.node.r.val);
+    else if(r.node.t==="name"){v=evalPy(r.node,env,ctx)}
+    else{const tmp=JSON.parse(JSON.stringify(r.node));v=evalPy(r.node,env,ctx)}
+    ast=replaceNode(ast,r.node,v);
+    steps.push({html:astStr(ast),before,note:r.note+" = "+esc(pyRepr(v))});}
+  return{steps,result:ast.val}}
+/* generic stepper widget */
+function stepper(root,sel,getSteps,draw){
+  const box=$(sel,root);let i=0,steps=getSteps();
+  box.innerHTML=`<div class="row"><button class="btn sm" type="button" data-a="b">Back</button><button class="btn pri sm" type="button" data-a="n">Step</button><button class="btn sm" type="button" data-a="a">Run all</button><button class="btn sm" type="button" data-a="r">Reset</button><span class="small muted" data-a="c"></span></div><div data-a="v"></div>`;
+  const v=$("[data-a=v]",box),c=$("[data-a=c]",box);
+  function show(){c.textContent=`step ${i} of ${steps.length-1}`;v.innerHTML=draw(steps[i],i,steps)}
+  $("[data-a=b]",box).onclick=()=>{if(i>0){i--;show()}};
+  $("[data-a=n]",box).onclick=()=>{if(i<steps.length-1){i++;show()}};
+  $("[data-a=a]",box).onclick=()=>{i=steps.length-1;show()};
+  $("[data-a=r]",box).onclick=()=>{i=0;show()};
+  show();
+  return{reset(){steps=getSteps();i=0;show()}}}
+const chips=(id,items,sel)=>`<div id="${id}">`+items.map((x,k)=>`<button type="button" class="opt2" data-v="${esc(x)}" aria-pressed="${k===sel}">${esc(x)}</button>`).join("")+`</div>`;
+function bindChips(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)})}
+/* seeded random, so every run of a demo is repeatable */
+function rng(seed){let s=seed>>>0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+const q2=n=>String(n).padStart(2," ");
+
+const CODE=s=>`<div class="code">${esc(s)}</div>`;
+const KV=o=>`<div class="kv">`+Object.entries(o).map(([k,v])=>`<span>${esc(k)} = ${esc(v)}</span>`).join("")+`</div>`;
+
+/* ===== IPSR Unit 1: Python Basics ===== */
+const NBREF=n=>`<span class="small muted">Notebook: IPSR_Unit1_Lab.ipynb, sections ${n}</span>`;
+
+/* 1 syntax, comments, Jupyter */
+lesson({nav:"Syntax, comments, Jupyter",title:"Syntax, comments and running code in Jupyter",syl:"Basic syntax, comments in the program; Running a script on Jupyter",
+html:()=>`<p class="lead">Python code is read line by line. <b>Indentation</b> (4 spaces) shows which lines belong together. A <b>comment</b> starts with <code>#</code>; Python ignores it, so use comments to tell the next reader <i>why</i>.</p>
+<div class="card"><h3>Anatomy of a few lines</h3>
+<div class="cmark"><span class="ln"><b># Comment: Python skips this line</b></span><span class="ln">marks = 82            <b># assignment: the name marks now holds 82</b></span><span class="ln">if marks &gt;= 40:       <b># the colon opens a block</b></span><span class="ln">    print("Pass")    <b># 4 spaces: this line is INSIDE the if</b></span><span class="ln">print("Done")         <b># no spaces: runs always</b></span></div>
+<p class="small muted">Try removing the 4 spaces in a notebook: you get <code>IndentationError: expected an indented block</code>.</p></div>
+<div class="card try"><h3>Try it: a notebook that remembers</h3>
+<p class="small muted">A notebook is a list of <b>cells</b>. The <b>kernel</b> remembers variables between cells, in the order you <i>run</i> them, not the order they appear. Edit any cell and press Run. Then try: restart the kernel and run Cell 2 first.</p>
+<div id="nbcells"></div>
+<div class="row"><button class="btn pri" type="button" id="runall">Run all cells (top to bottom)</button><button class="btn" type="button" id="restart">Restart kernel</button></div>
+<div><b class="small">Kernel memory:</b><div id="kmem" class="kv"></div></div></div>
+${quiz("i1q1","Cell 2 uses x, which Cell 1 creates. You restart the kernel and run only Cell 2. What happens?",["It prints 20 as before","NameError: name 'x' is not defined","It prints 0"],1,"Variables live in the kernel. A restart clears them, so x does not exist until Cell 1 runs again. 'Restart & Run All' is the safe way to check a notebook.")}
+${NBREF("1.1 and 1.2")}`,
+mount(r){const cells=["x = 10   # make a variable","y = x * 2\nprint(y)   # uses x from the cell above","# change x for later cells\nx = 100"];let env={},count=0;const ex=[0,0,0],outs=[null,null,null];
+  function draw(){ $("#nbcells",r).innerHTML=cells.map((c,i)=>`<div class="cell"><div class="hd"><span>In [${ex[i]||" "}]:</span><button class="btn sm" type="button" data-run="${i}">Run</button><span>Cell ${i+1}</span></div><div class="bd"><textarea class="py" data-i="${i}" spellcheck="false">${esc(c)}</textarea></div>${outs[i]?`<div class="out ${outs[i].err?"err":"ok"}">${esc(outs[i].txt)}</div>`:""}</div>`).join("");
+    $$("textarea",r).forEach(t=>t.oninput=()=>{cells[+t.dataset.i]=t.value});
+    $$("[data-run]",r).forEach(b=>b.onclick=()=>run(+b.dataset.run));
+    $("#kmem",r).innerHTML=Object.keys(env).length?Object.entries(env).map(([k,v])=>`<span>${esc(k)} = ${esc(pyRepr(v))}</span>`).join(""):'<span class="muted">(empty)</span>'}
+  function run(i){cells[i]=$(`textarea[data-i="${i}"]`,r).value;const res=runCell(cells[i],env);ex[i]=++count;
+    outs[i]=res.err?{err:1,txt:res.err}:{txt:(res.out.join("\n")+(res.val?((res.out.length?"\n":"")+"Out: "+pyRepr(res.val)):"")).trim()||"(no output)"};draw()}
+  $("#runall",r).onclick=()=>{cells.forEach((_,i)=>{cells[i]=$(`textarea[data-i="${i}"]`,r).value});for(let i=0;i<3;i++)run(i)};
+  $("#restart",r).onclick=()=>{env={};count=0;ex.fill(0);outs.fill(null);draw()};draw()}});
+
+/* 2 types and variables */
+lesson({nav:"Data types, variables",title:"Data types, variables and immutability",syl:"Data types, numerical types; Variables, assignments, immutable variables",
+html:()=>`<p class="lead">Every value has a <b>type</b>: <code>int</code> (whole), <code>float</code> (decimal), <code>str</code> (text), <code>bool</code> (True/False). A <b>variable</b> is a name that points to a value. Numbers, strings and tuples are <b>immutable</b> (cannot be changed in place); lists are <b>mutable</b>.</p>
+<div class="card try"><h3>Try it: type explorer</h3><p class="small muted">Click a value, or type your own Python expression and press Check.</p>
+${chips("tpresets",["7","3.14","'hi'","True","0.1 + 0.2","10 / 2","10 // 2","None","[1, 2]","'5' * 3"],-1)}
+<div class="row"><input type="text" id="texp" class="wide" value="0.1 + 0.2" style="max-width:340px"><button class="btn pri" type="button" id="tgo">Check</button></div><div id="tout"></div></div>
+<div class="card try"><h3>Try it: names and values</h3><p class="small muted">Step through each scenario. Boxes are values in memory; pills are variable names pointing to them.</p>
+${chips("scen",["Numbers (immutable)","Lists (mutable)","Strings (immutable)"],0)}<div id="nvst"></div></div>
+${quiz("i1q2","After <code>a = 5</code>, <code>b = a</code>, <code>a = a + 1</code>, what are a and b?",["a = 6, b = 6","a = 6, b = 5","a = 5, b = 6"],1,"Numbers are immutable. a + 1 makes a new value 6 and a points to it. b still points to the old 5.")}
+${quiz("i1q2b","After <code>p = [1, 2]</code>, <code>q = p</code>, <code>q.append(3)</code>, what is p?",["[1, 2]","[1, 2, 3]","Error"],1,"Lists are mutable and p and q are two names for the SAME list, so the change shows through both. Use q = p.copy() to get a separate list.")}
+${NBREF("1.3 and 1.4")}`,
+mount(r){const info={int:"whole number, any size",float:"decimal number, stored in binary so some values are approximate",str:"text, immutable",bool:"True or False, a kind of int (True is 1)",NoneType:"the 'nothing' value",list:"ordered, changeable collection"};
+  function chk(){const res=runCell($("#texp",r).value,{});$("#tout",r).innerHTML=res.err?`<div class="out err">${esc(res.err)}</div>`:`<div class="grid3"><div class="kpi"><span class="small muted">Value (repr)</span><b>${esc(pyRepr(res.val))}</b></div><div class="kpi"><span class="small muted">type()</span><b>${esc(res.val.k)}</b></div><div class="kpi"><span class="small muted">Meaning</span><span class="small">${esc(info[res.val.k]||"")}</span></div></div>`+
+    (/0\.1\s*\+\s*0\.2/.test($("#texp",r).value)?`<div class="callout k small">Floats are binary approximations, like 1/3 in decimal. Never test floats with <code>==</code>; use <code>round(x, 2)</code> or <code>abs(a - b) &lt; 1e-9</code>.</div>`:"")+((/\//.test($("#texp",r).value)&&!/\/\//.test($("#texp",r).value))?`<div class="callout k small small">Plain <code>/</code> always gives a float, even for 10 / 2 = 5.0. Use <code>//</code> for a whole-number result.</div>`:"")}
+  bindChips(r,"tpresets",v=>{$("#texp",r).value=v;chk()});$("#tgo",r).onclick=chk;$("#texp",r).onkeydown=e=>{if(e.key==="Enter")chk()};chk();
+  const S={"Numbers (immutable)":[
+     {code:"a = 5",objs:{1:"5"},names:{a:1},note:"a points to the value 5."},
+     {code:"b = a",objs:{1:"5"},names:{a:1,b:1},note:"b is a second name for the same 5. Nothing is copied."},
+     {code:"a = a + 1",objs:{1:"5",2:"6"},names:{a:2,b:1},note:"Numbers are immutable. a + 1 builds a NEW value 6 and a moves to it. b still sees 5."}],
+   "Lists (mutable)":[
+     {code:"p = [1, 2]",objs:{1:"[1, 2]"},names:{p:1},note:"p points to a list."},
+     {code:"q = p",objs:{1:"[1, 2]"},names:{p:1,q:1},note:"q is another name for the SAME list (an alias)."},
+     {code:"q.append(3)",objs:{1:"[1, 2, 3]"},names:{p:1,q:1},note:"Lists are mutable: the list itself changed, so p shows [1, 2, 3] too."},
+     {code:"q = q + [4]",objs:{1:"[1, 2, 3]",2:"[1, 2, 3, 4]"},names:{p:1,q:2},note:"+ builds a new list; q moves to it and p keeps the old one."}],
+   "Strings (immutable)":[
+     {code:"s = \"cat\"",objs:{1:"'cat'"},names:{s:1},note:"s points to the string 'cat'."},
+     {code:"s[0] = \"b\"",objs:{1:"'cat'"},names:{s:1},err:"TypeError: 'str' object does not support item assignment",note:"Strings cannot be changed in place."},
+     {code:"s = \"b\" + s[1:]",objs:{1:"'cat'",2:"'bat'"},names:{s:2},note:"Build a new string. The old 'cat' is no longer used."}]};
+  let st=null;function load(k){st=stepper(r,"#nvst",()=>S[k],(s,i)=>`${CODE(s.code)}${s.err?`<div class="out err">${esc(s.err)}</div>`:""}<div class="boxes">${Object.entries(s.objs).map(([id,l])=>`<div class="bx"><small>#${id}</small>${esc(l)}</div>`).join("")}</div><div class="kv">${Object.entries(s.names).map(([n,id])=>`<span>${n} &rarr; #${id}</span>`).join("")}</div><div class="callout k small">${esc(s.note)}</div>`)}
+  load("Numbers (immutable)");bindChips(r,"scen",load)}});
+
+/* 3 operators */
+lesson({hero:true,nav:"Operators and expressions",title:"Arithmetic operators and expressions",syl:"Arithmetic operators and expressions",
+html:()=>`<p class="lead">Operators: <code>+ - * / // % **</code>. When an expression has several, Python follows <b>precedence</b>: <code>**</code> first, then unary minus, then <code>* / // %</code>, then <code>+ -</code>. Equal ranks go left to right (except <code>**</code>, which goes right to left). Brackets always win.</p>
+<div class="card try"><h3>Try it: watch Python evaluate</h3><p class="small muted">Type any expression (numbers, + - * / // % ** and brackets). Press Step to see which operation Python does next, highlighted.</p>
+${chips("epresets",["2 + 3 * 4 ** 2 - 10 // 3","-2 ** 2","(-2) ** 2","2 ** 3 ** 2","7 // 2 + 7 % 2","-7 // 2","0.1 + 0.2","100 - 20 - 5"],0)}
+<div class="row"><input type="text" id="eexp" class="wide" style="max-width:420px" value="2 + 3 * 4 ** 2 - 10 // 3"><button class="btn pri" type="button" id="ego">Load</button></div><div id="est"></div></div>
+<div class="card try"><h3>Try it: quotient and remainder</h3><div class="row">a = <input type="number" id="da" value="17" style="width:90px"> b = <input type="number" id="db" value="5" style="width:90px"></div><div id="dout"></div></div>
+<div class="card try"><h3>Worked example: seconds to hours, minutes, seconds</h3><div class="row">seconds = <input type="number" id="sec" value="3725" min="0" style="width:110px"></div><div id="secout"></div></div>
+<div class="grid2"><div class="card"><h3>Operator table</h3><table class="dt"><thead><tr><th>Op</th><th>Meaning</th><th>7 and 2</th></tr></thead><tbody><tr><td><code>+ -</code></td><td>add, subtract</td><td>9, 5</td></tr><tr><td><code>*</code></td><td>multiply</td><td>14</td></tr><tr><td><code>/</code></td><td>divide (float)</td><td>3.5</td></tr><tr><td><code>//</code></td><td>floor divide</td><td>3</td></tr><tr><td><code>%</code></td><td>remainder</td><td>1</td></tr><tr><td><code>**</code></td><td>power</td><td>49</td></tr></tbody></table></div>
+<div class="card"><h3>Habits that avoid bugs</h3><ul class="small"><li>Use brackets, even when not needed.</li><li><code>-2 ** 2</code> is <b>-4</b>, not 4.</li><li><code>//</code> rounds toward minus infinity: <code>-7 // 2</code> is -4.</li><li>Always: <code>a == (a // b) * b + a % b</code>.</li></ul></div></div>
+${quiz("i1q3","What is <code>2 + 3 * 4</code>?",["20","14","24"],1,"Multiplication has higher precedence: 3 * 4 = 12, then 2 + 12 = 14. Use (2 + 3) * 4 for 20.")}
+${NBREF("1.5")}`,
+mount(r){let ctl=null;function go(){const s=$("#eexp",r).value;try{evalSteps(s,{});}catch(e){$("#est",r).innerHTML=`<div class="out err">${esc(e instanceof PyErr?e.pt+": "+e.message:String(e))}</div>`;return}
+    ctl=stepper(r,"#est",()=>evalSteps(s,{}).steps,(st,i,all)=>`<div class="code" style="font-size:16px">${st.html}</div><div class="small" style="margin-top:6px">${i?esc("Step "+i+": ")+st.note:st.note}</div>${i===all.length-1?`<div class="callout k">Final value: <b>${st.html.replace(/<[^>]+>/g,"")}</b></div>`:""}`)}
+  bindChips(r,"epresets",v=>{$("#eexp",r).value=v;go()});$("#ego",r).onclick=go;$("#eexp",r).onkeydown=e=>{if(e.key==="Enter")go()};go();
+  function dq(){const a=+$("#da",r).value,b=+$("#db",r).value;if(!b){$("#dout",r).innerHTML=`<div class="out err">ZeroDivisionError: integer division or modulo by zero</div>`;return}
+    const q=Math.floor(a/b),m=a-b*q;$("#dout",r).innerHTML=`<div class="kv"><span>${a} / ${b} = ${fRepr(a/b)}</span><span>${a} // ${b} = ${q}</span><span>${a} % ${b} = ${m}</span></div><div class="callout k small">Check: (${q}) * ${b} + ${m} = <b>${q*b+m}</b> = a</div>`}
+  ["da","db"].forEach(i=>$("#"+i,r).oninput=dq);dq();
+  function sc(){const s=Math.max(0,Math.floor(+$("#sec",r).value||0)),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;$("#secout",r).innerHTML=CODE(`seconds = ${s}\nh = seconds // 3600            # ${h}\nm = (seconds % 3600) // 60     # ${m}\ns = seconds % 60               # ${x}`)+`<div class="callout k">${s} seconds = <b>${h} h ${m} min ${x} s</b></div>`}
+  $("#sec",r).oninput=sc;sc()}});
+
+/* 4 errors */
+const ERRS=[
+ {code:"score = 90\nprint(scroe)",line:2,type:"NameError",msg:"name 'scroe' is not defined. Did you mean: 'score'?",why:"You used a name that does not exist. Usually a typo, or the cell that creates it has not been run.",fix:"print(score)"},
+ {code:"total = 10 + '5'",line:1,type:"TypeError",msg:"unsupported operand type(s) for +: 'int' and 'str'",why:"You mixed a number and text. Python does not guess.",fix:"total = 10 + int('5')   # 15"},
+ {code:"print(10 / 0)",line:1,type:"ZeroDivisionError",msg:"division by zero",why:"Dividing by zero has no answer.",fix:"Check the divisor first:  if d != 0: print(10 / d)"},
+ {code:"marks = [70, 80, 90]\nprint(marks[3])",line:2,type:"IndexError",msg:"list index out of range",why:"A list of 3 items has indexes 0, 1, 2. Index 3 does not exist.",fix:"print(marks[2])   # or marks[-1] for the last item"},
+ {code:"d = {'a': 1}\nprint(d['b'])",line:2,type:"KeyError",msg:"'b'",why:"The key 'b' is not in the dictionary.",fix:"print(d.get('b', 0))   # safe lookup with a default"},
+ {code:"age = int('twenty')",line:1,type:"ValueError",msg:"invalid literal for int() with base 10: 'twenty'",why:"The right type (a string) but a value that cannot be converted.",fix:"age = int('20')"},
+ {code:"print('hi'",line:1,type:"SyntaxError",msg:"'(' was never closed",why:"Python cannot even read the code. Fix brackets, quotes and colons.",fix:"print('hi')"},
+ {code:"x = 7\nif x > 5\n    print(x)",line:2,type:"SyntaxError",msg:"expected ':'",why:"if, for, while and def lines must end with a colon.",fix:"if x > 5:\n    print(x)"}];
+lesson({nav:"Reading error messages",title:"Understanding error messages",syl:"Understanding error messages",
+html:()=>`<p class="lead">An error is Python telling you what went wrong. <b>Read from the bottom up</b>: the last line names the error and the reason; the line above points to the code. Eight common errors below. For each: guess the error type, then press Run.</p>
+<div id="errs"></div>
+<div class="callout i small"><b>Four-step habit:</b> 1) read the last line, 2) find the line number, 3) look at that line and the one above, 4) change one thing and run again.</div>
+${quiz("i1q4","Which error type means 'a name you used does not exist'?",["TypeError","NameError","KeyError"],1,"NameError. KeyError is for a dictionary key; TypeError is for the wrong kind of value.")}
+${NBREF("1.6")}`,
+mount(r){const types=[...new Set(ERRS.map(e=>e.type))];
+  $("#errs",r).innerHTML=ERRS.map((e,i)=>`<div class="card" data-e="${i}"><h3>Snippet ${i+1}</h3>${CODE(e.code)}<div class="small muted" style="margin:6px 0">Your guess:</div>${types.map(t=>`<button type="button" class="opt2" data-g="${t}">${t}</button>`).join("")}<div class="row"><button type="button" class="btn pri sm" data-run="${i}">Run it</button></div><div class="res"></div></div>`).join("");
+  $$("[data-e]",r).forEach(card=>{const i=+card.dataset.e,e=ERRS[i];let guess=null;
+    $$("[data-g]",card).forEach(b=>b.onclick=()=>{guess=b.dataset.g;$$("[data-g]",card).forEach(x=>x.setAttribute("aria-pressed",x===b))});
+    $("[data-run]",card).onclick=()=>{const tb=`Traceback (most recent call last):\n  Cell In[1], line ${e.line}\n    ${e.code.split("\n")[e.line-1].trim()}\n${e.type}: ${e.msg}`;
+      $(".res",card).innerHTML=`<div class="out err">${esc(tb)}</div><p class="small" style="margin:6px 0">${guess===null?"":guess===e.type?'<span class="tag g">Your guess was right</span> ':'<span class="tag b">Not this time</span> '}<b>${e.type}</b>. ${esc(e.why)}</p>${CODE("Fix:  "+e.fix)}`}})}});
+
+/* 5 conditions */
+lesson({hero:true,nav:"Conditions, if-else, short-circuit",title:"Conditions, boolean logic, if-else and short-circuit evaluation",syl:"Conditions, boolean logic, logical operators, ranges; Control statements: if-else; Short-circuit (lazy) evaluation",
+html:()=>`<p class="lead">A <b>condition</b> is an expression that gives <code>True</code> or <code>False</code>. Combine them with <code>and</code>, <code>or</code>, <code>not</code>. <code>if / elif / else</code> picks <b>one</b> branch: the first condition that is true. Python is <b>lazy</b>: <code>and</code>/<code>or</code> stop as soon as the answer is known.</p>
+<div class="card try"><h3>Truth table builder</h3><p class="small muted">Write any Python condition using P, Q, R (True/False).</p>${chips("tpre",["P and Q","P or Q","not P","P and not Q","not (P and Q)","not P or not Q","P or (Q and R)"],0)}
+<div class="row"><input type="text" id="tt" class="wide" style="max-width:360px" value="P and Q"><button class="btn pri" type="button" id="ttgo">Build table</button></div><div id="ttout"></div></div>
+<div class="card try"><h3>if / elif / else tracer</h3><div class="row">marks = <input type="range" id="mk" min="0" max="100" value="62"> <b id="mkv">62</b> ${seg("order",[["right","Strictest first (correct)"],["wrong","Weakest first (a trap)"]])}</div><div id="iftr"></div></div>
+<div class="card try"><h3>Short-circuit (lazy) evaluation</h3><p class="small muted">Python evaluates left to right and stops early. See why <code>y != 0 and 10 / y &gt; 2</code> is safe.</p>
+<div class="row">y = <input type="number" id="sy" value="0" style="width:80px"> expression: <input type="text" id="sx" class="wide" style="max-width:340px" value="y != 0 and 10 / y > 2"><button class="btn pri" type="button" id="scgo">Evaluate</button></div>${chips("scp",["y != 0 and 10 / y > 2","10 / y > 2 and y != 0","True or 10 / y > 2","False and 10 / y > 2"],0)}<div id="scout"></div></div>
+<div class="card try"><h3>Ranges and chained comparison</h3><div class="row">range(<input type="number" id="r1" value="2" style="width:70px">, <input type="number" id="r2" value="10" style="width:70px">, <input type="number" id="r3" value="3" style="width:70px">) &nbsp; x = <input type="number" id="rx" value="7" style="width:70px"></div><div id="rout"></div></div>
+${quiz("i1q5","<code>False and (1 / 0 &gt; 2)</code> gives:",["ZeroDivisionError","False","True"],1,"Short-circuit: the left side is False, so 'and' is already False and the right side is never evaluated.")}
+${NBREF("1.7, 1.8 and 1.10")}`,
+mount(r){function tt(){const ex=$("#tt",r).value;let ast;try{ast=parsePy(ex)}catch(e){$("#ttout",r).innerHTML=`<div class="out err">${esc(e.pt+": "+e.message)}</div>`;return}
+    const names=["P","Q","R"].filter(n=>new RegExp("\\b"+n+"\\b").test(ex));const rows=[];const N=names.length||1;
+    for(let k=0;k<(1<<N);k++){const env={};names.forEach((n,i)=>env[n]=V(!!(k&(1<<(N-1-i))),"bool"));let v;try{v=pyRepr(evalPy(ast,env,{out:[]}))}catch(e){v="error"}rows.push([names.map(n=>pyRepr(env[n])),v])}
+    $("#ttout",r).innerHTML=`<table class="tt"><thead><tr>${names.map(n=>`<th>${n}</th>`).join("")}<th>${esc(ex)}</th></tr></thead><tbody>${rows.map(rw=>`<tr>${rw[0].map(x=>`<td class="${x[0]}">${x}</td>`).join("")}<td class="${rw[1][0]}"><b>${rw[1]}</b></td></tr>`).join("")}</tbody></table>`}
+  bindChips(r,"tpre",v=>{$("#tt",r).value=v;tt()});$("#ttgo",r).onclick=tt;tt();
+  let ord="right";bindSeg(r,"order",v=>{ord=v;ifr()});
+  function ifr(){const m=+$("#mk",r).value;$("#mkv",r).textContent=m;
+    const branches=ord==="right"?[["m >= 75","A"],["m >= 60","B"],["m >= 40","C"]]:[["m >= 40","C"],["m >= 60","B"],["m >= 75","A"]];
+    let hit=-1;branches.forEach((b,i)=>{if(hit<0&&eval(b[0].replace("m",m)))hit=i});
+    const lines=branches.map((b,i)=>`<span class="ln ${hit===i?"on":""}">${i?"elif":"if"} ${b[0]}:  ${hit===i?"&larr; TRUE, this branch runs":i<hit||hit<0?"&larr; False, skip":"&larr; not reached"}\n    grade = "${b[1]}"</span>`).join("")+`<span class="ln ${hit<0?"on":""}">else:\n    grade = "Fail"</span>`;
+    const g=hit>=0?branches[hit][1]:"Fail";const correct=m>=75?"A":m>=60?"B":m>=40?"C":"Fail";
+    $("#iftr",r).innerHTML=`<div class="cmark">${lines}</div><div class="callout ${g===correct?"k":"i"}">grade = <b>${g}</b>${g!==correct?` &nbsp; <span class="tag b">Wrong! It should be ${correct}</span> The first true branch wins, so put the strictest test first.`:""}</div>`}
+  $("#mk",r).oninput=ifr;ifr();
+  function sc(){const y=+$("#sy",r).value;const env={y:V(y,Number.isInteger(y)?"int":"float")};const ex=$("#sx",r).value;
+    try{const res=evalSteps(ex,env);$("#scout",r).innerHTML=res.steps.map((s,i)=>`<div class="small"><span class="muted">${i?i+".":"start"}</span> <span class="t">${s.html}</span> <span class="muted">${i?"&mdash; "+s.note:""}</span></div>`).join("")}
+    catch(e){const m=e instanceof PyErr?e.pt+": "+e.message:String(e);$("#scout",r).innerHTML=`<div class="out err">${esc(m)}</div><p class="small">The right side ran when it should not have. Put the guard (<code>y != 0</code>) on the left.</p>`}}
+  bindChips(r,"scp",v=>{$("#sx",r).value=v;sc()});$("#scgo",r).onclick=sc;$("#sy",r).oninput=sc;sc();
+  function rg(){const a=+$("#r1",r).value,b=+$("#r2",r).value,s=+$("#r3",r).value||1;const L=[];if(s>0)for(let i=a;i<b&&L.length<60;i+=s)L.push(i);else for(let i=a;i>b&&L.length<60;i+=s)L.push(i);const x=+$("#rx",r).value;
+    $("#rout",r).innerHTML=`<div class="boxes">${L.map(v=>`<div class="bx ${v===x?"hi":""}">${v}</div>`).join("")||'<span class="muted">(empty)</span>'}</div><div class="small">list(range(${a}, ${b}, ${s})) stops <b>before</b> ${b}. &nbsp; <code>${a} &lt;= ${x} &lt; ${b}</code> is <b>${a<=x&&x<b?"True":"False"}</b></div>`}
+  ["r1","r2","r3","rx"].forEach(i=>$("#"+i,r).oninput=rg);rg()}});
+
+/* 6 loops */
+lesson({nav:"Loops",title:"Loops: for and while",syl:"Loops (for, while)",
+html:()=>`<p class="lead">A loop repeats a block. <code>for</code> goes through a known sequence; <code>while</code> repeats until its condition becomes False (so something inside must change). <code>break</code> leaves the loop, <code>continue</code> skips to the next round.</p>
+<div class="card try"><h3>Loop tracer</h3>${chips("lsc",["for + range","while (Collatz)","break and continue","nested loops"],0)}<div class="row" id="lparam"></div><div id="lst"></div></div>
+${quiz("i1q6","How many times does <code>for i in range(3, 8):</code> run?",["8","5","6"],1,"range(3, 8) gives 3, 4, 5, 6, 7: five numbers. The stop value is not included.")}
+${NBREF("1.9")}`,
+mount(r){const SC={
+ "for + range":{code:["total = 0","for i in range(1, N+1):","    total = total + i","print(total)"],param:{N:5},
+   steps(p){const s=[{line:0,vars:{total:0},out:[]}];let t=0;for(let i=1;i<=p.N;i++){s.push({line:1,vars:{i,total:t},out:[],n:"i takes the next value from range"});t+=i;s.push({line:2,vars:{i,total:t},out:[],n:`total = ${t-i} + ${i}`})}s.push({line:3,vars:{total:t},out:[String(t)],n:"loop finished, now print"});return s}},
+ "while (Collatz)":{code:["n = N","steps = 0","while n != 1:","    n = n // 2 if n % 2 == 0 else 3 * n + 1","    steps = steps + 1","print(steps)"],param:{N:6},
+   steps(p){let n=Math.max(1,p.N),c=0;const s=[{line:0,vars:{n},out:[]},{line:1,vars:{n,steps:0},out:[]}];let g=0;while(n!==1&&g++<80){s.push({line:2,vars:{n,steps:c},out:[],n:`n != 1 is True (n = ${n}), enter the loop`});n=n%2===0?n/2:3*n+1;s.push({line:3,vars:{n,steps:c},out:[],n:"n changes: the loop must make progress"});c++;s.push({line:4,vars:{n,steps:c},out:[]})}
+     s.push({line:2,vars:{n,steps:c},out:[],n:"n != 1 is False, the loop ends"});s.push({line:5,vars:{n,steps:c},out:[String(c)]});return s}},
+ "break and continue":{code:["for i in range(10):","    if i == 3: continue","    if i == 6: break","    print(i)"],param:{},
+   steps(){const s=[];const out=[];for(let i=0;i<10;i++){s.push({line:0,vars:{i},out:[...out]});s.push({line:1,vars:{i},out:[...out],n:i===3?"i == 3 is True: continue, skip the rest of this round":"i == 3 is False"});if(i===3)continue;s.push({line:2,vars:{i},out:[...out],n:i===6?"i == 6 is True: break, leave the loop":"i == 6 is False"});if(i===6)break;out.push(String(i));s.push({line:3,vars:{i},out:[...out]})}return s}},
+ "nested loops":{code:["for row in range(1, N+1):","    line = \"\"","    for col in range(row):","        line = line + \"*\"","    print(line)"],param:{N:4},
+   steps(p){const s=[],out=[];for(let row=1;row<=p.N;row++){let line="";s.push({line:0,vars:{row},out:[...out]});s.push({line:1,vars:{row,line:'""'},out:[...out]});for(let c=0;c<row;c++){s.push({line:2,vars:{row,col:c,line:`"${line}"`},out:[...out]});line+="*";s.push({line:3,vars:{row,col:c,line:`"${line}"`},out:[...out]})}out.push(line);s.push({line:4,vars:{row,line:`"${line}"`},out:[...out]})}return s}}};
+  let cur="for + range",P={};function load(k){cur=k;P={...SC[k].param};$("#lparam",r).innerHTML=Object.keys(P).map(n=>`${n} = <input type="number" min="1" max="12" value="${P[n]}" data-p="${n}" style="width:70px">`).join(" ")||'<span class="small muted">No settings for this one.</span>';
+    $$("[data-p]",r).forEach(i=>i.oninput=()=>{P[i.dataset.p]=Math.max(1,Math.min(12,+i.value||1));draw()});draw()}
+  function draw(){const sc=SC[cur];stepper(r,"#lst",()=>sc.steps(P),(s,i)=>`<div class="cmark">${sc.code.map((l,k)=>`<span class="ln ${k===s.line?"on":""}">${esc(l.replace(/N\b/g,P.N!=null?String(P.N):"N"))}</span>`).join("")}</div>${KV(s.vars)}${s.n?`<div class="small muted">${esc(s.n)}</div>`:""}${s.out.length?`<div class="out ok">${esc(s.out.join("\n"))}</div>`:""}`)}
+  bindChips(r,"lsc",load);load("for + range")}});
+
+/* 7 strings and files */
+lesson({nav:"Strings and text files",title:"Strings and text files",syl:"Strings and text files",
+html:()=>`<p class="lead">A string is a sequence of characters, numbered from 0 (and from -1 at the end). A slice <code>s[start:stop:step]</code> takes a piece; <code>stop</code> is not included. Files are read and written with <code>open()</code> and the <code>with</code> block closes them for you.</p>
+<div class="card try"><h3>Slice visualiser</h3><div class="row">s = <input type="text" id="ss" value="Problem Solving" style="width:210px"> start <input type="text" id="s1" value="" style="width:55px" placeholder="blank"> stop <input type="text" id="s2" value="7" style="width:55px" placeholder="blank"> step <input type="text" id="s3" value="" style="width:55px" placeholder="blank"></div><div id="sout"></div></div>
+<div class="card try"><h3>String methods</h3>${chips("sm",["upper()","lower()","split()","replace('o','0')","find('S')","strip()","title()","[::-1] (reverse)","len()"],0)}<div id="smout"></div></div>
+<div class="card try"><h3>A text file, simulated</h3><p class="small muted">The box is a file on disk. Choose a mode and press Do it. Mode <b>w</b> erases the file first; <b>a</b> adds to the end; <b>r</b> reads.</p>
+<div class="row"><input type="text" id="ft" value="line four" style="width:200px"> ${seg("fm",[["w","write: 'w'"],["a","append: 'a'"],["r","read: 'r'"]])} <button class="btn pri" type="button" id="fdo">Do it</button> <button class="btn" type="button" id="fre">Reset file</button></div><div class="grid2"><div><b class="small">notes.txt on disk</b><div class="out" id="fdisk" style="border:1px solid var(--line);border-radius:6px;min-height:80px"></div></div><div><b class="small">Code and result</b><div id="fres"></div></div></div></div>
+${quiz("i1q7","<code>'Python'[1:4]</code> is:",["'Pyt'","'yth'","'ytho'"],1,"Index 1 is 'y', up to but not including index 4: 'y', 't', 'h'.")}
+${NBREF("1.11")}`,
+mount(r){function sl(){const s=$("#ss",r).value,n=s.length,rd=id=>{const v=$("#"+id,r).value.trim();return v===""?null:parseInt(v,10)};
+    const a=rd("s1"),b=rd("s2"),st=rd("s3")??1;if(st===0){$("#sout",r).innerHTML='<div class="out err">ValueError: slice step cannot be zero</div>';return}
+    const norm=(v,def)=>{if(v===null)return def;if(v<0)v+=n;return v};let idx=[];
+    if(st>0){let i=norm(a,0),j=norm(b,n);i=Math.max(0,Math.min(n,i));j=Math.max(0,Math.min(n,j));for(let k=i;k<j;k+=st)idx.push(k)}else{let i=norm(a,n-1),j=b===null?-1:norm(b,-1);i=Math.min(n-1,i);for(let k=i;k>j&&k>=0;k+=st)idx.push(k)}
+    const res=idx.map(k=>s[k]).join("");
+    $("#sout",r).innerHTML=`<div class="boxes">${[...s].map((c,k)=>`<div class="bx ${idx.includes(k)?"hi":""}"><small>${k}</small>${c===" "?"&middot;":esc(c)}<small>${k-n}</small></div>`).join("")}</div>${CODE(`s[${$("#s1",r).value}:${$("#s2",r).value}${$("#s3",r).value?":"+$("#s3",r).value:""}]`)}<div class="callout k">Result: <b>'${esc(res)}'</b></div>`}
+  ["ss","s1","s2","s3"].forEach(i=>$("#"+i,r).oninput=sl);sl();
+  function sm(m){const s="  hello World, solving problems  ";const base=$("#ss",r).value;const R={"upper()":base.toUpperCase(),"lower()":base.toLowerCase(),"split()":JSON.stringify(base.split(/\s+/).filter(Boolean)).replace(/"/g,"'").replace(/,/g,", "),"replace('o','0')":base.replace(/o/g,"0"),"find('S')":String(base.indexOf("S")),"strip()":null,"title()":base.replace(/\w\S*/g,w=>w[0].toUpperCase()+w.slice(1).toLowerCase()),"[::-1] (reverse)":[...base].reverse().join(""),"len()":String(base.length)};
+    $("#smout",r).innerHTML=m==="strip()"?CODE(`'${s}'.strip()`)+`<div class="callout k">Result: <b>'${esc(s.trim())}'</b> (spaces at both ends removed)</div>`:CODE(`s = '${base}'\ns.${m.startsWith("[")?"":m}`.replace(/s\.\[::-1\] \(reverse\)/,"s[::-1]"))+`<div class="callout k">Result: <b>${m==="split()"||m==="find('S')"||m==="len()"?esc(R[m]):"'"+esc(R[m])+"'"}</b></div><p class="small muted">Strings are immutable: the methods return a NEW string; s itself is unchanged.</p>`}
+  bindChips(r,"sm",sm);sm("upper()");$("#ss",r).addEventListener("input",()=>{const a=$$("#sm [aria-pressed=true]",r)[0];if(a)sm(a.dataset.v)});
+  const init="line one\nline two\nline three\n";let file=init,mode="w";bindSeg(r,"fm",v=>mode=v);
+  function fd(res,code){$("#fdisk",r).textContent=file;$("#fres",r).innerHTML=res!=null?CODE(code)+`<div class="out ok">${esc(res)}</div>`:""}
+  $("#fdo",r).onclick=()=>{const t=$("#ft",r).value;if(mode==="w"){file=t+"\n";fd("(file overwritten)",`with open("notes.txt", "w") as f:\n    f.write("${t}\\n")`)}else if(mode==="a"){file+=t+"\n";fd("(line added at the end)",`with open("notes.txt", "a") as f:\n    f.write("${t}\\n")`)}else{const L=file.split("\n");if(L[L.length-1]==="")L.pop();fd(L.map((x,i)=>`${i+1} ${x}`).join("\n")||"(empty file)",`with open("notes.txt") as f:\n    for no, line in enumerate(f, start=1):\n        print(no, line.strip())`)}};
+  $("#fre",r).onclick=()=>{file=init;fd(null)};fd(null)}});
+
+/* 8 collections */
+lesson({hero:true,nav:"Lists, tuples, dictionaries",title:"Lists, tuples and dictionaries",syl:"Lists, tuples and dictionaries (overview); Basic list operators; Dictionary literals, adding and removing keys, accessing and replacing values, traversing",
+html:()=>`<p class="lead"><b>List</b> <code>[ ]</code>: ordered and changeable. <b>Tuple</b> <code>( )</code>: ordered, fixed. <b>Dictionary</b> <code>{ }</code>: key &rarr; value pairs, looked up by key. Pick a tab and press the buttons; the code that Python would run is shown.</p>
+${seg("ctab",[["list","List"],["tuple","Tuple"],["dict","Dictionary"]])}
+<div id="cbody"></div>
+${quiz("i1q8","Which is the safe way to read a dictionary key that may be missing?",["d['x']","d.get('x', 0)","d[x]"],1,".get returns a default instead of raising KeyError.")}
+${quiz("i1q8b","<code>sorted(L)</code> versus <code>L.sort()</code>:",["both change L","sorted() returns a new list; sort() changes L","sort() returns a new list; sorted() changes L"],1,"sorted(L) leaves L alone and returns a sorted copy. L.sort() sorts L in place and returns None.")}
+${NBREF("1.12, 1.13 and 1.14")}`,
+mount(r){let L=[40,10,30,20],D={CSE:60,ECE:40},hist=[],tab="list";const T=[3,4,5];
+  const log=(c,res,err)=>{hist.unshift({c,res,err});hist=hist.slice(0,5)};
+  const hv=()=>`<div style="margin-top:8px">${hist.map(h=>`<div class="small t">${esc(h.c)} ${h.err?`<span class="tag b">${esc(h.err)}</span>`:h.res!=null?`<span class="muted">&rarr; ${esc(h.res)}</span>`:""}</div>`).join("")||'<span class="small muted">Run something to see the code here.</span>'}</div>`;
+  function draw(){const b=$("#cbody",r);
+    if(tab==="list"){b.innerHTML=`<div class="card try"><h3>List sandbox</h3><div class="boxes">${L.map((v,i)=>`<div class="bx"><small>${i}</small>${v}</div>`).join("")||'<span class="muted">(empty list)</span>'}</div>
+     <div class="row">value <input type="number" id="lv" value="99" style="width:80px"> index <input type="number" id="li" value="1" style="width:70px"></div>
+     <div class="row">${["append","insert","replace","remove","pop","sort","sorted","reverse","search"].map(a=>`<button class="btn sm" type="button" data-op="${a}">${a}</button>`).join("")}<button class="btn sm" type="button" data-op="reset">reset</button></div>${hv()}</div>`;
+      $$("[data-op]",b).forEach(x=>x.onclick=()=>{const v=+$("#lv",b).value,i=+$("#li",b).value,o=x.dataset.op;
+        try{if(o==="append"){L.push(v);log(`L.append(${v})`)}else if(o==="insert"){L.splice(i,0,v);log(`L.insert(${i}, ${v})`)}
+          else if(o==="replace"){if(i<-L.length||i>=L.length)throw new Error("IndexError: list assignment index out of range");L[(i+L.length)%L.length]=v;log(`L[${i}] = ${v}`)}
+          else if(o==="remove"){const k=L.indexOf(v);if(k<0)throw new Error("ValueError: list.remove(x): x not in list");L.splice(k,1);log(`L.remove(${v})`)}
+          else if(o==="pop"){if(!L.length)throw new Error("IndexError: pop from empty list");const p=L.pop();log("L.pop()",String(p))}
+          else if(o==="sort"){L.sort((a,c)=>a-c);log("L.sort()","None (L itself is now sorted)")}
+          else if(o==="sorted"){log("sorted(L)","["+[...L].sort((a,c)=>a-c).join(", ")+"]  (L unchanged)")}
+          else if(o==="reverse"){L.reverse();log("L.reverse()")}
+          else if(o==="search"){const k=L.indexOf(v);log(`${v} in L`,k>=0?"True":"False");if(k>=0)log(`L.index(${v})`,String(k))}
+          else if(o==="reset"){L=[40,10,30,20];hist=[]}}catch(e){log("(that failed)",null,e.message)}draw()})}
+    else if(tab==="tuple"){b.innerHTML=`<div class="card try"><h3>Tuple</h3><div class="boxes">${T.map((v,i)=>`<div class="bx"><small>${i}</small>${v}</div>`).join("")}</div>${CODE("t = (3, 4, 5)")}<div class="row"><button class="btn sm" type="button" data-t="mod">t[0] = 9</button><button class="btn sm" type="button" data-t="unp">x, y, z = t</button><button class="btn sm" type="button" data-t="idx">t.index(4)</button><button class="btn sm" type="button" data-t="one">(5) vs (5,)</button></div><div id="tout"></div><p class="small muted">Use a tuple for data that must not change (a coordinate, an RGB colour). It is also what a function returns when it gives back several values.</p></div>`;
+      const msg={mod:'<div class="out err">TypeError: \'tuple\' object does not support item assignment</div>',unp:'<div class="out ok">x = 3, y = 4, z = 5</div>',idx:'<div class="out ok">1</div>',one:'<div class="out ok">type((5)) is int, but type((5,)) is tuple. The comma makes a tuple.</div>'};
+      $$("[data-t]",b).forEach(x=>x.onclick=()=>{$("#tout",b).innerHTML=msg[x.dataset.t]})}
+    else{b.innerHTML=`<div class="card try"><h3>Dictionary sandbox</h3><table class="dt"><thead><tr><th>key</th><th>value</th></tr></thead><tbody>${Object.entries(D).map(([k,v])=>`<tr><td class="t">'${esc(k)}'</td><td class="t">${v}</td></tr>`).join("")||'<tr><td colspan="2" class="muted">(empty)</td></tr>'}</tbody></table>
+     <div class="row">key <input type="text" id="dk" value="ME" style="width:90px"> value <input type="number" id="dv" value="30" style="width:80px"></div>
+     <div class="row">${["set","delete","get","keys","values","items","traverse","reset"].map(a=>`<button class="btn sm" type="button" data-d="${a}">${a}</button>`).join("")}</div>${hv()}</div>`;
+      $$("[data-d]",b).forEach(x=>x.onclick=()=>{const k=$("#dk",b).value,v=+$("#dv",b).value,o=x.dataset.d;
+        try{if(o==="set"){const had=k in D;D[k]=v;log(`d['${k}'] = ${v}`,had?"replaced the value":"added a new key")}
+          else if(o==="delete"){if(!(k in D))throw new Error(`KeyError: '${k}'`);delete D[k];log(`del d['${k}']`)}
+          else if(o==="get"){log(`d.get('${k}', 0)`,String(k in D?D[k]:0))}
+          else if(o==="keys")log("list(d.keys())","["+Object.keys(D).map(x=>`'${x}'`).join(", ")+"]");
+          else if(o==="values")log("list(d.values())","["+Object.values(D).join(", ")+"]");
+          else if(o==="items")log("list(d.items())","["+Object.entries(D).map(([a,c])=>`('${a}', ${c})`).join(", ")+"]");
+          else if(o==="traverse"){Object.entries(D).forEach(([a,c])=>log(`for k, v in d.items():  print(k, v)`,`${a} ${c}`))}
+          else if(o==="reset"){D={CSE:60,ECE:40};hist=[]}}catch(e){log("(that failed)",null,e.message)}draw()})}}
+  bindSeg(r,"ctab",v=>{tab=v;hist=[];draw()});draw()}});
+
+/* 9 pandas and numpy */
+const STU=[["Asha","CSE",82,92],["Ravi","ECE",74,85],["Meera","CSE",91,96],["Karan","ME",58,70],["Isha","ECE",66,80],["Dev","ME",47,64],["Neha","CSE",77,88],["Omar","ECE",88,90]].map(x=>({name:x[0],branch:x[1],marks:x[2],att:x[3]}));
+lesson({nav:"Pandas and NumPy",title:"Pandas and NumPy",syl:"Pandas; NumPy",
+html:()=>`<p class="lead"><b>Pandas</b> gives you a <b>DataFrame</b>: a table you can filter, sort and summarise in one line each. <b>NumPy</b> gives you <b>arrays</b> that do maths on every element at once (no loop). They are the two workhorses of data work in Python.</p>
+${seg("pn",[["pd","Pandas: DataFrame"],["np","NumPy: arrays"]])}<div id="pnb"></div>
+${quiz("i1q9","In NumPy, what does <code>a * 2</code> do when a is an array?",["Error","Doubles every element","Repeats the array twice"],1,"Vectorised: the operation is applied to every element. (A plain Python list would repeat itself instead.)")}
+${NBREF("1.15 and 1.16")}`,
+mount(r){let tab="pd";
+  function pd(){const b=$("#pnb",r);b.innerHTML=`<div class="card try"><h3>DataFrame <code>df</code> (8 students)</h3>${chips("pop",["Show all","Filter rows","Sort","Group and average","New column","Describe"],0)}<div id="pctl" class="row"></div><div id="pcode"></div><div id="ptab"></div></div>`;
+    let op="Show all",thr=70,col="marks",asc=false;
+    function show(){
+      const cols=[["name","name"],["branch","branch"],["marks","marks"],["att","att"]];let rows=STU,code="df",ctl="";
+      if(op==="Filter rows"){ctl=`marks greater than <input type="range" id="th" min="40" max="95" value="${thr}"> <b>${thr}</b>`;rows=STU.filter(s=>s.marks>thr);code=`df[df["marks"] > ${thr}]`}
+      if(op==="Sort"){ctl=`by ${seg("sc",[["marks","marks"],["att","att"],["name","name"]])} ${seg("sd",[["d","descending"],["a","ascending"]],"s")}`;rows=[...STU].sort((a,c)=>(col==="name"?a.name.localeCompare(c.name):a[col]-c[col])*(asc?1:-1));code=`df.sort_values("${col}", ascending=${asc?"True":"False"})`}
+      if(op==="New column"){rows=STU.map(s=>({...s,passed:s.marks>=60?"True":"False"}));cols.push(["passed","passed"]);code=`df["passed"] = df["marks"] >= 60\ndf`}
+      let html;
+      if(op==="Group and average"){const g=groupBy(STU,s=>s.branch);const rr=Object.keys(g).sort().map(k=>({branch:k,mean:mean(g[k].map(s=>s.marks)),count:g[k].length}));code=`df.groupby("branch")["marks"].agg(["mean", "count"])`;html=table(rr,[["branch","branch"],["mean","mean marks",2],["count","count"]],{small:true})}
+      else if(op==="Describe"){const m=STU.map(s=>s.marks);code=`df["marks"].describe()`;html=table([["count",m.length],["mean",mean(m)],["std",sd(m)],["min",Math.min(...m)],["25%",quant(m,.25)],["50%",median(m)],["75%",quant(m,.75)],["max",Math.max(...m)]].map(x=>({stat:x[0],marks:x[1]})),[["stat","stat"],["marks","marks"]],{small:true})}
+      else html=table(rows,cols,{small:true})+(op==="Filter rows"?`<p class="small muted">${rows.length} of ${STU.length} rows kept.</p>`:"");
+      $("#pctl",b).innerHTML=ctl;$("#pcode",b).innerHTML=CODE(code);$("#ptab",b).innerHTML=html;
+      const th=$("#th",b);if(th)th.oninput=()=>{thr=+th.value;show()};
+      if($("#sc",b)){bindSeg(b,"sc",v=>{col=v;show()});bindSeg(b,"sd",v=>{asc=v==="a";show()});$$("#sc button",b).forEach(x=>x.setAttribute("aria-pressed",x.dataset.v===col));$$("#sd button",b).forEach(x=>x.setAttribute("aria-pressed",(x.dataset.v==="a")===asc))}}
+    bindChips(b,"pop",v=>{op=v;show()});show()}
+  function np(){const b=$("#pnb",r);const a=[10,20,30,40,50,60];const fm=x=>Array.isArray(x)?"["+x.map(fm).join(" ")+"]":String(x);
+    const OPS={"a * 2":a.map(x=>x*2),"a + 5":a.map(x=>x+5),"a.mean()":mean(a),"a.sum()":sum(a),"a[a > 25]":a.filter(x=>x>25),"a.reshape(2, 3)":[[10,20,30],[40,50,60]],"a.reshape(2, 3).T":[[10,40],[20,50],[30,60]],"a.reshape(2, 3).sum(axis=0)":[50,70,90],"a.reshape(2, 3).sum(axis=1)":[60,150],"np.arange(0, 10, 2)":[0,2,4,6,8],"np.linspace(0, 1, 5)":[0,0.25,0.5,0.75,1]};
+    b.innerHTML=`<div class="card try"><h3>NumPy sandbox</h3>${CODE("import numpy as np\na = np.array([10, 20, 30, 40, 50, 60])")}${chips("nop",Object.keys(OPS),0)}<div id="nout"></div><div class="callout k small">A Python list <code>[10, 20] * 2</code> gives <code>[10, 20, 10, 20]</code>. A NumPy array <code>np.array([10, 20]) * 2</code> gives <code>[20 40]</code>. That is why NumPy is used for numbers.</div></div>`;
+    function s(k){$("#nout",b).innerHTML=CODE(k)+`<div class="out ok">${esc(fm(OPS[k]))}</div>`+(k.includes("axis=0")?'<p class="small muted">axis=0 collapses the rows: one total per column.</p>':k.includes("axis=1")?'<p class="small muted">axis=1 collapses the columns: one total per row.</p>':"")}
+    bindChips(b,"nop",s);s(Object.keys(OPS)[0])}
+  bindSeg(r,"pn",v=>{tab=v;v==="pd"?pd():np()});pd()}});
+
+/* 10 matplotlib */
+lesson({nav:"Matplotlib",title:"Matplotlib: drawing charts",syl:"Matplotlib",
+html:()=>`<p class="lead">Matplotlib turns numbers into a picture. Pattern: make the data, call a plot function (<code>plot</code>, <code>bar</code>, <code>scatter</code>, <code>hist</code>, <code>pie</code>), add a <b>title</b> and <b>axis labels</b>, then <code>plt.show()</code>. Pick the chart that matches the question.</p>
+<div class="card try"><h3>Chart builder</h3><div class="row"><b>Chart:</b> ${seg("ct",[["line","line"],["bar","bar"],["scatter","scatter"],["hist","histogram"],["pie","pie"]])}</div>
+<div class="row">title <input type="text" id="ctt" value="Marks of 8 students" style="width:200px"> x label <input type="text" id="cxl" value="Student" style="width:110px"> y label <input type="text" id="cyl" value="Marks" style="width:110px"></div><div id="cch"></div><div id="ccode"></div>
+<div class="callout k small" id="cadv"></div></div>
+${quiz("i1q10","Which chart suits 'how are marks spread across the class?'",["Pie chart","Histogram","Line chart"],1,"A histogram groups numbers into bins and shows the shape of the spread. A pie shows parts of a whole; a line shows change over time.")}
+${NBREF("1.17")}`,
+mount(r){let kind="line";const names=STU.map(s=>s.name),marks=STU.map(s=>s.marks),att=STU.map(s=>s.att);
+  const ADV={line:"Use for change over time or any ordered sequence.",bar:"Use to compare categories side by side.",scatter:"Use to see whether two numbers move together (here attendance and marks).",hist:"Use to see how one number is spread (shape, centre, outliers).",pie:"Use only for a few parts of one whole. Bars are usually clearer."};
+  function d(){const t=$("#ctt",r).value,xl=$("#cxl",r).value,yl=$("#cyl",r).value;let svg,code="import matplotlib.pyplot as plt\n";
+    if(kind==="line"){svg=chartLine([{name:"marks",vals:marks}],names,{w:640,h:300,title:t,min:0,max:100});code+=`plt.plot(names, marks, marker="o")`}
+    else if(kind==="bar"){svg=chartBar(names.map((n,i)=>({label:n,value:marks[i]})),{w:640,h:300,title:t,ylabel:yl,min:0,max:100});code+=`plt.bar(names, marks)`}
+    else if(kind==="scatter"){svg=chartScatter(STU.map(s=>({x:s.att,y:s.marks,label:s.name})),{w:640,h:320,title:t,xlabel:xl,ylabel:yl,x0:60,x1:100,y0:40,y1:100,labels:true});code+=`plt.scatter(attendance, marks)`}
+    else if(kind==="hist"){svg=chartBar(histBins(marks,5,40,100),{w:640,h:300,title:t,ylabel:"Count"});code+=`plt.hist(marks, bins=5, range=(40, 100))`}
+    else{const g=groupBy(STU,s=>s.branch);svg=chartPie(Object.keys(g).sort().map(k=>({label:k,value:g[k].length})));code+=`plt.pie(counts, labels=branches, autopct="%1.1f%%")`}
+    $("#cch",r).innerHTML=svg;$("#ccode",r).innerHTML=CODE(code+(kind==="pie"||kind==="hist"?"":`\nplt.xlabel("${xl}")\nplt.ylabel("${yl}")`)+`\nplt.title("${t}")\nplt.show()`);$("#cadv",r).textContent=ADV[kind]}
+  bindSeg(r,"ct",v=>{kind=v;const P={line:["Marks of 8 students","Student","Marks"],bar:["Marks by student","Student","Marks"],scatter:["Attendance vs marks","Attendance %","Marks"],hist:["How marks are spread","Marks","Number of students"],pie:["Students per branch","",""]}[v];$("#ctt",r).value=P[0];$("#cxl",r).value=P[1];$("#cyl",r).value=P[2];d()});
+  ["ctt","cxl","cyl"].forEach(i=>$("#"+i,r).oninput=d);d()}});
+
+/* live pane: Python calculator */
+function renderLive(){const env={},hist=[];
+  $("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">A mini Python for the projector. Type an expression or an assignment (<code>x = 5</code>) and press Enter. Variables stay in memory.</p><input type="text" id="repl" class="wide" placeholder="try: 7 // 2" autocomplete="off"><div id="rh" style="margin-top:8px"></div><p class="small muted">Supports numbers, text, True/False, lists, + - * / // % **, comparisons, and, or, not, print(), len(), round(), int(), float(), str(), type(), max(), min().</p>`;
+  $("#repl").onkeydown=e=>{if(e.key!=="Enter")return;const s=e.target.value.trim();if(!s)return;const res=runCell(s,env);hist.unshift({s,res});e.target.value="";
+    $("#rh").innerHTML=hist.slice(0,12).map(h=>`<div class="cell"><div class="bd t small">&gt;&gt;&gt; ${esc(h.s)}</div>${h.res.err?`<div class="out err">${esc(h.res.err)}</div>`:(h.res.out.length||h.res.val)?`<div class="out ok">${esc((h.res.out.join("\n")+(h.res.val?(h.res.out.length?"\n":"")+pyRepr(h.res.val):"")))}</div>`:""}</div>`).join("")}}
+
+renderLive();go(0);
+
+</script>
+</body>
+</html>

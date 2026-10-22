@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IPSR Lab - Unit 5</title>
+<style>
+:root{
+  --bg:#FAF8F3; --surface:#FFFFFF; --surface2:#EFEBE1; --fg:#12110E; --muted:#44403A; --line:#B9B2A2; --line2:#D9D3C4;
+  --pri:#1F3FB5; --pri-soft:#DDE5FA; --sec:#9A4208; --sec-soft:#FBE3CC;
+  --good:#0F6A31; --good-soft:#D5F0DD; --warn:#744500; --warn-soft:#F9E8B8; --bad:#A31D12; --bad-soft:#FADAD5;
+  --code:#EFEBE1; --on:#FFFFFF; --grid:#CFC9BA; --shadow:0 1px 2px rgba(18,17,14,.08),0 6px 18px rgba(18,17,14,.06);
+  --c1:#1F3FB5; --c2:#9A4208; --c3:#0F6A31; --c4:#7A2A9C; --c5:#8A6D00; --c6:#B0235C;
+  --disp:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --body:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  --mono:ui-monospace,'Cascadia Code',Consolas,Menlo,monospace;
+  --zoom:1;
+}
+:root[data-theme="dark"]{
+  --bg:#0C0C0A; --surface:#181714; --surface2:#242320; --fg:#F7F4EA; --muted:#CFCABD; --line:#5B574B; --line2:#35332C;
+  --pri:#9DB1FF; --pri-soft:#1B2350; --sec:#FFAE6B; --sec-soft:#40240E;
+  --good:#6FE09A; --good-soft:#0F3320; --warn:#F5C964; --warn-soft:#3B2E0A; --bad:#FF9A8C; --bad-soft:#451A15;
+  --code:#1F1E1A; --on:#0C0C0A; --grid:#46433A; --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.3);
+  --c1:#9DB1FF; --c2:#FFAE6B; --c3:#6FE09A; --c4:#D9A0FF; --c5:#F0D060; --c6:#FF8FB8;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body);zoom:var(--zoom)}
+button,select,input{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:240px minmax(0,1fr) 310px;min-height:calc(100vh / var(--zoom))}
+.nav{background:var(--surface);border-right:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.brand{font-family:var(--disp);font-size:20px;line-height:1.15;margin:0 4px 4px}
+.brand small{display:block;font:12.5px var(--body);color:var(--muted);margin-top:4px}
+.nav ol{list-style:none;margin:16px 0 0;padding:0}
+.nav li button{width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;color:var(--fg)}
+.nav li button:hover{background:var(--surface2)}
+.nav li button[aria-current="true"]{background:var(--pri-soft);font-weight:600}
+.nav .n{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--muted);display:grid;place-items:center;font-size:12px;color:var(--muted)}
+.nav li.done .n{background:var(--good);color:var(--on);border-color:var(--good)}
+.nav .t{font-size:13.5px;line-height:1.3}
+.nav .hero .n{border-color:var(--sec);color:var(--sec)}
+.tools{margin:18px 4px 0;display:grid;gap:8px}
+.tools button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 10px;cursor:pointer;font-weight:600;text-align:left}
+.tools button:hover{border-color:var(--fg)}
+.tools .hint{font-size:12px;color:var(--muted)}
+main{padding:26px 30px 70px;min-width:0}
+.crumb{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.15;margin:4px 0 6px}
+h2{font-family:var(--disp);font-size:20px;margin:0 0 8px}
+h3{font-size:13.5px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.syl{display:inline-block;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0;box-shadow:var(--shadow)}
+.card.try{border-left:5px solid var(--pri)}
+.card.sec{border-left:5px solid var(--sec)}
+.lead{font-size:16.5px}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:5px;padding:2px 7px}
+.tag.p{background:var(--pri-soft);color:var(--pri)} .tag.s{background:var(--sec-soft);color:var(--sec)}
+.tag.g{background:var(--good-soft);color:var(--good)} .tag.w{background:var(--warn-soft);color:var(--warn)} .tag.b{background:var(--bad-soft);color:var(--bad)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--fg)}
+.btn.pri{background:var(--pri);color:var(--on);border-color:var(--pri)} .btn.sec{background:var(--sec);color:var(--on);border-color:var(--sec)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+table.dt{border-collapse:collapse;width:100%;font-size:13.5px}
+table.dt th{background:var(--surface2);text-align:left;padding:6px 9px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+table.dt td{padding:5px 9px;border-bottom:1px solid var(--line2);white-space:nowrap}
+table.dt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:340px}
+.tw.sm{max-height:none}
+.new{animation:pop .6s ease both}
+@keyframes pop{from{background:var(--sec-soft);transform:translateY(-4px);opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.new{animation:none}}
+.code{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:7px 10px;overflow:auto;white-space:pre-wrap;color:var(--fg)}
+code{font-family:var(--mono);font-size:.92em;background:var(--code);padding:1px 5px;border-radius:4px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.callout{border-radius:8px;padding:10px 14px;margin:10px 0;background:var(--surface2);border:1px solid var(--line2)}
+.callout.k{background:var(--sec-soft);border-color:transparent} .callout.i{background:var(--pri-soft);border-color:transparent}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:7px 13px;cursor:pointer;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--pri);color:var(--on)}
+.seg.s button[aria-pressed="true"]{background:var(--sec)}
+select,input[type=text],input[type=number]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px}
+input[type=range]{accent-color:var(--pri);vertical-align:middle}
+label.chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer;margin-right:12px}
+.live{background:var(--surface);border-left:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.live .tw{max-height:none}
+.opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;margin:6px 0;cursor:pointer}
+.opt:hover{border-color:var(--fg)} .opt.ok{background:var(--good-soft);border-color:var(--good)} .opt.no{background:var(--bad-soft);border-color:var(--bad)}
+.bar{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden;border:1px solid var(--line2)}
+.bar i{display:block;height:100%;background:var(--sec);transition:width .4s}
+.flow{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+.arrow{font-size:28px;color:var(--sec);text-align:center}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:12.5px;margin:2px 4px 2px 0;background:var(--surface)}
+td.ix{background:var(--bad-soft)} td.iy{background:var(--warn-soft)} td.iz{background:var(--pri-soft)} td.chg{background:var(--good-soft)}
+.cardsel{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi b{font-size:22px;display:block;font-variant-numeric:tabular-nums}
+.nextrow{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
+svg.chart{width:100%;height:auto;display:block;max-height:420px}
+svg.chart text{fill:var(--fg);font:12px var(--body)}
+svg.chart .ax{stroke:var(--muted);stroke-width:1}
+svg.chart .gr{stroke:var(--grid);stroke-width:1}
+svg.chart .lbl{fill:var(--muted)}
+.sheet{border-collapse:collapse;font-size:13.5px;font-family:var(--mono);width:100%}
+.sheet th{background:var(--surface2);border:1px solid var(--line);padding:3px 8px;text-align:center;font-weight:600;color:var(--muted)}
+.sheet td{border:1px solid var(--line);padding:0;min-width:80px}
+.sheet td input{width:100%;border:0;background:transparent;padding:4px 7px;font:inherit;border-radius:0}
+.sheet td.sel{outline:2px solid var(--pri);outline-offset:-2px}
+:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+@media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.live{grid-column:1/-1;position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
+@media (max-width:760px){.app{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav ol{display:flex;overflow:auto;gap:4px}.nav li{flex:none}.nav .t{display:none}main{padding:18px 16px 60px}.grid2,.grid3,.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+
+textarea,input[type=search]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px;font:inherit;color:var(--fg)}
+textarea.py{width:100%;font-family:var(--mono);font-size:13.5px;min-height:62px;resize:vertical;background:var(--code)}
+input.wide{width:100%;font-family:var(--mono)}
+.cell{border:1px solid var(--line);border-radius:10px;margin:10px 0;overflow:hidden;background:var(--surface)}
+.cell .hd{display:flex;gap:10px;align-items:center;background:var(--surface2);padding:5px 10px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.cell .bd{padding:8px 10px}
+.out{font-family:var(--mono);font-size:13px;white-space:pre-wrap;padding:6px 10px;border-top:1px dashed var(--line2);color:var(--fg)}
+.out.err{color:var(--bad);background:var(--bad-soft)}
+.out.ok{background:var(--good-soft)}
+.kv{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.kv span{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:2px 8px}
+.mk{background:var(--warn-soft);color:var(--fg);outline:2px solid var(--warn);border-radius:3px;padding:0 2px}
+.boxes{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
+.bx{min-width:38px;border:1px solid var(--line);border-radius:6px;text-align:center;background:var(--surface);padding:2px 6px;font-family:var(--mono)}
+.bx small{display:block;font-size:11px;color:var(--muted)}
+.bx.hi{background:var(--pri);color:var(--on);border-color:var(--pri)}
+.bx.hi small{color:var(--on)}
+.bx.ok{background:var(--good-soft);border-color:var(--good)}
+.bx.no{background:var(--bad-soft);border-color:var(--bad)}
+.bx.cur{background:var(--warn-soft);border-color:var(--warn)}
+.cmark{font-family:var(--mono);font-size:13px;line-height:1.65;background:var(--code);border:1px solid var(--line2);border-radius:8px;padding:8px 12px;white-space:pre}
+.cmark .ln{display:block;padding:0 4px;border-radius:3px}
+.cmark .ln.on{background:var(--warn-soft);outline:1px solid var(--warn)}
+.t{font-family:var(--mono)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:760px){.grid4{grid-template-columns:1fr 1fr}}
+.world{display:flex;gap:10px;margin:8px 0;flex-wrap:wrap}
+.sq{width:130px;height:90px;border:2px solid var(--line);border-radius:10px;display:grid;place-items:center;text-align:center;background:var(--surface);position:relative}
+.sq.dirty{background:var(--warn-soft);border-color:var(--warn)}
+.sq.here{outline:4px solid var(--pri)}
+.sq small{position:absolute;top:2px;left:6px;color:var(--muted)}
+.fnode{fill:var(--surface);stroke:var(--fg);stroke-width:2}
+.fnode.front{fill:var(--warn-soft);stroke:var(--warn)}
+.fnode.exp{fill:var(--good-soft);stroke:var(--good)}
+.fnode.cur{fill:var(--pri);stroke:var(--pri)}
+.fnode.path{fill:var(--sec-soft);stroke:var(--sec);stroke-width:3.5}
+.edge{stroke:var(--muted);stroke-width:2;fill:none}
+.edge.path{stroke:var(--sec);stroke-width:4}
+svg.g text{fill:var(--fg);font:600 14px var(--body);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+svg.g text.cur{fill:var(--on)}
+table.tt{border-collapse:collapse;font-family:var(--mono);font-size:13.5px}
+table.tt th,table.tt td{border:1px solid var(--line);padding:4px 10px;text-align:center}
+table.tt th{background:var(--surface2)}
+table.tt td.T{background:var(--good-soft)} table.tt td.F{background:var(--bad-soft)}
+.stack{display:flex;flex-direction:column-reverse;align-items:center;min-width:70px;border-bottom:4px solid var(--fg);padding:0 8px}
+.blk{width:56px;height:38px;border:2px solid var(--fg);border-radius:6px;display:grid;place-items:center;font-weight:700;margin-top:2px;background:var(--pri-soft)}
+.blk.held{background:var(--sec-soft);border-color:var(--sec)}
+.tag.big{font-size:13px;padding:3px 10px}
+.opt2{display:inline-block;margin:3px;padding:6px 12px;border:1px solid var(--line);background:var(--surface);border-radius:999px;cursor:pointer;font-weight:600}
+.opt2:hover{border-color:var(--fg)}
+.opt2.ok{background:var(--good-soft);border-color:var(--good)}
+.opt2.no{background:var(--bad-soft);border-color:var(--bad)}
+.opt2[aria-pressed=true]{background:var(--pri);color:var(--on);border-color:var(--pri)}
+.dotg i{display:block;aspect-ratio:1;border-radius:2px;border:1px solid var(--line2)}
+.pill input{margin-right:4px}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="nav" aria-label="Lessons">
+    <h2 class="brand">IPSR Lab<small>Unit 5, Uncertain Knowledge and Reasoning<br>B.Tech Sem I, Introduction to Problem Solving and Reasoning</small></h2>
+    <ol id="navlist"></ol>
+    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
+  </nav>
+  <main id="stage" tabindex="-1"></main>
+  <aside class="live" aria-label="Live data"><h3>Quick reference: probability</h3><div id="livebox"></div></aside>
+</div>
+<script>
+"use strict";
+/* ===== helpers ===== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-US"):v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/(a.length-1))};
+const quant=(a,q)=>{const s=[...a].sort((x,y)=>x-y),p=(s.length-1)*q,l=Math.floor(p);return s[l]+(s[Math.min(l+1,s.length-1)]-s[l])*(p-l)};
+const mode=a=>{const c={};a.forEach(v=>c[v]=(c[v]||0)+1);const mx=Math.max(...Object.values(c));return Object.keys(c).filter(k=>c[k]===mx).join(", ")};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const groupBy=(rows,f)=>{const g={};rows.forEach(r=>{const k=f(r);(g[k]=g[k]||[]).push(r)});return g};
+const corr=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0,c=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2;c+=(y[i]-my)**2});return a/Math.sqrt(b*c)};
+const linfit=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2});const m=a/b;return {m,b:my-m*mx,r:corr(x,y)}};
+function table(rows,cols,opts={}){
+  const head=cols.map(c=>`<th>${esc(c[1])}</th>`).join("");
+  const body=rows.map((r,i)=>`<tr${opts.newFrom!=null&&i>=opts.newFrom?' class="new"':''}>`+cols.map(c=>{
+    const v=r[c[0]],cls=(typeof v==="number"?"num":"")+((opts.cellClass&&opts.cellClass(r,c[0],i))||"");
+    return `<td class="${cls.trim()}">${v===""||v==null?'<span class="muted">(blank)</span>':esc(typeof v==="number"?fmt(v,c[2]!=null?c[2]:(Number.isInteger(v)?0:2)):v)}</td>`}).join("")+"</tr>").join("");
+  return `<div class="tw${opts.small?' sm':''}"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+const QUIZ={};
+function quiz(id,q,opts,ans,why){QUIZ[id]={ans,why};
+  return `<div class="card"><h3>Quick check</h3><p style="margin:0 0 6px"><b>${q}</b></p>`+opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" style="margin-top:6px"></div></div>`;}
+function regQuiz(id,ans,why){QUIZ[id]={ans,why}}
+function seg(id,items,cls=""){return `<div class="seg ${cls}" id="${id}" role="group">`+items.map((x,i)=>`<button type="button" data-v="${x[0]}" aria-pressed="${i===0}">${x[1]}</button>`).join("")+`</div>`}
+function bindSeg(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)});return ()=>$$("[aria-pressed=true]",g)[0].dataset.v}
+const IN=n=>n.toLocaleString("en-US",{maximumFractionDigits:0});
+
+/* ===== SVG charts (colours come from CSS variables, so both themes work) ===== */
+const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
+const nice=(max)=>{const e=Math.pow(10,Math.floor(Math.log10(max||1))),f=max/e;const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*e};
+function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(lo+st*i);return out}
+const short=v=>Math.abs(v)>=100000?(v/100000).toFixed(1).replace(/\.0$/,"")+"L":Math.abs(v)>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":(Math.round(v*100)/100)+"";
+function chartBar(items,o={}){ // items:[{label,value,color}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...items.map(i=>i.value))*1.08),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  items.forEach((it,i)=>{const x=m.l+i*bw+bw*.15,w=bw*.7,y=sy(Math.max(it.value,mn));
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,sy(mn)-y)}" fill="${it.color||o.color||"var(--c1)"}" rx="2"><title>${esc(it.label)}: ${fmt(it.value)}</title></rect>`;
+    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:11px">${short(it.value)}</text>`;
+    const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  return s+"</svg>";}
+function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:o.legendRight?110:16,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...all)*1.08);
+  const sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  const step=Math.ceil(labels.length/(o.maxLabels||12));labels.forEach((l,i)=>{if(i%step===0)s+=`<text class="lbl" x="${sx(i)}" y="${H-m.b+16}" text-anchor="middle">${esc(l)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  series.forEach((se,k)=>{const c=se.color||PAL[k%6];let d="";se.vals.forEach((v,i)=>{if(v!=null)d+=(d?"L":"M")+sx(i).toFixed(1)+" "+sy(v).toFixed(1)});
+    if(o.area&&k===0)s+=`<path d="${d}L${sx(se.vals.length-1)} ${sy(mn)}L${sx(0)} ${sy(mn)}Z" fill="${c}" opacity=".18"/>`;
+    s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${se.w||2.5}" ${se.dash?'stroke-dasharray="6 4"':""} stroke-linejoin="round"/>`;
+    if(o.dots!==false&&!se.dash)se.vals.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${sx(i)}" cy="${sy(v)}" r="3.5" fill="${c}"><title>${esc(labels[i])}: ${fmt(v)}</title></circle>`});
+    if(o.legendRight)s+=`<text x="${W-m.r+8}" y="${m.t+14+k*16}" style="fill:${c};font-weight:600">${esc(se.name)}</text>`;
+    else if(series.length>1)s+=`<text x="${m.l+8+k*150}" y="${H-6}" style="fill:${c};font-weight:600">&#9632; ${esc(se.name)}</text>`});
+  (o.marks||[]).forEach(mk=>{s+=`<text x="${sx(mk.i)}" y="${sy(mk.v)-10}" text-anchor="middle" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
+  return s+"</svg>";}
+function chartScatter(pts,o={}){ // pts:[{x,y,r,color,label}]
+  const W=o.w||640,H=o.h||340,m={l:60,r:16,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||nice(Math.max(...ys)*1.05);
+  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(y0,y1).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  ticks(x0,x1).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${short(t)}</text>`);
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(y0)}" y2="${sy(y0)}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${sy(y0)}"/>`;
+  if(o.xlabel)s+=`<text class="lbl" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${esc(o.xlabel)}</text>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  if(o.fit){const f=o.fit;s+=`<line x1="${sx(x0)}" y1="${sy(f.m*x0+f.b)}" x2="${sx(x1)}" y2="${sy(f.m*x1+f.b)}" stroke="var(--sec)" stroke-width="2.5" stroke-dasharray="7 4"/>`}
+  pts.forEach(p=>{s+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="${p.r||4}" fill="${p.color||"var(--c1)"}" fill-opacity="${o.alpha||.65}" stroke="${p.color||"var(--c1)"}"><title>${esc(p.label||"")} (${fmt(p.x)}, ${fmt(p.y)})</title></circle>`;
+    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:11px">${esc(p.label)}</text>`});
+  return s+"</svg>";}
+function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart">`;
+  items.forEach((it,k)=>{const ang=it.value/tot*2*Math.PI,x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(a+ang),y2=cy+R*Math.sin(a+ang);
+    s+=`<path d="M${cx} ${cy}L${x1} ${y1}A${R} ${R} 0 ${ang>Math.PI?1:0} 1 ${x2} ${y2}Z" fill="${it.color||PAL[k%6]}" stroke="var(--surface)" stroke-width="2"><title>${esc(it.label)}: ${(100*it.value/tot).toFixed(1)}%</title></path>`;a+=ang;
+    s+=`<text x="250" y="${40+k*22}" style="fill:${it.color||PAL[k%6]};font-weight:700">&#9632; <tspan style="fill:var(--fg);font-weight:400">${esc(it.label)} ${(100*it.value/tot).toFixed(1)}%</tspan></text>`});
+  return s+"</svg>";}
+function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:short(lo+i*w),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+
+/* ===== lesson framework ===== */
+const L=[];
+function lesson(o){L.push(o)}
+let cur=0, done=new Set();
+const UKEY="dalab_"+(document.title||"x");
+try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e){}
+function go(i){
+  cur=Math.max(0,Math.min(L.length-1,i));
+  const l=L[cur],st=$("#stage");
+  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
+  $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
+  l.mount&&l.mount(st);
+  $$("[data-q]",st).forEach(b=>b.onclick=()=>{
+    const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
+    $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
+    b.classList.add(ok?"ok":"no");
+    $("#why-"+id,st).textContent=(ok?"Correct. ":"Not quite. ")+k.why;
+    if(ok){done.add(cur);try{localStorage.setItem(UKEY,JSON.stringify([...done]))}catch(e){}drawNav()}
+  });
+  drawNav(); window.scrollTo(0,0); st.focus({preventScroll:true});
+}
+function drawNav(){
+  $("#navlist").innerHTML=L.map((l,i)=>`<li class="${done.has(i)?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${done.has(i)?"&#10003;":i+1}</span><span class="t">${l.nav}</span></button></li>`).join("");
+  $$("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
+}
+/* theme + text size (for projectors) */
+(function(){
+  const R=document.documentElement;let theme=null,zi=0;const Z=[1,1.15,1.3];
+  try{theme=localStorage.getItem("dalab_theme")}catch(e){}
+  if(!theme)theme=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
+  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);
+    const b=$("#themeBtn"),z=$("#zoomBtn");if(b)b.innerHTML=theme==="dark"?"&#9728; Switch to LIGHT mode":"&#9790; Switch to DARK mode";if(z)z.textContent="Text size: "+Math.round(Z[zi]*100)+"%";}
+  window.addEventListener("DOMContentLoaded",()=>{
+    $("#themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("dalab_theme",theme)}catch(e){}apply()};
+    $("#zoomBtn").onclick=()=>{zi=(zi+1)%3;apply()};apply();
+    document.addEventListener("keydown",e=>{if(e.altKey&&(e.key==="d"||e.key==="D")){$("#themeBtn").click()}});
+  });
+  apply();
+})();
+
+/* ===== IPSR common: tiny Python-expression engine + stepper ===== */
+class PyErr extends Error{constructor(t,m){super(m);this.pt=t}}
+const V=(v,k)=>({v,k});
+const fRepr=n=>{if(Number.isNaN(n))return"nan";if(!isFinite(n))return n>0?"inf":"-inf";let s=String(n);if(/^-?\d+$/.test(s))s+=".0";return s};
+function pyRepr(x){if(x.k==="str")return"'"+x.v.replace(/'/g,"\\'")+"'";if(x.k==="bool")return x.v?"True":"False";if(x.k==="NoneType")return"None";if(x.k==="float")return fRepr(x.v);if(x.k==="list")return"["+x.v.map(pyRepr).join(", ")+"]";return String(x.v)}
+const pyStr=x=>x.k==="str"?x.v:pyRepr(x);
+const isNum=x=>x.k==="int"||x.k==="float"||x.k==="bool";
+const nv=x=>x.k==="bool"?V(+x.v,"int"):x;
+const truthy=x=>x.k==="str"?x.v.length>0:x.k==="NoneType"?false:x.k==="list"?x.v.length>0:!!x.v;
+function tokenize(src){
+  const re=/\s*(?:(\d+\.\d*|\.\d+|\d+)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|([A-Za-z_]\w*)|(\*\*|\/\/|==|!=|<=|>=|[-+*\/%<>(),=\[\]]))/y;
+  const out=[];let i=0;src=src.trim();
+  while(i<src.length){re.lastIndex=i;const m=re.exec(src);if(!m)throw new PyErr("SyntaxError","invalid syntax near '"+src.slice(i,i+6)+"'");
+    if(m[1]!==undefined)out.push({t:"num",v:m[1]});else if(m[2]!==undefined)out.push({t:"str",v:m[2].slice(1,-1)});
+    else if(m[3]!==undefined)out.push({t:["and","or","not","True","False","None"].includes(m[3])?"kw":"name",v:m[3]});else out.push({t:"op",v:m[4]});
+    i=re.lastIndex;while(src[i]===" ")i++}
+  return out}
+function parsePy(src){
+  const T=tokenize(src);let p=0;const pk=()=>T[p],nx=()=>T[p++];
+  const isOp=v=>pk()&&pk().t==="op"&&pk().v===v, isKw=v=>pk()&&pk().t==="kw"&&pk().v===v;
+  function or(){let l=and();while(isKw("or")){nx();l={t:"or",l,r:and()}}return l}
+  function and(){let l=not();while(isKw("and")){nx();l={t:"and",l,r:not()}}return l}
+  function not(){if(isKw("not")){nx();return{t:"un",op:"not",x:not()}}return cmp()}
+  function cmp(){let l=add();const ops=[],items=[l];while(pk()&&pk().t==="op"&&["==","!=","<",">","<=",">="].includes(pk().v)){ops.push(nx().v);items.push(add())}return ops.length?{t:"cmp",ops,items}:l}
+  function add(){let l=mul();while(isOp("+")||isOp("-")){const op=nx().v;l={t:"bin",op,l,r:mul()}}return l}
+  function mul(){let l=unary();while(isOp("*")||isOp("/")||isOp("//")||isOp("%")){const op=nx().v;l={t:"bin",op,l,r:unary()}}return l}
+  function unary(){if(isOp("-")||isOp("+")){const op=nx().v;return{t:"un",op,x:unary()}}return pow()}
+  function pow(){const b=atom();if(isOp("**")){nx();return{t:"bin",op:"**",l:b,r:unary()}}return b}
+  function atom(){const k=nx();if(!k)throw new PyErr("SyntaxError","unexpected end of expression");
+    if(k.t==="num")return{t:"val",val:/[.]/.test(k.v)?V(parseFloat(k.v),"float"):V(parseInt(k.v,10),"int")};
+    if(k.t==="str")return{t:"val",val:V(k.v,"str")};
+    if(k.t==="kw"){if(k.v==="True")return{t:"val",val:V(true,"bool")};if(k.v==="False")return{t:"val",val:V(false,"bool")};if(k.v==="None")return{t:"val",val:V(null,"NoneType")};throw new PyErr("SyntaxError","invalid syntax")}
+    if(k.t==="name"){if(isOp("(")){nx();const args=[];if(!isOp(")")){args.push(or());while(isOp(",")){nx();args.push(or())}}if(!isOp(")"))throw new PyErr("SyntaxError","'(' was never closed");nx();return{t:"call",name:k.v,args}}return{t:"name",name:k.v}}
+    if(k.t==="op"&&k.v==="("){const e=or();if(!isOp(")"))throw new PyErr("SyntaxError","'(' was never closed");nx();return e}
+    if(k.t==="op"&&k.v==="["){const items=[];if(!isOp("]")){items.push(or());while(isOp(",")){nx();items.push(or())}}if(!isOp("]"))throw new PyErr("SyntaxError","'[' was never closed");nx();return{t:"list",items}}
+    throw new PyErr("SyntaxError","invalid syntax near '"+k.v+"'")}
+  const e=or();if(p<T.length)throw new PyErr("SyntaxError","invalid syntax near '"+T[p].v+"'");return e}
+const tn=x=>x.k;
+function applyBin(op,a,b){
+  const A=isNum(a)?nv(a):a,B=isNum(b)?nv(b):b;
+  if(op==="+"){if(isNum(A)&&isNum(B))return V(A.v+B.v,A.k==="float"||B.k==="float"?"float":"int");
+    if(A.k==="str"&&B.k==="str")return V(A.v+B.v,"str");
+    if(A.k==="list"&&B.k==="list")return V(A.v.concat(B.v),"list");
+    if(A.k==="str")throw new PyErr("TypeError",`can only concatenate str (not "${tn(b)}") to str`);
+    throw new PyErr("TypeError",`unsupported operand type(s) for +: '${tn(a)}' and '${tn(b)}'`)}
+  if(op==="*"){if(isNum(A)&&isNum(B))return V(A.v*B.v,A.k==="float"||B.k==="float"?"float":"int");
+    if(A.k==="str"&&B.k==="int")return V(B.v>0?A.v.repeat(B.v):"","str");if(B.k==="str"&&A.k==="int")return V(A.v>0?B.v.repeat(A.v):"","str");
+    throw new PyErr("TypeError",`can't multiply sequence by non-int of type '${isNum(A)?tn(A):tn(B)}'`.replace(/^can't.*$/,m=>(A.k==="str"||B.k==="str")?m:`unsupported operand type(s) for *: '${tn(a)}' and '${tn(b)}'`))}
+  if(!isNum(A)||!isNum(B))throw new PyErr("TypeError",`unsupported operand type(s) for ${op}: '${tn(a)}' and '${tn(b)}'`);
+  const fl=A.k==="float"||B.k==="float";
+  if(op==="-")return V(A.v-B.v,fl?"float":"int");
+  if(op==="/"){if(B.v===0)throw new PyErr("ZeroDivisionError","division by zero");return V(A.v/B.v,"float")}
+  if(op==="//"){if(B.v===0)throw new PyErr("ZeroDivisionError",fl?"float floor division by zero":"integer division or modulo by zero");return V(Math.floor(A.v/B.v),fl?"float":"int")}
+  if(op==="%"){if(B.v===0)throw new PyErr("ZeroDivisionError",fl?"float modulo by zero":"integer modulo by zero");return V(A.v-B.v*Math.floor(A.v/B.v),fl?"float":"int")}
+  if(op==="**"){if(A.v===0&&B.v<0)throw new PyErr("ZeroDivisionError","0.0 cannot be raised to a negative power");const r=Math.pow(A.v,B.v);return V(r,(fl||B.v<0)?"float":"int")}
+  throw new PyErr("SyntaxError","unknown operator")}
+function applyCmp(op,a,b){const A=isNum(a)?nv(a):a,B=isNum(b)?nv(b):b;
+  if(op==="=="||op==="!="){let eq=(isNum(A)&&isNum(B))||(A.k===B.k)?(A.k==="list"?JSON.stringify(A.v)===JSON.stringify(B.v):A.v===B.v):false;return V(op==="=="?eq:!eq,"bool")}
+  if((isNum(A)&&isNum(B))||(A.k==="str"&&B.k==="str")){const x=A.v,y=B.v;return V(op==="<"?x<y:op===">"?x>y:op==="<="?x<=y:x>=y,"bool")}
+  throw new PyErr("TypeError",`'${op}' not supported between instances of '${tn(a)}' and '${tn(b)}'`)}
+const FUN={abs:a=>V(Math.abs(a[0].v),a[0].k==="bool"?"int":a[0].k),
+  round:a=>{const d=a[1]?a[1].v:0,f=Math.pow(10,d);let r=Math.round(a[0].v*f)/f;const x=a[0].v*f;if(Math.abs(x%1)===0.5)r=(Math.floor(x)%2===0?Math.floor(x):Math.ceil(x))/f;return a[1]?V(r,a[0].k):V(r,"int")},
+  int:a=>{if(a[0].k==="str"){if(!/^\s*[-+]?\d+\s*$/.test(a[0].v))throw new PyErr("ValueError",`invalid literal for int() with base 10: '${a[0].v}'`);return V(parseInt(a[0].v,10),"int")}return V(Math.trunc(a[0].v),"int")},
+  float:a=>{if(a[0].k==="str"){if(isNaN(parseFloat(a[0].v)))throw new PyErr("ValueError",`could not convert string to float: '${a[0].v}'`);return V(parseFloat(a[0].v),"float")}return V(+a[0].v,"float")},
+  str:a=>V(pyStr(a[0]),"str"),len:a=>{if(a[0].k!=="str"&&a[0].k!=="list")throw new PyErr("TypeError",`object of type '${tn(a[0])}' has no len()`);return V(a[0].v.length,"int")},
+  max:a=>a.reduce((m,x)=>applyCmp(">",x,m).v?x:m),min:a=>a.reduce((m,x)=>applyCmp("<",x,m).v?x:m),
+  bool:a=>V(truthy(a[0]),"bool"),type:a=>V(`<class '${a[0].k==="NoneType"?"NoneType":a[0].k}'>`,"str")};
+function evalPy(n,env,ctx){
+  switch(n.t){
+    case"val":return n.val;
+    case"name":if(env&&n.name in env)return env[n.name];throw new PyErr("NameError",`name '${n.name}' is not defined`);
+    case"list":return V(n.items.map(i=>evalPy(i,env,ctx)),"list");
+    case"un":{const x=evalPy(n.x,env,ctx);if(n.op==="not")return V(!truthy(x),"bool");if(!isNum(x))throw new PyErr("TypeError",`bad operand type for unary ${n.op}: '${tn(x)}'`);const y=nv(x);return n.op==="-"?V(-y.v,y.k):y}
+    case"bin":return applyBin(n.op,evalPy(n.l,env,ctx),evalPy(n.r,env,ctx));
+    case"and":{const l=evalPy(n.l,env,ctx);return truthy(l)?evalPy(n.r,env,ctx):l}
+    case"or":{const l=evalPy(n.l,env,ctx);return truthy(l)?l:evalPy(n.r,env,ctx)}
+    case"cmp":{let l=evalPy(n.items[0],env,ctx);for(let i=0;i<n.ops.length;i++){const r=evalPy(n.items[i+1],env,ctx);if(!applyCmp(n.ops[i],l,r).v)return V(false,"bool");l=r}return V(true,"bool")}
+    case"call":{const args=n.args.map(a=>evalPy(a,env,ctx));if(n.name==="print"){if(ctx)ctx.out.push(args.map(pyStr).join(" "));return V(null,"NoneType")}
+      if(!FUN[n.name])throw new PyErr("NameError",`name '${n.name}' is not defined`);try{return FUN[n.name](args)}catch(e){if(e instanceof PyErr)throw e;throw new PyErr("TypeError","bad arguments for "+n.name+"()")}}
+  }}
+function stripComment(s){let q=null;for(let i=0;i<s.length;i++){const c=s[i];if(q){if(c===q)q=null}else if(c==='"'||c==="'")q=c;else if(c==="#")return s.slice(0,i)}return s}
+/* run a few lines like a notebook cell; returns {out:[lines], val, err} */
+function runCell(src,env){const ctx={out:[]};let last=null;
+  try{for(const raw of src.split("\n")){const line=stripComment(raw).trim();if(!line)continue;
+    const m=line.match(/^([A-Za-z_]\w*)\s*=(?!=)\s*(.+)$/);
+    if(m){env[m[1]]=evalPy(parsePy(m[2]),env,ctx);last=null}else{const v=evalPy(parsePy(line),env,ctx);last=/^print\s*\(/.test(line)?null:v}}
+    return{out:ctx.out,val:last}}
+  catch(e){if(e instanceof PyErr)return{out:ctx.out,err:e.pt+": "+e.message,et:e.pt};throw e}}
+/* printing an AST with minimal brackets, for step-by-step evaluation */
+const PREC={or:1,and:2,not:3,cmp:4,bin:{"+":6,"-":6,"*":7,"/":7,"//":7,"%":7,"**":9},un:8,atom:10};
+function prc(n){if(n.t==="or")return 1;if(n.t==="and")return 2;if(n.t==="un")return n.op==="not"?3:8;if(n.t==="cmp")return 4;if(n.t==="bin")return PREC.bin[n.op];return 10}
+function astStr(n,hl){
+  const wrap=(c,min,strict)=>{const s=astStr(c,hl);const p=prc(c);return(p<min||(strict&&p===min))?"("+s+")":s};
+  let s;
+  switch(n.t){
+    case"val":s=esc(pyRepr(n.val));break;
+    case"name":s=esc(n.name);break;
+    case"list":s="["+n.items.map(i=>astStr(i,hl)).join(", ")+"]";break;
+    case"call":s=esc(n.name)+"("+n.args.map(a=>astStr(a,hl)).join(", ")+")";break;
+    case"un":s=(n.op==="not"?"not ":n.op)+wrap(n.x,n.op==="not"?3:8,false);break;
+    case"bin":{const p=prc(n);s=n.op==="**"?wrap(n.l,p,true)+" ** "+wrap(n.r,8,false):wrap(n.l,p,false)+" "+esc(n.op)+" "+wrap(n.r,p,true);break}
+    case"and":s=wrap(n.l,2,false)+" and "+wrap(n.r,2,true);break;
+    case"or":s=wrap(n.l,1,false)+" or "+wrap(n.r,1,true);break;
+    case"cmp":s=n.items.map((x,i)=>wrap(x,5,false)+(i<n.ops.length?" "+esc(n.ops[i])+" ":"")).join("");break;
+  }
+  return n===hl?`<span class="mk">${s}</span>`:s}
+/* find next reducible node (postorder, left first, honours short-circuit); returns {node, replace(fn)} via path */
+function nextReducible(n,env){
+  const isV=x=>x.t==="val";
+  function rec(n){
+    if(isV(n))return null;
+    if(n.t==="name")return{node:n,note:"look up the value of the name"};
+    if(n.t==="and"||n.t==="or"){
+      if(!isV(n.l)){const r=rec(n.l);if(r)return r;return null}
+      const sc=n.t==="and"?!truthy(n.l.val):truthy(n.l.val);
+      if(sc)return{node:n,short:true,note:"short-circuit: the left side already decides, the right side is NOT evaluated"};
+      if(!isV(n.r)){const r=rec(n.r);if(r)return r;return null}
+      return{node:n,note:"left side did not decide, so the right side is used"}}
+    const kids=n.t==="bin"?[n.l,n.r]:n.t==="un"?[n.x]:n.t==="cmp"?n.items:n.t==="call"?n.args:n.t==="list"?n.items:[];
+    for(const k of kids){const r=rec(k);if(r)return r}
+    return{node:n,note:n.t==="bin"?"do "+n.op:n.t==="un"?"apply "+n.op:n.t==="cmp"?"compare":n.t==="call"?"call "+n.name+"()":"build the list"}}
+  return rec(n)}
+function replaceNode(root,target,val){if(root===target)return{t:"val",val};
+  for(const k of["l","r","x"])if(root[k])root[k]=replaceNode(root[k],target,val);
+  for(const k of["items","args"])if(root[k])root[k]=root[k].map(c=>replaceNode(c,target,val));return root}
+function evalSteps(src,env){
+  let ast=parsePy(src);const steps=[{html:astStr(ast),note:"start: the whole expression"}];let guard=0;
+  while(ast.t!=="val"&&guard++<60){const r=nextReducible(ast,env);if(!r)break;
+    const before=astStr(ast,r.node);
+    let v;const ctx={out:[]};
+    if(r.short)v=r.node.l.val;else if(r.node.t==="and"||r.node.t==="or")v=r.node.t==="and"?(truthy(r.node.l.val)?r.node.r.val:r.node.l.val):(truthy(r.node.l.val)?r.node.l.val:r.node.r.val);
+    else if(r.node.t==="name"){v=evalPy(r.node,env,ctx)}
+    else{const tmp=JSON.parse(JSON.stringify(r.node));v=evalPy(r.node,env,ctx)}
+    ast=replaceNode(ast,r.node,v);
+    steps.push({html:astStr(ast),before,note:r.note+" = "+esc(pyRepr(v))});}
+  return{steps,result:ast.val}}
+/* generic stepper widget */
+function stepper(root,sel,getSteps,draw){
+  const box=$(sel,root);let i=0,steps=getSteps();
+  box.innerHTML=`<div class="row"><button class="btn sm" type="button" data-a="b">Back</button><button class="btn pri sm" type="button" data-a="n">Step</button><button class="btn sm" type="button" data-a="a">Run all</button><button class="btn sm" type="button" data-a="r">Reset</button><span class="small muted" data-a="c"></span></div><div data-a="v"></div>`;
+  const v=$("[data-a=v]",box),c=$("[data-a=c]",box);
+  function show(){c.textContent=`step ${i} of ${steps.length-1}`;v.innerHTML=draw(steps[i],i,steps)}
+  $("[data-a=b]",box).onclick=()=>{if(i>0){i--;show()}};
+  $("[data-a=n]",box).onclick=()=>{if(i<steps.length-1){i++;show()}};
+  $("[data-a=a]",box).onclick=()=>{i=steps.length-1;show()};
+  $("[data-a=r]",box).onclick=()=>{i=0;show()};
+  show();
+  return{reset(){steps=getSteps();i=0;show()}}}
+const chips=(id,items,sel)=>`<div id="${id}">`+items.map((x,k)=>`<button type="button" class="opt2" data-v="${esc(x)}" aria-pressed="${k===sel}">${esc(x)}</button>`).join("")+`</div>`;
+function bindChips(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)})}
+/* seeded random, so every run of a demo is repeatable */
+function rng(seed){let s=seed>>>0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+const q2=n=>String(n).padStart(2," ");
+
+const CODE=s=>`<div class="code">${esc(s)}</div>`;
+const KV=o=>`<div class="kv">`+Object.entries(o).map(([k,v])=>`<span>${esc(k)} = ${esc(v)}</span>`).join("")+`</div>`;
+
+/* ===== IPSR Unit 5: Uncertain Knowledge and Reasoning ===== */
+const NBREF=n=>`<span class="small muted">Notebook: IPSR_Unit5_Lab.ipynb, sections ${n}</span>`;
+function matcher(root,sel,items,opts){const box=$(sel,root);let got=0,tried=new Set();
+  box.innerHTML=items.map((it,i)=>`<div class="card" style="margin:8px 0"><b>${it.q}</b><div style="margin-top:4px">${opts.map((o,k)=>`<button type="button" class="opt2" data-m="${i}" data-k="${k}">${o}</button>`).join("")}</div><div class="small" data-r="${i}" style="margin-top:4px"></div></div>`).join("")+`<div class="callout k small" data-sc></div>`;
+  const sc=()=>$("[data-sc]",box).textContent=`Right first time: ${got} of ${items.length}`;sc();
+  $$("[data-m]",box).forEach(b=>b.onclick=()=>{const i=+b.dataset.m,k=+b.dataset.k,it=items[i],ok=k===it.a;if(!tried.has(i)){tried.add(i);if(ok)got++;sc()}
+    $$(`[data-m="${i}"]`,box).forEach(x=>x.classList.remove("ok","no"));b.classList.add(ok?"ok":"no");$(`[data-r="${i}"]`,box).textContent=ok?"Right. "+it.why:"Not this one. Try another."})}
+const pc=(x,d=1)=>(100*x).toFixed(d)+"%";
+const f3=x=>(Math.round(x*1000)/1000).toFixed(3);
+
+/* 1 objectives, uncertainty, sources */
+lesson({nav:"Uncertainty",title:"Objectives, uncertainty and its sources",syl:"Objectives; Uncertainty; Sources of uncertain knowledge",
+html:()=>`<p class="lead">Logic says a statement is true or false. The real world is not that tidy: sensors are noisy, data is missing, rules have exceptions. An agent that waits for certainty never acts. <b>Objective of this unit:</b> represent uncertainty with <b>probabilities</b>, update beliefs with evidence, and choose the action with the best <b>expected utility</b>.</p>
+<div class="card try"><h3>Why a logical rule fails: toothache and cavity</h3><p class="small muted">Rule: <i>toothache implies cavity</i>. In a simulated clinic, 10% of people have a cavity; 80% of them have a toothache; 10% of people without a cavity also have one.</p>
+<div class="row">Patients: ${seg("pn",[["1000","1,000"],["10000","10,000"]])} <button class="btn pri" type="button" id="clin">Simulate a new clinic</button></div><div id="clo"></div></div>
+<div class="card try"><h3>Acting under uncertainty: umbrella or not?</h3><div class="row">P(rain) <input type="range" id="pr" min="0" max="1" step="0.01" value="0.3"> <b id="prv">0.30</b></div><div id="eu"></div></div>
+<div class="card try"><h3>Sources of uncertain knowledge</h3><div id="src"></div></div>
+${quiz("i5q1","An agent should choose the action with the highest:",["Probability of success only","Expected utility","Lowest cost"],1,"Expected utility = sum of (probability x utility) over outcomes. It weighs both how likely an outcome is and how good or bad it is.")}
+${NBREF("5.1, 5.2 and 5.3")}`,
+mount(r){let seed=11,pn="1000";bindSeg(r,"pn",v=>{pn=v;clin()});
+  function clin(){const N=+pn,rd=rng(seed);let cav=0,tooth=0,both=0,cavNoTooth=0;for(let i=0;i<N;i++){const c=rd()<.1,t=c?rd()<.8:rd()<.1;if(c)cav++;if(t)tooth++;if(c&&t)both++;if(c&&!t)cavNoTooth++}
+    $("#clo",r).innerHTML=`<div class="grid4"><div class="kpi"><span class="small muted">With toothache</span><b>${tooth}</b></div><div class="kpi"><span class="small muted">...of them have a cavity</span><b>${both}</b></div><div class="kpi"><span class="small muted">Rule wrong for</span><b>${pc(1-both/Math.max(1,tooth))}</b></div><div class="kpi"><span class="small muted">Cavities with no toothache</span><b>${cavNoTooth}</b></div></div><div class="callout k small">Roughly half the toothaches are NOT cavities, and some cavities cause no pain. A true/false rule cannot express this; a probability can: P(cavity | toothache) is about 0.5 to 0.6.</div>`}
+  $("#clin",r).onclick=()=>{seed+=7;clin()};clin();
+  const U={"Take umbrella":[5,-1],"Leave it":[-10,3]};
+  function eu(){const p=+$("#pr",r).value;$("#prv",r).textContent=p.toFixed(2);const E=Object.entries(U).map(([a,[w,d]])=>({a,e:p*w+(1-p)*d,w,d}));const best=E.reduce((x,y)=>y.e>x.e?y:x);
+    $("#eu",r).innerHTML=`<table class="dt"><thead><tr><th>Action</th><th>Utility if rain</th><th>Utility if dry</th><th>Expected utility</th></tr></thead><tbody>${E.map(x=>`<tr><td>${x.a}</td><td class="num">${x.w}</td><td class="num">${x.d}</td><td class="num"><b>${x.e.toFixed(2)}</b></td></tr>`).join("")}</tbody></table><div class="callout k">Best action: <b>${best.a}</b>. Expected utility = P(rain) x U(rain) + P(dry) x U(dry). Slide P(rain) and watch the decision flip.</div>`}
+  $("#pr",r).oninput=eu;eu();
+  matcher(r,"#src",[{q:"A rule for toothache would need hundreds of exceptions and still be incomplete.",a:0,why:"Too much work to list every exception: laziness."},{q:"Medicine does not yet have a complete theory of this disease.",a:1,why:"The science itself is incomplete: theoretical ignorance."},{q:"We know the medical rules but cannot run every test on this patient.",a:2,why:"Missing measurements: practical ignorance."},{q:"A thermometer shows 36.4 then 37.1 for the same patient.",a:3,why:"Readings vary randomly: noisy sensors."}],["Laziness","Theoretical ignorance","Practical ignorance","Noisy sensors"])}});
+
+/* 2 probabilistic reasoning + basic probability */
+const EVS={"Sum is 7":o=>o[0]+o[1]===7,"Double":o=>o[0]===o[1],"Sum at least 10":o=>o[0]+o[1]>=10,"First die even":o=>o[0]%2===0,"Sum is odd":o=>(o[0]+o[1])%2===1,"At least one 6":o=>o[0]===6||o[1]===6};
+lesson({nav:"Basic probability",title:"Probabilistic reasoning and basic probability theory",syl:"Probabilistic reasoning; Basic probability theory",
+html:()=>`<p class="lead"><b>Probabilistic reasoning</b> keeps a <b>degree of belief</b> between 0 (impossible) and 1 (certain) for every statement. For equally likely outcomes, <code>P(A) = favourable / total</code>. Rules: <code>P(not A) = 1 - P(A)</code> and the <b>addition rule</b> <code>P(A or B) = P(A) + P(B) - P(A and B)</code>.</p>
+<div class="card try"><h3>The sample space of two dice (36 outcomes)</h3><p class="small muted">Pick events A (blue) and B (orange). Overlap shows A and B.</p><div class="row"><b>A:</b> <select id="ea"></select> <b>B:</b> <select id="eb"></select></div><div id="sp"></div><div id="spo"></div></div>
+<div class="card try"><h3>Law of large numbers</h3><div class="row">Roll two dice ${seg("ln",[["20","20 times"],["500","500"],["20000","20,000"]])} <button class="btn pri" type="button" id="lr">Roll</button> Event: <select id="le"></select></div><div id="lo"></div></div>
+${quiz("i5q2","P(A) = 0.3, P(B) = 0.4, P(A and B) = 0.1. What is P(A or B)?",["0.7","0.6","0.12"],1,"0.3 + 0.4 - 0.1 = 0.6. Without subtracting the overlap you count the shared outcomes twice.")}
+${NBREF("5.4 and 5.5")}`,
+mount(r){const names=Object.keys(EVS),sp=[];for(let a=1;a<=6;a++)for(let b=1;b<=6;b++)sp.push([a,b]);
+  ["ea","eb","le"].forEach((id,i)=>$("#"+id,r).innerHTML=names.map(n=>`<option>${n}</option>`).join(""));$("#eb",r).value="Double";
+  function d(){const A=EVS[$("#ea",r).value],B=EVS[$("#eb",r).value];const nA=sp.filter(A).length,nB=sp.filter(B).length,nAB=sp.filter(o=>A(o)&&B(o)).length,nOr=sp.filter(o=>A(o)||B(o)).length;
+    let g='<table class="tt" style="margin:8px 0"><tr><th></th>'+[1,2,3,4,5,6].map(x=>`<th>${x}</th>`).join("")+"</tr>";for(let a=1;a<=6;a++){g+=`<tr><th>${a}</th>`;for(let b=1;b<=6;b++){const o=[a,b],ia=A(o),ib=B(o);g+=`<td style="${ia&&ib?"background:var(--warn-soft);outline:2px solid var(--sec)":ia?"background:var(--pri-soft)":ib?"background:var(--sec-soft)":""}">${a+b}</td>`}g+="</tr>"}g+="</table><div class='small muted'>Rows: first die. Columns: second die. Cell shows the sum.</div>";
+    $("#sp",r).innerHTML=g;$("#spo",r).innerHTML=`<table class="dt"><tbody><tr><td>P(A) = ${nA}/36</td><td class="num"><b>${f3(nA/36)}</b></td></tr><tr><td>P(B) = ${nB}/36</td><td class="num"><b>${f3(nB/36)}</b></td></tr><tr><td>P(not A) = 1 - P(A)</td><td class="num"><b>${f3(1-nA/36)}</b></td></tr><tr><td>P(A and B) = ${nAB}/36</td><td class="num"><b>${f3(nAB/36)}</b></td></tr><tr><td>P(A or B) = P(A) + P(B) - P(A and B) = ${nOr}/36</td><td class="num"><b>${f3(nOr/36)}</b></td></tr></tbody></table>`}
+  ["ea","eb"].forEach(i=>$("#"+i,r).onchange=d);d();
+  let seed=3,lk="500";bindSeg(r,"ln",v=>{lk=v;roll()});function roll(){const n=+lk,rd=rng(seed),ev=EVS[$("#le",r).value];let c=0;const run=[];for(let i=1;i<=n;i++){const o=[1+Math.floor(rd()*6),1+Math.floor(rd()*6)];if(ev(o))c++;run.push(c/i)}
+    const tr=sp.filter(ev).length/36,step=Math.max(1,Math.floor(n/60)),idx=run.map((_,i)=>i).filter(i=>i%step===0||i===n-1);
+    $("#lo",r).innerHTML=chartLine([{name:"share of rolls",vals:idx.map(i=>run[i]),color:"var(--c1)"},{name:"true probability",vals:idx.map(()=>tr),color:"var(--c2)",dash:true}],idx.map(i=>String(i+1)),{w:640,h:260,min:0,max:1,dots:false,maxLabels:8})+`<div class="callout k small">After ${n} rolls the share is <b>${f3(run[n-1])}</b>; true probability <b>${f3(tr)}</b>. More trials, closer match.</div>`}
+  $("#lr",r).onclick=()=>{seed+=5;roll()};$("#le",r).onchange=roll;roll()}});
+
+/* 3 conditional probability */
+lesson({hero:true,nav:"Conditional probability",title:"Conditional probability",syl:"Conditional probability",
+html:()=>`<p class="lead"><b>P(A | B)</b> reads "the probability of A <i>given</i> B". Once you know B happened, the sample space shrinks to B only: <code>P(A | B) = P(A and B) / P(B)</code>. If P(A | B) = P(A), the events are <b>independent</b>: knowing B tells you nothing about A.</p>
+<div class="card try"><h3>Try it: attendance and result for 700 students</h3><p class="small muted">Edit the four counts if you like. Then choose what you <b>know</b> (the condition).</p>
+<table class="dt"><thead><tr><th></th><th>Passed</th><th>Failed</th></tr></thead><tbody><tr><td>Attended 75% or more</td><td><input type="number" id="c11" value="420" style="width:80px"></td><td><input type="number" id="c12" value="60" style="width:80px"></td></tr><tr><td>Attended less</td><td><input type="number" id="c21" value="90" style="width:80px"></td><td><input type="number" id="c22" value="130" style="width:80px"></td></tr></tbody></table>
+<div class="row"><b>Given:</b> ${seg("gv",[["att","attended"],["not","did not attend"],["pas","passed"],["fai","failed"]])}</div><div id="cpo"></div></div>
+${quiz("i5q3","In the default table, P(pass | attended) is about:",["0.64","0.88","0.50"],1,"420 attended and passed out of 480 who attended = 0.875. The overall pass rate is only 510/700 = 0.73, so attendance and passing are NOT independent.")}
+${NBREF("5.6")}`,
+mount(r){let g="att";bindSeg(r,"gv",v=>{g=v;d()});
+  function d(){const c=[[+$("#c11",r).value||0,+$("#c12",r).value||0],[+$("#c21",r).value||0,+$("#c22",r).value||0]],T=c[0][0]+c[0][1]+c[1][0]+c[1][1];if(!T)return;
+    const pass=(c[0][0]+c[1][0])/T,att=(c[0][0]+c[0][1])/T;let q,gname,cond,nB,nAB,aname;
+    if(g==="att"||g==="not"){const row=g==="att"?0:1;nB=c[row][0]+c[row][1];nAB=c[row][0];gname=g==="att"?"attended":"did not attend";aname="pass";q=pass;cond=(i,j)=>i===row}
+    else{const col=g==="pas"?0:1;nB=c[0][col]+c[1][col];nAB=c[0][col];gname=g==="pas"?"passed":"failed";aname="attended";q=att;cond=(i,j)=>j===col}
+    const pr=nAB/nB;
+    const cell=(i,j,v)=>`<td class="num" style="${cond(i,j)?"background:var(--pri-soft);font-weight:700":"opacity:.45"}">${v}</td>`;
+    $("#cpo",r).innerHTML=`<table class="dt" style="margin-top:8px"><thead><tr><th></th><th>Passed</th><th>Failed</th></tr></thead><tbody><tr><td>Attended 75% or more</td>${cell(0,0,c[0][0])}${cell(0,1,c[0][1])}</tr><tr><td>Attended less</td>${cell(1,0,c[1][0])}${cell(1,1,c[1][1])}</tr></tbody></table><p class="small muted">Highlighted cells are the shrunken sample space: only people who ${gname}.</p>
+    <div class="callout k"><b>P(${aname} | ${gname}) = P(${aname} and ${gname}) / P(${gname}) = ${nAB}/${nB} = ${f3(pr)}</b><br>Compare with P(${aname}) = <b>${f3(q)}</b> overall. ${Math.abs(pr-q)<0.02?"They are about equal: the events look independent.":pr>q?"Knowing this raises the probability: the events are dependent.":"Knowing this lowers the probability: the events are dependent."}</div>`+
+    chartBar([{label:"P("+aname+")",value:q,color:"var(--c1)"},{label:"P("+aname+" | "+gname+")",value:pr,color:"var(--c2)"}],{w:480,h:200,max:1,values:true})}
+  ["c11","c12","c21","c22"].forEach(i=>$("#"+i,r).oninput=d);d()}});
+
+/* 4 joint, prior, conditional */
+const JT=[[1,1,1,.108],[1,1,0,.016],[1,0,1,.012],[1,0,0,.064],[0,1,1,.072],[0,1,0,.144],[0,0,1,.008],[0,0,0,.576]];
+lesson({hero:true,nav:"Joint distribution",title:"The joint probability, priors and conditional probabilities",syl:"The joint probability; The prior and conditional probabilities",
+html:()=>`<p class="lead">The <b>full joint distribution</b> gives the probability of every combination of variables; the 8 rows below add up to 1. Everything else comes from it: add rows for a <b>marginal</b> (a <b>prior</b> such as P(cavity)), or divide sums for a <b>conditional</b> such as P(cavity | toothache).</p>
+<div class="card try"><h3>Dentist example: Toothache, Catch (the probe catches), Cavity</h3><div class="grid3"><div><b>Event</b> (what you ask about)<br>${seg("e1",[["a","Toothache"],["n","any"]],"s")}<br>${seg("e2",[["a","Catch"],["n","any"]],"s")}<br>${seg("e3",[["a","Cavity"],["n","any"]],"s")}</div><div><b>Given</b> (what you know)<br>${seg("g1",[["1","toothache"],["0","no toothache"],["n","any"]])}<br>${seg("g2",[["1","catch"],["0","no catch"],["n","any"]])}<br>${seg("g3",[["1","cavity"],["0","no cavity"],["n","any"]])}</div><div id="jo"></div></div><div id="jt"></div></div>
+<div class="callout i small"><b>Prior versus conditional.</b> P(cavity) = 0.2 is the <b>prior</b>: belief before any evidence. P(cavity | toothache) = 0.6 is a <b>conditional</b>: belief after seeing the evidence. Evidence moved the belief from 0.2 to 0.6.</div>
+${quiz("i5q4","What is the sum of all probabilities in a full joint distribution?",["It depends","Exactly 1","The number of rows"],1,"Exactly one of the rows must be true, so the probabilities sum to 1.")}
+${NBREF("5.8 and 5.11")}`,
+mount(r){const S={e1:"n",e2:"n",e3:"a",g1:"1",g2:"n",g3:"n"};["e1","e2","e3","g1","g2","g3"].forEach(id=>bindSeg(r,id,v=>{S[id]=v;d()}));
+  ["e1","e2","e3"].forEach(id=>{$$("#"+id+" button",r).forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===S[id]))});$$("#g1 button",r).forEach(b=>b.setAttribute("aria-pressed",b.dataset.v==="1"));$$("#g2 button",r).forEach(b=>b.setAttribute("aria-pressed",b.dataset.v==="n"));$$("#g3 button",r).forEach(b=>b.setAttribute("aria-pressed",b.dataset.v==="n"));
+  function d(){const inE=row=>[["e1",0],["e2",1],["e3",2]].every(([k,i])=>S[k]==="n"||row[i]===1),inG=row=>[["g1",0],["g2",1],["g3",2]].every(([k,i])=>S[k]==="n"||row[i]===+S[k]);
+    const pG=sum(JT.filter(inG).map(x=>x[3])),pEG=sum(JT.filter(x=>inE(x)&&inG(x)).map(x=>x[3])),pE=sum(JT.filter(inE).map(x=>x[3]));const pr=pG?pEG/pG:NaN;
+    $("#jt",r).innerHTML=`<table class="dt" style="margin-top:8px"><thead><tr><th>Toothache</th><th>Catch</th><th>Cavity</th><th>P</th><th>In the given?</th><th>Event and given?</th></tr></thead><tbody>${JT.map(x=>{const g=inG(x),e=inE(x)&&g;return`<tr style="${e?"background:var(--sec-soft)":g?"background:var(--pri-soft)":"opacity:.55"}"><td>${TF(x[0])}</td><td>${TF(x[1])}</td><td>${TF(x[2])}</td><td class="num">${x[3].toFixed(3)}</td><td>${g?"yes":""}</td><td>${e?"yes":""}</td></tr>`}).join("")}</tbody></table>`;
+    $("#jo",r).innerHTML=`<div class="callout k small">P(event) = <b>${f3(pE)}</b><br>P(given) = <b>${f3(pG)}</b><br>P(event and given) = <b>${f3(pEG)}</b><br><b>P(event | given) = ${isNaN(pr)?"undefined":f3(pr)}</b></div><p class="small muted">Blue rows: the given. Orange: event and given.</p>`}
+  d()}});
+const TF=b=>b?"T":"F";
+
+/* 5 Bayes */
+lesson({hero:true,nav:"Bayes rule and reasoning",title:"Bayes rule and Bayesian reasoning",syl:"Bayesian rule; Bayesian reasoning",
+html:()=>`<p class="lead"><b>Bayes rule:</b> <code>P(H | E) = P(E | H) x P(H) / P(E)</code>, with <code>P(E) = P(E | H) P(H) + P(E | not H) P(not H)</code>. It reverses a conditional: from "how likely is this evidence if the hypothesis is true" (easy to measure) to "how likely is the hypothesis given this evidence" (what we want). <b>Bayesian reasoning</b> repeats it: today's posterior becomes tomorrow's prior.</p>
+<div class="card try"><h3>A medical test, as 1,000 people</h3><div class="grid3"><div>Prior: P(disease) <input type="range" id="bp" min="0.001" max="0.5" step="0.001" value="0.01"> <b id="bpv">0.010</b></div><div>Sensitivity: P(+ | disease) <input type="range" id="bs" min="0.5" max="0.999" step="0.001" value="0.9"> <b id="bsv">0.900</b></div><div>False positive: P(+ | healthy) <input type="range" id="bf" min="0.001" max="0.3" step="0.001" value="0.05"> <b id="bfv">0.050</b></div></div><div id="bo"></div></div>
+<div class="card try"><h3>Updating step by step: a spam filter reads words</h3><p class="small muted">Start with P(spam) = 0.20. Click words to read them in order; each one multiplies in its likelihood.</p><div class="row"><span id="ws"></span> <button class="btn" type="button" id="wr">Start over</button></div><div id="wo"></div></div>
+${quiz("i5q5","A disease affects 1% of people. A test is 90% sensitive with a 5% false positive rate. You test positive. P(disease) is about:",["90%","15%","50%"],1,"Of 1,000 people: 9 sick and positive, about 50 healthy and positive. 9 of 59 positives are sick, around 15%. The low prior matters.")}
+${NBREF("5.7 and 5.9")}`,
+mount(r){function b(){const p=+$("#bp",r).value,s=+$("#bs",r).value,f=+$("#bf",r).value;$("#bpv",r).textContent=p.toFixed(3);$("#bsv",r).textContent=s.toFixed(3);$("#bfv",r).textContent=f.toFixed(3);
+    const pe=s*p+f*(1-p),post=s*p/pe;const N=1000,sick=Math.round(N*p),tp=Math.round(sick*s),fn=sick-tp,healthy=N-sick,fp=Math.round(healthy*f),tn=healthy-fp;
+    const dots=[...Array(tp).fill("var(--bad)"),...Array(fp).fill("var(--c1)"),...Array(fn).fill("var(--warn)"),...Array(tn).fill("var(--line2)")].map(c=>`<i style="background:${c}"></i>`).join("");
+    const sw=(c,t)=>`<span style="display:inline-block;width:12px;height:12px;background:${c};border:1px solid var(--line);margin:0 4px 0 10px"></span>${t}`;
+    const curve=[];for(let q=1;q<=50;q++){const pp=q/100;curve.push(s*pp/(s*pp+f*(1-pp)))}
+    $("#bo",r).innerHTML=`<div style="display:grid;grid-template-columns:repeat(50,1fr);gap:1px;max-width:560px;margin:8px 0" class="dotg">${dots}</div><div class="small">${sw("var(--bad)","sick, test positive: "+tp)}${sw("var(--c1)","healthy, test positive: "+fp)}${sw("var(--warn)","sick, test negative: "+fn)}${sw("var(--line2)","healthy, test negative: "+tn)}</div>
+    <div class="callout k"><b>P(disease | positive) = ${tp}/${tp+fp} = about ${pc(post)}</b> (exact Bayes: ${f3(post)}). P(+) = ${f3(pe)}.</div><div class="small"><b>Posterior against prior</b> (current prior marked)</div>`+chartLine([{name:"posterior",vals:curve,color:"var(--c2)"}],curve.map((_,i)=>String(i+1)+"%"),{w:560,h:220,min:0,max:1,dots:false,maxLabels:10,marks:p<=0.5?[{i:Math.max(0,Math.min(49,Math.round(p*100)-1)),v:post,text:"you"}]:[]})}
+  ["bp","bs","bf"].forEach(i=>$("#"+i,r).oninput=b);b();
+  const W={offer:[.30,.02],free:[.40,.03],meeting:[.02,.25],report:[.03,.20]};let bel=[.2],seq=[];
+  $("#ws",r).innerHTML=Object.keys(W).map(w=>`<button type="button" class="btn sm" data-w="${w}">${w}</button>`).join(" ");
+  const wd=()=>{$("#wo",r).innerHTML=`<div class="code">${["start: P(spam) = 0.200",...seq.map((w,i)=>`after '${w}': P(spam) = ${f3(bel[i+1])}`)].join("\n")}</div>`+(seq.length?chartLine([{name:"P(spam)",vals:bel,color:"var(--c1)"}],["start",...seq],{w:520,h:200,min:0,max:1,maxLabels:8}):"")};
+  $$("[data-w]",r).forEach(x=>x.onclick=()=>{const[ps,ph]=W[x.dataset.w],pr=bel[bel.length-1];bel.push(ps*pr/(ps*pr+ph*(1-pr)));seq.push(x.dataset.w);wd()});$("#wr",r).onclick=()=>{bel=[.2];seq=[];wd()};wd()}});
+
+/* 6 ranking hypotheses */
+const HYP={Flu:.10,Cold:.30,Allergy:.20,Healthy:.40};
+const SYM={fever:{Flu:.90,Cold:.20,Allergy:.02,Healthy:.01},sneezing:{Flu:.50,Cold:.80,Allergy:.90,Healthy:.05},itchy:{Flu:.05,Cold:.05,Allergy:.80,Healthy:.02}};
+lesson({nav:"Ranking hypotheses",title:"Ranking potentially true hypotheses",syl:"Ranking potentially true hypotheses",
+html:()=>`<p class="lead">With several possible explanations, work out <b>P(hypothesis | evidence)</b> for each, then <b>rank</b> them. Multiply each hypothesis's prior by the likelihood of every observed symptom, then divide by the total so the posteriors add to 1. The top hypothesis is the <b>MAP</b> (maximum a posteriori) choice. This simple method assumes symptoms are independent given the disease.</p>
+<div class="card try"><h3>Diagnose: tick the symptoms you observe</h3><div class="row">${Object.keys(SYM).map(s=>`<label class="pill"><input type="checkbox" data-s="${s}"> ${s}</label>`).join("")}</div><div id="rk"></div></div>
+<div class="card"><h3>The numbers behind it</h3><table class="dt"><thead><tr><th>Hypothesis</th><th>Prior</th>${Object.keys(SYM).map(s=>`<th>P(${s} | H)</th>`).join("")}</tr></thead><tbody>${Object.keys(HYP).map(h=>`<tr><td><b>${h}</b></td><td class="num">${HYP[h]}</td>${Object.keys(SYM).map(s=>`<td class="num">${SYM[s][h]}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+${quiz("i5q6","Why divide by the sum of all the products at the end?",["To make posteriors add up to 1","To remove the prior","To speed up the calculation"],0,"The products are only proportional to the posteriors. Normalising makes them proper probabilities. It does not change the ranking.")}
+${NBREF("5.10")}`,
+mount(r){function d(){const ev=$$("[data-s]",r).filter(c=>c.checked).map(c=>c.dataset.s);const raw={};Object.keys(HYP).forEach(h=>{raw[h]=HYP[h];ev.forEach(e=>raw[h]*=SYM[e][h])});const z=sum(Object.values(raw));const rows=Object.keys(HYP).map(h=>({h,raw:raw[h],post:raw[h]/z})).sort((a,b)=>b.post-a.post);
+    $("#rk",r).innerHTML=`<table class="dt" style="margin-top:8px"><thead><tr><th>Rank</th><th>Hypothesis</th><th>Prior</th><th>Prior x likelihoods</th><th>Posterior</th><th></th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td>${i+1}</td><td><b>${x.h}</b></td><td class="num">${HYP[x.h]}</td><td class="num">${x.raw.toPrecision(3)}</td><td class="num"><b>${pc(x.post)}</b></td><td style="width:40%"><div class="bar"><i style="width:${x.post*100}%"></i></div></td></tr>`).join("")}</tbody></table><div class="callout k">${ev.length?`Evidence: ${ev.join(", ")}. Most probable: <b>${rows[0].h}</b> (${pc(rows[0].post)}).`:"No evidence yet, so the posteriors equal the priors."} Total of raw products (the P(evidence)): ${z.toPrecision(3)}.</div>`}
+  $$("[data-s]",r).forEach(c=>c.onchange=d);d()}});
+
+/* live pane */
+function renderLive(){$("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">Formula sheet.</p><div class="code">P(not A) = 1 - P(A)\nP(A or B) = P(A) + P(B) - P(A and B)\nP(A | B) = P(A and B) / P(B)\nIndependent: P(A and B) = P(A) P(B)\n\nBayes:\nP(H | E) = P(E | H) P(H) / P(E)\nP(E) = P(E|H)P(H) + P(E|not H)P(not H)\n\nExpected utility:\nEU(a) = sum over outcomes of P x U</div><h4 style="margin:12px 0 6px">Words</h4><table class="dt"><tbody><tr><td><b>Prior</b></td><td class="small" style="white-space:normal">belief before evidence</td></tr><tr><td><b>Likelihood</b></td><td class="small" style="white-space:normal">P(evidence | hypothesis)</td></tr><tr><td><b>Posterior</b></td><td class="small" style="white-space:normal">belief after evidence</td></tr><tr><td><b>Joint</b></td><td class="small" style="white-space:normal">P of a combination</td></tr></tbody></table>`}
+
+renderLive();go(0);
+
+</script>
+</body>
+</html>

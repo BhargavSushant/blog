@@ -1,0 +1,1339 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CN Lab - Unit 4</title>
+<style>
+:root{
+  --bg:#FAF8F3; --surface:#FFFFFF; --surface2:#EFEBE1; --fg:#12110E; --muted:#44403A; --line:#B9B2A2; --line2:#D9D3C4;
+  --pri:#1F3FB5; --pri-soft:#DDE5FA; --sec:#9A4208; --sec-soft:#FBE3CC;
+  --good:#0F6A31; --good-soft:#D5F0DD; --warn:#744500; --warn-soft:#F9E8B8; --bad:#A31D12; --bad-soft:#FADAD5;
+  --code:#EFEBE1; --on:#FFFFFF; --grid:#CFC9BA; --shadow:0 1px 2px rgba(18,17,14,.08),0 6px 18px rgba(18,17,14,.06);
+  --c1:#1F3FB5; --c2:#9A4208; --c3:#0F6A31; --c4:#7A2A9C; --c5:#8A6D00; --c6:#B0235C;
+  --disp:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --body:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  --mono:ui-monospace,'Cascadia Code',Consolas,Menlo,monospace;
+  --zoom:1;
+}
+:root[data-theme="dark"]{
+  --bg:#0C0C0A; --surface:#181714; --surface2:#242320; --fg:#F7F4EA; --muted:#CFCABD; --line:#5B574B; --line2:#35332C;
+  --pri:#9DB1FF; --pri-soft:#1B2350; --sec:#FFAE6B; --sec-soft:#40240E;
+  --good:#6FE09A; --good-soft:#0F3320; --warn:#F5C964; --warn-soft:#3B2E0A; --bad:#FF9A8C; --bad-soft:#451A15;
+  --code:#1F1E1A; --on:#0C0C0A; --grid:#46433A; --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.3);
+  --c1:#9DB1FF; --c2:#FFAE6B; --c3:#6FE09A; --c4:#D9A0FF; --c5:#F0D060; --c6:#FF8FB8;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body);zoom:var(--zoom)}
+button,select,input{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:240px minmax(0,1fr) 310px;min-height:calc(100vh / var(--zoom))}
+.nav{background:var(--surface);border-right:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.brand{font-family:var(--disp);font-size:20px;line-height:1.15;margin:0 4px 4px}
+.brand small{display:block;font:12.5px var(--body);color:var(--muted);margin-top:4px}
+.nav ol{list-style:none;margin:16px 0 0;padding:0}
+.nav li button{width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;color:var(--fg)}
+.nav li button:hover{background:var(--surface2)}
+.nav li button[aria-current="true"]{background:var(--pri-soft);font-weight:600}
+.nav .n{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--muted);display:grid;place-items:center;font-size:12px;color:var(--muted)}
+.nav li.done .n{background:var(--good);color:var(--on);border-color:var(--good)}
+.nav .t{font-size:13.5px;line-height:1.3}
+.nav .hero .n{border-color:var(--sec);color:var(--sec)}
+.tools{margin:18px 4px 0;display:grid;gap:8px}
+.tools button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 10px;cursor:pointer;font-weight:600;text-align:left}
+.tools button:hover{border-color:var(--fg)}
+.tools .hint{font-size:12px;color:var(--muted)}
+main{padding:26px 30px 70px;min-width:0}
+.crumb{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.15;margin:4px 0 6px}
+h2{font-family:var(--disp);font-size:20px;margin:0 0 8px}
+h3{font-size:13.5px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.syl{display:inline-block;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0;box-shadow:var(--shadow)}
+.card.try{border-left:5px solid var(--pri)}
+.card.sec{border-left:5px solid var(--sec)}
+.lead{font-size:16.5px}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:5px;padding:2px 7px}
+.tag.p{background:var(--pri-soft);color:var(--pri)} .tag.s{background:var(--sec-soft);color:var(--sec)}
+.tag.g{background:var(--good-soft);color:var(--good)} .tag.w{background:var(--warn-soft);color:var(--warn)} .tag.b{background:var(--bad-soft);color:var(--bad)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--fg)}
+.btn.pri{background:var(--pri);color:var(--on);border-color:var(--pri)} .btn.sec{background:var(--sec);color:var(--on);border-color:var(--sec)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+table.dt{border-collapse:collapse;width:100%;font-size:13.5px}
+table.dt th{background:var(--surface2);text-align:left;padding:6px 9px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+table.dt td{padding:5px 9px;border-bottom:1px solid var(--line2);white-space:nowrap}
+table.dt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:340px}
+.tw.sm{max-height:none}
+.new{animation:pop .6s ease both}
+@keyframes pop{from{background:var(--sec-soft);transform:translateY(-4px);opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.new{animation:none}}
+.code{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:7px 10px;overflow:auto;white-space:pre-wrap;color:var(--fg)}
+code{font-family:var(--mono);font-size:.92em;background:var(--code);padding:1px 5px;border-radius:4px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.callout{border-radius:8px;padding:10px 14px;margin:10px 0;background:var(--surface2);border:1px solid var(--line2)}
+.callout.k{background:var(--sec-soft);border-color:transparent} .callout.i{background:var(--pri-soft);border-color:transparent}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:7px 13px;cursor:pointer;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--pri);color:var(--on)}
+.seg.s button[aria-pressed="true"]{background:var(--sec)}
+select,input[type=text],input[type=number]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px}
+input[type=range]{accent-color:var(--pri);vertical-align:middle}
+label.chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer;margin-right:12px}
+.live{background:var(--surface);border-left:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.live .tw{max-height:none}
+.opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;margin:6px 0;cursor:pointer}
+.opt:hover{border-color:var(--fg)} .opt.ok{background:var(--good-soft);border-color:var(--good)} .opt.no{background:var(--bad-soft);border-color:var(--bad)}
+.bar{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden;border:1px solid var(--line2)}
+.bar i{display:block;height:100%;background:var(--sec);transition:width .4s}
+.flow{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+.arrow{font-size:28px;color:var(--sec);text-align:center}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:12.5px;margin:2px 4px 2px 0;background:var(--surface)}
+td.ix{background:var(--bad-soft)} td.iy{background:var(--warn-soft)} td.iz{background:var(--pri-soft)} td.chg{background:var(--good-soft)}
+.cardsel{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi b{font-size:22px;display:block;font-variant-numeric:tabular-nums}
+.nextrow{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
+svg.chart{width:100%;height:auto;display:block;max-height:420px}
+svg.chart text{fill:var(--fg);font:12px var(--body)}
+svg.chart .ax{stroke:var(--muted);stroke-width:1}
+svg.chart .gr{stroke:var(--grid);stroke-width:1}
+svg.chart .lbl{fill:var(--muted)}
+.sheet{border-collapse:collapse;font-size:13.5px;font-family:var(--mono);width:100%}
+.sheet th{background:var(--surface2);border:1px solid var(--line);padding:3px 8px;text-align:center;font-weight:600;color:var(--muted)}
+.sheet td{border:1px solid var(--line);padding:0;min-width:80px}
+.sheet td input{width:100%;border:0;background:transparent;padding:4px 7px;font:inherit;border-radius:0}
+.sheet td.sel{outline:2px solid var(--pri);outline-offset:-2px}
+:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+@media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.live{grid-column:1/-1;position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
+@media (max-width:760px){.app{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav ol{display:flex;overflow:auto;gap:4px}.nav li{flex:none}.nav .t{display:none}main{padding:18px 16px 60px}.grid2,.grid3,.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+
+textarea,input[type=search]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px;font:inherit;color:var(--fg)}
+textarea.py{width:100%;font-family:var(--mono);font-size:13.5px;min-height:62px;resize:vertical;background:var(--code)}
+input.wide{width:100%;font-family:var(--mono)}
+.cell{border:1px solid var(--line);border-radius:10px;margin:10px 0;overflow:hidden;background:var(--surface)}
+.cell .hd{display:flex;gap:10px;align-items:center;background:var(--surface2);padding:5px 10px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.cell .bd{padding:8px 10px}
+.out{font-family:var(--mono);font-size:13px;white-space:pre-wrap;padding:6px 10px;border-top:1px dashed var(--line2);color:var(--fg)}
+.out.err{color:var(--bad);background:var(--bad-soft)}
+.out.ok{background:var(--good-soft)}
+.kv{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.kv span{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:2px 8px}
+.mk{background:var(--warn-soft);color:var(--fg);outline:2px solid var(--warn);border-radius:3px;padding:0 2px}
+.boxes{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
+.bx{min-width:38px;border:1px solid var(--line);border-radius:6px;text-align:center;background:var(--surface);padding:2px 6px;font-family:var(--mono)}
+.bx small{display:block;font-size:11px;color:var(--muted)}
+.bx.hi{background:var(--pri);color:var(--on);border-color:var(--pri)}
+.bx.hi small{color:var(--on)}
+.bx.ok{background:var(--good-soft);border-color:var(--good)}
+.bx.no{background:var(--bad-soft);border-color:var(--bad)}
+.bx.cur{background:var(--warn-soft);border-color:var(--warn)}
+.cmark{font-family:var(--mono);font-size:13px;line-height:1.65;background:var(--code);border:1px solid var(--line2);border-radius:8px;padding:8px 12px;white-space:pre}
+.cmark .ln{display:block;padding:0 4px;border-radius:3px}
+.cmark .ln.on{background:var(--warn-soft);outline:1px solid var(--warn)}
+.t{font-family:var(--mono)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:760px){.grid4{grid-template-columns:1fr 1fr}}
+.world{display:flex;gap:10px;margin:8px 0;flex-wrap:wrap}
+.sq{width:130px;height:90px;border:2px solid var(--line);border-radius:10px;display:grid;place-items:center;text-align:center;background:var(--surface);position:relative}
+.sq.dirty{background:var(--warn-soft);border-color:var(--warn)}
+.sq.here{outline:4px solid var(--pri)}
+.sq small{position:absolute;top:2px;left:6px;color:var(--muted)}
+.fnode{fill:var(--surface);stroke:var(--fg);stroke-width:2}
+.fnode.front{fill:var(--warn-soft);stroke:var(--warn)}
+.fnode.exp{fill:var(--good-soft);stroke:var(--good)}
+.fnode.cur{fill:var(--pri);stroke:var(--pri)}
+.fnode.path{fill:var(--sec-soft);stroke:var(--sec);stroke-width:3.5}
+.edge{stroke:var(--muted);stroke-width:2;fill:none}
+.edge.path{stroke:var(--sec);stroke-width:4}
+svg.g text{fill:var(--fg);font:600 14px var(--body);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+svg.g text.cur{fill:var(--on)}
+table.tt{border-collapse:collapse;font-family:var(--mono);font-size:13.5px}
+table.tt th,table.tt td{border:1px solid var(--line);padding:4px 10px;text-align:center}
+table.tt th{background:var(--surface2)}
+table.tt td.T{background:var(--good-soft)} table.tt td.F{background:var(--bad-soft)}
+.stack{display:flex;flex-direction:column-reverse;align-items:center;min-width:70px;border-bottom:4px solid var(--fg);padding:0 8px}
+.blk{width:56px;height:38px;border:2px solid var(--fg);border-radius:6px;display:grid;place-items:center;font-weight:700;margin-top:2px;background:var(--pri-soft)}
+.blk.held{background:var(--sec-soft);border-color:var(--sec)}
+.tag.big{font-size:13px;padding:3px 10px}
+.opt2{display:inline-block;margin:3px;padding:6px 12px;border:1px solid var(--line);background:var(--surface);border-radius:999px;cursor:pointer;font-weight:600}
+.opt2:hover{border-color:var(--fg)}
+.opt2.ok{background:var(--good-soft);border-color:var(--good)}
+.opt2.no{background:var(--bad-soft);border-color:var(--bad)}
+.opt2[aria-pressed=true]{background:var(--pri);color:var(--on);border-color:var(--pri)}
+.dotg i{display:block;aspect-ratio:1;border-radius:2px;border:1px solid var(--line2)}
+.pill input{margin-right:4px}
+
+/* ===== CN additions ===== */
+.arqwrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:8px 0}
+@media (max-width:900px){.arqwrap{grid-template-columns:1fr}}
+.seqbox{border:1px solid var(--line);border-radius:10px;background:var(--surface);max-height:520px;overflow:auto}
+.seqbox svg{display:block;width:100%;height:auto;min-width:600px}
+svg .axis{stroke:var(--muted);stroke-width:2}
+svg .tk{font:11px var(--mono);fill:var(--muted)}
+svg text.sl{font:600 11.5px var(--mono);fill:var(--fg)}
+svg text.sl.hd{font:700 14px var(--body);letter-spacing:.06em}
+svg text.pk,svg text.ev{paint-order:stroke;stroke:var(--surface);stroke-width:3.5px;stroke-linejoin:round}
+svg text.ev.ok{fill:var(--good)} svg text.ev.bad{fill:var(--bad)} svg text.ev.warn{fill:var(--warn)}
+svg .pkt{stroke-width:2.6;stroke-linecap:round}
+svg .pkt.pd,svg .pdot.pd{stroke:var(--c1);fill:var(--c1)} svg .pkt.pr,svg .pdot.pr{stroke:var(--c2);fill:var(--c2)}
+svg .pkt.pa,svg .pdot.pa{stroke:var(--c3);fill:var(--c3)} svg .pkt.pl,svg .pdot.pl{stroke:var(--bad);fill:var(--bad)}
+svg .pdot{stroke:none}
+svg .xm{font:700 18px var(--body);fill:var(--bad)}
+svg .cursor{stroke:var(--fg);stroke-width:1;stroke-dasharray:4 4;opacity:.55}
+.h4{margin:10px 0 5px;font-size:13.5px}
+.wstrip{display:flex;gap:4px;flex-wrap:wrap}
+.wb{width:36px;height:36px;border:2px solid var(--line);border-radius:7px;display:grid;place-items:center;font:700 13px var(--mono);background:var(--surface)}
+.wb.ack{background:var(--good-soft);border-color:var(--good)} .wb.sent{background:var(--warn-soft);border-color:var(--warn)}
+.wb.buf{background:var(--sec-soft);border-color:var(--sec)} .wb.exp{outline:3px solid var(--pri);outline-offset:1px}
+.wb.inwin{box-shadow:0 6px 0 -1px var(--pri)}
+.legend{margin:8px 0}.legend .lg{display:inline-block;width:22px;height:4px;border-radius:2px;margin:0 4px 3px 10px;vertical-align:middle}
+.lg.pd{background:var(--c1)}.lg.pr{background:var(--c2)}.lg.pa{background:var(--c3)}.lg.pl{background:var(--bad)}
+.logb{font:12.5px var(--mono);max-height:170px;overflow:auto;border:1px solid var(--line2);border-radius:8px;padding:6px 8px;background:var(--code)}
+.logb .bad{color:var(--bad)}.logb .ok{color:var(--good)}.logb .warn{color:var(--warn)}
+tr.bestrow td{background:var(--good-soft)}
+.diag{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:6px}
+.diag svg{display:block;width:100%;height:auto}
+svg .nd{fill:var(--surface);stroke:var(--fg);stroke-width:2}
+svg .nd.on{fill:var(--pri);stroke:var(--pri)} svg .nd.bad{fill:var(--bad-soft);stroke:var(--bad)} svg .nd.ok{fill:var(--good-soft);stroke:var(--good)}
+svg text.nt{font:600 13px var(--body);fill:var(--fg);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+svg text.nt.on{fill:var(--on)}
+svg text.sm{font:12px var(--body);fill:var(--muted);text-anchor:middle}
+svg .ed{stroke:var(--muted);stroke-width:2;fill:none}
+svg .fr{fill:var(--sec-soft);stroke:var(--sec);stroke-width:2}
+.bitrow{display:flex;flex-wrap:wrap;gap:2px;font-family:var(--mono);font-size:15px;margin:4px 0}
+.bitrow span{min-width:20px;text-align:center;border:1px solid var(--line2);border-radius:4px;padding:1px 2px;background:var(--surface)}
+.bitrow span.ins{background:var(--warn-soft);border-color:var(--warn);font-weight:700}
+.bitrow span.flag{background:var(--pri);color:var(--on);border-color:var(--pri)}
+.bitrow span.cnt{background:var(--sec-soft);border-color:var(--sec)}
+.bitrow span.bad{background:var(--bad-soft);border-color:var(--bad)}
+.bitrow span.good{background:var(--good-soft);border-color:var(--good)}
+.bitrow span.run{background:var(--pri-soft);border-color:var(--pri)}
+.pgrid{display:inline-grid;gap:3px}
+.pgrid button{width:36px;height:36px;border:2px solid var(--line);border-radius:6px;background:var(--surface);font:700 14px var(--mono);cursor:pointer;color:var(--fg)}
+.pgrid button.par{background:var(--sec-soft);border-color:var(--sec)}
+.pgrid button.err{background:var(--bad-soft);border-color:var(--bad)}
+.pgrid button.hit{outline:3px solid var(--bad)}
+.pgrid .lab{display:grid;place-items:center;font:600 12px var(--body);color:var(--muted)}
+.qbuf{display:flex;gap:4px;margin:6px 0}.qbuf i{width:34px;height:34px;border:2px solid var(--line);border-radius:6px;background:var(--surface)}
+.qbuf i.f{background:var(--pri);border-color:var(--pri)}
+.meter{height:14px;background:var(--surface2);border:1px solid var(--line);border-radius:7px;overflow:hidden}.meter i{display:block;height:100%;background:var(--pri)}
+svg .ed.path{stroke:var(--sec);stroke-width:4.5}
+svg .nd.on{fill:var(--pri-soft);stroke:var(--pri);stroke-width:4}
+svg .nd.en{fill:var(--sec);stroke:var(--sec)}
+
+/* ===== book blocks ===== */
+main h2.sec{font-family:var(--disp);font-size:1.5em;margin:38px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--line2)}
+main h2.sec span{display:inline-block;min-width:2.6em;color:var(--pri);font-family:var(--mono);font-size:.72em;margin-right:6px}
+main h3.sub{font-size:1.1em;margin:22px 0 6px}
+main p{max-width:68ch}
+.learn{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px 18px;margin:14px 0}
+.learn ul,.sum ul,.doit ol,.exam ol{margin:6px 0 0;padding-left:22px}.learn li,.sum li,.doit li,.exam li{margin:3px 0}
+.def,.idea,.note,.warnb{border-radius:0 10px 10px 0;padding:10px 16px;margin:14px 0;border-left:6px solid var(--pri);background:var(--pri-soft)}
+.idea{border-left-color:var(--sec);background:var(--sec-soft)}
+.note{border-left-color:var(--muted);background:var(--surface2)}
+.warnb{border-left-color:var(--bad);background:var(--bad-soft)}
+.tg{display:block;font:700 11.5px var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.sum{border:2px solid var(--good);background:var(--good-soft);border-radius:10px;padding:10px 18px;margin:18px 0}
+.doit{border:2px dashed var(--pri);border-radius:10px;padding:10px 18px;margin:12px 0;background:var(--surface)}
+.exam{border:1px solid var(--line);border-radius:10px;padding:10px 18px;margin:18px 0;background:var(--surface2)}
+.vis{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 12px;margin:10px 0}
+.trk{margin:6px 0}.trkl{font:700 12.5px var(--body);color:var(--muted);margin-bottom:1px}
+.story .cap,.cap.narr{background:var(--surface);border:2px solid var(--pri);border-radius:10px;padding:12px 16px;margin:10px 0;font-size:16.5px;line-height:1.55;min-height:64px}
+.stepno{font:700 11.5px var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--pri);margin-bottom:3px}
+.storybar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 12px}
+.dots{display:inline-flex;gap:4px;margin-left:8px;flex-wrap:wrap}.dots i{width:10px;height:10px;border-radius:50%;background:var(--line2);border:1px solid var(--line)}.dots i.dn{background:var(--pri-soft);border-color:var(--pri)}.dots i.cu{background:var(--pri);border-color:var(--pri)}
+.cap.narr .nl{margin:2px 0}.cap.narr .nl.old{color:var(--muted);font-size:14px}.cap.narr .nl.new{font-size:16.5px}
+.who{display:inline-block;font:700 11.5px var(--body);padding:1px 8px;border-radius:999px;color:var(--on);margin-right:4px}.who.S{background:var(--c1)}.who.R{background:var(--c3)}.who.N{background:var(--bad)}
+.tm{font:12px var(--mono);color:var(--muted);margin-right:4px}
+.scn{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.cmpt td,.cmpt th{white-space:normal!important;vertical-align:top}
+.bitrow span.cur{outline:3px solid var(--pri);background:var(--pri-soft)}
+.bitrow span.dim{opacity:.45}
+.bitrow span.esc{background:var(--sec-soft);border-color:var(--sec);font-weight:700}
+.big{font:700 26px var(--mono)}
+.stack5{display:flex;flex-direction:column;gap:3px;max-width:430px}
+.stack5 div{border:2px solid var(--line);border-radius:8px;padding:6px 12px;background:var(--surface);display:flex;justify-content:space-between;gap:10px}
+.stack5 div.me{background:var(--pri);color:var(--on);border-color:var(--pri);font-weight:700}
+.stack5 small{color:inherit;opacity:.8}
+td.chg{background:var(--warn-soft);font-weight:700}
+
+.guide{background:var(--surface2);border:2px solid var(--accent,#1e40af);border-radius:12px;padding:14px 18px;margin:14px 0}
+.guide .gh{font:700 11px/1 var(--mono,monospace);letter-spacing:.08em;color:var(--accent,#1e40af);margin-bottom:8px}
+.guide p{margin:6px 0}.guide .gm{font-size:.95em}
+.guide table.gt td,.guide table.gt th{vertical-align:top}
+.chain{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.chain>div{flex:1 1 150px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface)}
+.chain b{display:block;margin-bottom:2px}
+.synbox{border:1px solid var(--line);border-left:5px solid var(--accent,#1e40af);border-radius:8px;padding:10px 16px;margin:12px 0;background:var(--surface)}
+table.gt{width:100%;table-layout:fixed}
+table.gt td,table.gt th{overflow-wrap:anywhere;word-break:normal}
+.guide table.gt th:nth-child(1){width:34%}.guide table.gt th:nth-child(2){width:30%}
+.gl{margin:10px 0}.gr{border-top:1px solid var(--line);padding:8px 0}
+.gr .gs{font-size:1.02em}.gr .gq,.gr .gd{margin-top:2px;color:var(--text)}
+.gr span{font:700 11px/1 var(--mono,monospace);letter-spacing:.06em;text-transform:uppercase;color:var(--accent,#1e40af);margin-right:6px}
+.osiwrap{display:flex;gap:18px;flex-wrap:wrap}.osiwrap.one{display:block}
+.osicol{flex:1 1 220px;max-width:340px}.osih{font:700 12px/1 var(--mono,monospace);letter-spacing:.06em;margin:0 0 6px;text-transform:uppercase}
+.osil{border:2px solid var(--line);border-radius:6px;padding:5px 10px;margin-bottom:3px;background:var(--surface)}
+.osil.on{background:var(--pri);color:var(--on);border-color:var(--pri);font-weight:700}
+.osinote{margin-top:8px}
+.osipdu{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;min-height:36px}
+.osipdu span{border:2px solid var(--line);border-radius:4px;padding:5px 10px;font-family:var(--mono,monospace);background:var(--surface)}
+.osipdu .h{background:var(--pri-soft);border-color:var(--pri)}.osipdu .t{background:var(--surface2);border-color:var(--muted)}
+
+svg .sg{fill:var(--pri-soft);stroke:var(--pri);stroke-width:1.5}
+svg .sg.ok{fill:var(--good-soft);stroke:var(--good)} svg .sg.bad{fill:var(--bad-soft);stroke:var(--bad)}
+svg .sg.wait{fill:var(--warn-soft);stroke:var(--warn);stroke-dasharray:4 3} svg .sg.idle{fill:var(--surface2);stroke:var(--line)}
+svg .sg.jam{fill:var(--bad);stroke:var(--bad)} svg .sg.bo{fill:var(--sec-soft);stroke:var(--sec)} svg .sg.ctl{fill:var(--surface2);stroke:var(--c4)}
+svg .sgt{font:600 11px var(--mono);fill:var(--fg)} svg .sg.jam + .sgt{fill:var(--on)}
+svg .mk{stroke:var(--bad);stroke-width:1.5;stroke-dasharray:4 3} svg .mk.g{stroke:var(--good)} svg .mkt{font:600 11px var(--mono);fill:var(--fg)}
+svg .stn{fill:var(--surface);stroke:var(--fg);stroke-width:2} svg .stn.on{fill:var(--pri-soft);stroke:var(--pri);stroke-width:3} svg .stn.ok{fill:var(--good-soft);stroke:var(--good);stroke-width:3}
+svg .stn.bad{fill:var(--bad-soft);stroke:var(--bad);stroke-width:3} svg .stn.dim{opacity:.45}
+svg .wave{stroke-width:9;stroke-linecap:butt;opacity:.9} svg .wave.a{stroke:var(--c1)} svg .wave.b{stroke:var(--c2)} svg .wave.x{stroke:var(--bad)}
+svg .tnode{fill:var(--surface);stroke:var(--fg);stroke-width:2} svg .tnode.ok{fill:var(--good-soft);stroke:var(--good);stroke-width:3} svg .tnode.bad{fill:var(--bad-soft);stroke:var(--bad);stroke-width:3}
+svg .tnode.idle{fill:var(--surface2);stroke:var(--line)} svg .tnode.cur{stroke:var(--pri);stroke-width:5}
+svg .rng{fill:none;stroke:var(--c4);stroke-width:2;stroke-dasharray:6 4;opacity:.8}
+.bit1{background:var(--pri);color:var(--on)} .macbox span{display:inline-block;font:600 15px var(--mono);padding:4px 7px;border:1px solid var(--line);margin:1px;border-radius:4px;background:var(--surface)}
+.macbox span.hl1{background:var(--pri-soft);border-color:var(--pri)} .macbox span.hl2{background:var(--sec-soft);border-color:var(--sec)} .macbox span.hl3{background:var(--good-soft);border-color:var(--good)}
+.efr{display:flex;flex-wrap:wrap;gap:0;margin:8px 0}.efr button{border:1px solid var(--line);background:var(--surface);padding:10px 8px;cursor:pointer;font:600 13px var(--mono);min-width:44px;text-align:center}
+.efr button[aria-pressed=true]{background:var(--pri);color:var(--on);border-color:var(--pri)}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="nav" aria-label="Lessons">
+    <h2 class="brand">CN Lab<small>Unit 4, Network Layer<br>B.Tech (Hons) CSE, Computer Networks, CS20B501</small></h2>
+    <ol id="navlist"></ol>
+    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
+  </nav>
+  <main id="stage" tabindex="-1"></main>
+  <aside class="live" aria-label="Live data"><h3>Quick reference: Unit IV</h3><div id="livebox"></div></aside>
+</div>
+<script>
+"use strict";
+/* ===== helpers ===== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-US"):v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/(a.length-1))};
+const quant=(a,q)=>{const s=[...a].sort((x,y)=>x-y),p=(s.length-1)*q,l=Math.floor(p);return s[l]+(s[Math.min(l+1,s.length-1)]-s[l])*(p-l)};
+const mode=a=>{const c={};a.forEach(v=>c[v]=(c[v]||0)+1);const mx=Math.max(...Object.values(c));return Object.keys(c).filter(k=>c[k]===mx).join(", ")};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const groupBy=(rows,f)=>{const g={};rows.forEach(r=>{const k=f(r);(g[k]=g[k]||[]).push(r)});return g};
+const corr=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0,c=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2;c+=(y[i]-my)**2});return a/Math.sqrt(b*c)};
+const linfit=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2});const m=a/b;return {m,b:my-m*mx,r:corr(x,y)}};
+function table(rows,cols,opts={}){
+  const head=cols.map(c=>`<th>${esc(c[1])}</th>`).join("");
+  const body=rows.map((r,i)=>`<tr${opts.newFrom!=null&&i>=opts.newFrom?' class="new"':''}>`+cols.map(c=>{
+    const v=r[c[0]],cls=(typeof v==="number"?"num":"")+((opts.cellClass&&opts.cellClass(r,c[0],i))||"");
+    return `<td class="${cls.trim()}">${v===""||v==null?'<span class="muted">(blank)</span>':esc(typeof v==="number"?fmt(v,c[2]!=null?c[2]:(Number.isInteger(v)?0:2)):v)}</td>`}).join("")+"</tr>").join("");
+  return `<div class="tw${opts.small?' sm':''}"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+const QUIZ={};
+function quiz(id,q,opts,ans,why){QUIZ[id]={ans,why};
+  return `<div class="card"><h3>Quick check</h3><p style="margin:0 0 6px"><b>${q}</b></p>`+opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" style="margin-top:6px"></div></div>`;}
+function regQuiz(id,ans,why){QUIZ[id]={ans,why}}
+function seg(id,items,cls=""){return `<div class="seg ${cls}" id="${id}" role="group">`+items.map((x,i)=>`<button type="button" data-v="${x[0]}" aria-pressed="${i===0}">${x[1]}</button>`).join("")+`</div>`}
+function bindSeg(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)});return ()=>$$("[aria-pressed=true]",g)[0].dataset.v}
+const IN=n=>n.toLocaleString("en-US",{maximumFractionDigits:0});
+
+/* ===== SVG charts (colours come from CSS variables, so both themes work) ===== */
+const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
+const nice=(max)=>{const e=Math.pow(10,Math.floor(Math.log10(max||1))),f=max/e;const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*e};
+function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(lo+st*i);return out}
+const short=v=>Math.abs(v)>=100000?(v/100000).toFixed(1).replace(/\.0$/,"")+"L":Math.abs(v)>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":(Math.round(v*100)/100)+"";
+function chartBar(items,o={}){ // items:[{label,value,color}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...items.map(i=>i.value))*1.08),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  items.forEach((it,i)=>{const x=m.l+i*bw+bw*.15,w=bw*.7,y=sy(Math.max(it.value,mn));
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,sy(mn)-y)}" fill="${it.color||o.color||"var(--c1)"}" rx="2"><title>${esc(it.label)}: ${fmt(it.value)}</title></rect>`;
+    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:11px">${short(it.value)}</text>`;
+    const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  return s+"</svg>";}
+function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:o.legendRight?110:16,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...all)*1.08);
+  const sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  const step=Math.ceil(labels.length/(o.maxLabels||12));labels.forEach((l,i)=>{if(i%step===0)s+=`<text class="lbl" x="${sx(i)}" y="${H-m.b+16}" text-anchor="middle">${esc(l)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  series.forEach((se,k)=>{const c=se.color||PAL[k%6];let d="";se.vals.forEach((v,i)=>{if(v!=null)d+=(d?"L":"M")+sx(i).toFixed(1)+" "+sy(v).toFixed(1)});
+    if(o.area&&k===0)s+=`<path d="${d}L${sx(se.vals.length-1)} ${sy(mn)}L${sx(0)} ${sy(mn)}Z" fill="${c}" opacity=".18"/>`;
+    s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${se.w||2.5}" ${se.dash?'stroke-dasharray="6 4"':""} stroke-linejoin="round"/>`;
+    if(o.dots!==false&&!se.dash)se.vals.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${sx(i)}" cy="${sy(v)}" r="3.5" fill="${c}"><title>${esc(labels[i])}: ${fmt(v)}</title></circle>`});
+    if(o.legendRight)s+=`<text x="${W-m.r+8}" y="${m.t+14+k*16}" style="fill:${c};font-weight:600">${esc(se.name)}</text>`;
+    else if(series.length>1)s+=`<text x="${m.l+8+k*150}" y="${H-6}" style="fill:${c};font-weight:600">&#9632; ${esc(se.name)}</text>`});
+  (o.marks||[]).forEach(mk=>{s+=`<text x="${sx(mk.i)}" y="${sy(mk.v)-10}" text-anchor="middle" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
+  return s+"</svg>";}
+function chartScatter(pts,o={}){ // pts:[{x,y,r,color,label}]
+  const W=o.w||640,H=o.h||340,m={l:60,r:16,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||nice(Math.max(...ys)*1.05);
+  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(y0,y1).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  ticks(x0,x1).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${short(t)}</text>`);
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(y0)}" y2="${sy(y0)}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${sy(y0)}"/>`;
+  if(o.xlabel)s+=`<text class="lbl" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${esc(o.xlabel)}</text>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  if(o.fit){const f=o.fit;s+=`<line x1="${sx(x0)}" y1="${sy(f.m*x0+f.b)}" x2="${sx(x1)}" y2="${sy(f.m*x1+f.b)}" stroke="var(--sec)" stroke-width="2.5" stroke-dasharray="7 4"/>`}
+  pts.forEach(p=>{s+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="${p.r||4}" fill="${p.color||"var(--c1)"}" fill-opacity="${o.alpha||.65}" stroke="${p.color||"var(--c1)"}"><title>${esc(p.label||"")} (${fmt(p.x)}, ${fmt(p.y)})</title></circle>`;
+    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:11px">${esc(p.label)}</text>`});
+  return s+"</svg>";}
+function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart">`;
+  items.forEach((it,k)=>{const ang=it.value/tot*2*Math.PI,x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(a+ang),y2=cy+R*Math.sin(a+ang);
+    s+=`<path d="M${cx} ${cy}L${x1} ${y1}A${R} ${R} 0 ${ang>Math.PI?1:0} 1 ${x2} ${y2}Z" fill="${it.color||PAL[k%6]}" stroke="var(--surface)" stroke-width="2"><title>${esc(it.label)}: ${(100*it.value/tot).toFixed(1)}%</title></path>`;a+=ang;
+    s+=`<text x="250" y="${40+k*22}" style="fill:${it.color||PAL[k%6]};font-weight:700">&#9632; <tspan style="fill:var(--fg);font-weight:400">${esc(it.label)} ${(100*it.value/tot).toFixed(1)}%</tspan></text>`});
+  return s+"</svg>";}
+function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:short(lo+i*w),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+
+/* ===== lesson framework ===== */
+const L=[];
+function lesson(o){L.push(o)}
+let cur=0, done=new Set();
+const UKEY="dalab_"+(document.title||"x");
+try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e){}
+function go(i){
+  cur=Math.max(0,Math.min(L.length-1,i));
+  const l=L[cur],st=$("#stage");
+  st.innerHTML=`<div class="crumb">${L[0].guide?(cur?`Lesson ${cur} of ${L.length-1}`:"Unit guide: read this first"):`Lesson ${cur+1} of ${L.length}`}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
+  $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
+  l.mount&&l.mount(st);
+  $$("[data-q]",st).forEach(b=>b.onclick=()=>{
+    const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
+    $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
+    b.classList.add(ok?"ok":"no");
+    $("#why-"+id,st).textContent=(ok?"Correct. ":"Not quite. ")+k.why;
+    if(ok){done.add(cur);try{localStorage.setItem(UKEY,JSON.stringify([...done]))}catch(e){}drawNav()}
+  });
+  drawNav(); window.scrollTo(0,0); st.focus({preventScroll:true});
+}
+function drawNav(){
+  $("#navlist").innerHTML=L.map((l,i)=>`<li class="${done.has(i)?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${done.has(i)?"&#10003;":(L[0].guide?(i||"G"):i+1)}</span><span class="t">${l.nav}</span></button></li>`).join("");
+  $$("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
+}
+/* theme + text size (for projectors) */
+(function(){
+  const R=document.documentElement;let theme=null,zi=0;const Z=[1,1.15,1.3];
+  try{theme=localStorage.getItem("dalab_theme")}catch(e){}
+  if(!theme)theme=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
+  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);
+    const b=$("#themeBtn"),z=$("#zoomBtn");if(b)b.innerHTML=theme==="dark"?"&#9728; Switch to LIGHT mode":"&#9790; Switch to DARK mode";if(z)z.textContent="Text size: "+Math.round(Z[zi]*100)+"%";}
+  window.addEventListener("DOMContentLoaded",()=>{
+    $("#themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("dalab_theme",theme)}catch(e){}apply()};
+    $("#zoomBtn").onclick=()=>{zi=(zi+1)%3;apply()};apply();
+    document.addEventListener("keydown",e=>{if(e.altKey&&(e.key==="d"||e.key==="D")){$("#themeBtn").click()}});
+  });
+  apply();
+})();
+
+/* ===== shared CN helpers: SVG, book blocks, narrated story player, ARQ sequence view ===== */
+const NS="http://www.w3.org/2000/svg";
+const E=(tag,attrs,parent)=>{const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e};
+const raf=window.requestAnimationFrame.bind(window);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ---------- book blocks (strings) ---------- */
+const SEC=(n,t)=>`<h2 class="sec"><span>${n}</span>${t}</h2>`;
+const DEF=(term,def)=>`<div class="def"><span class="tg">Key term</span><b>${term}</b> ${def}</div>`;
+const IDEA=h=>`<div class="idea"><span class="tg">Think of it like this</span>${h}</div>`;
+const NOTE=h=>`<div class="note"><span class="tg">Good to know</span>${h}</div>`;
+const WARN=h=>`<div class="warnb"><span class="tg">Common mistake</span>${h}</div>`;
+const SUM=a=>`<div class="sum"><b>In short</b><ul>${a.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+const DOIT=a=>`<div class="doit"><b>Try this</b><ol>${a.map(x=>`<li>${x}</li>`).join('')}</ol></div>`;
+const GUIDE=o=>`<div class="guide"><div class="gh">LESSON GUIDE: READ THIS FIRST</div><p><b>Syllabus topic:</b> ${o.syl}</p><p>${o.why}</p><div class="gl">${o.map.map(r=>`<div class="gr"><div class="gs"><b>${r[0]}</b> ${r[1]}</div><div class="gq"><span>Answers:</span> ${r[2]}</div><div class="gd"><span>You will:</span> ${r[3]}</div></div>`).join('')}</div><p class="gm"><b>Position in the OSI model:</b> ${o.osi}<br><b>Before you start:</b> ${o.pre}<br><b>Time:</b> ${o.time}. <b>Next:</b> ${o.next}</p></div>`;
+const LEARN=a=>`<div class="learn"><b>By the end of this lesson you can</b><ul>${a.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+const EXAM=a=>`<div class="exam"><b>Practice questions (write your answers, then discuss)</b><ol>${a.map(x=>`<li>${x}</li>`).join('')}</ol></div>`;
+const cells=a=>`<div class="bitrow">${a.length?a.map(x=>`<span class="${x.cl||''}">${esc(x.c)}</span>`).join(''):'<i class="small muted">(nothing yet)</i>'}</div>`;
+const track=rows=>rows.map(r=>`<div class="trk"><div class="trkl">${r.label}</div>${cells(r.cells)}${r.note?`<div class="small muted">${r.note}</div>`:''}</div>`).join('');
+
+/* ---------- narrated story player ----------
+   cfg.draw(i, animate, step) paints the picture for step i. Each step has {cap: html}. */
+function story(root,sel,cfg){
+  const box=typeof sel==='string'?$(sel,root):sel;let steps=[],i=0,timer=null,alive=true;
+  box.classList.add('story');
+  box.innerHTML=`<div class="cap" data-a="cap" aria-live="polite"></div><div class="storybar"><button type="button" class="btn sm" data-a="b">&#9664; Back</button><button type="button" class="btn sm pri" data-a="n">Next step &#9654;</button><button type="button" class="btn sm" data-a="p">Auto-play</button><button type="button" class="btn sm" data-a="r">Restart</button><span class="dots" data-a="d" aria-hidden="true"></span></div>`;
+  const q=a=>$(`[data-a=${a}]`,box);
+  function show(animate){const s=steps[i]||{cap:''};
+    q('cap').innerHTML=`<div class="stepno">Step ${i+1} of ${steps.length}</div>${s.cap}`;
+    q('d').innerHTML=steps.map((_,k)=>`<i class="${k<i?'dn':k===i?'cu':''}"></i>`).join('');
+    q('b').disabled=i===0;q('n').disabled=i>=steps.length-1;
+    cfg.draw(i,animate,s)}
+  function stop(){if(timer){clearTimeout(timer);timer=null}q('p').textContent='Auto-play'}
+  function tick(){if(!box.isConnected){stop();return}if(i>=steps.length-1){stop();return}i++;show(true);timer=setTimeout(tick,steps[i].ms||cfg.ms||3600)}
+  q('b').onclick=()=>{stop();if(i>0){i--;show(false)}};
+  q('n').onclick=()=>{stop();if(i<steps.length-1){i++;show(true)}};
+  q('r').onclick=()=>{stop();i=0;show(false)};
+  q('p').onclick=()=>{if(timer){stop();return}if(i>=steps.length-1){i=0;show(false)}q('p').textContent='Pause';timer=setTimeout(tick,steps[i].ms||cfg.ms||3600)};
+  return {set(s,keep){stop();steps=s;if(!keep||i>=s.length)i=0;show(false)},goto(k){stop();i=Math.max(0,Math.min(steps.length-1,k));show(false)},idx:()=>i};
+}
+
+/* ---------- animated ARQ sequence diagram with live commentary ---------- */
+const PNAME={sw:'Stop-and-Wait',gbn:'Go-Back-N',sr:'Selective Repeat'};
+function arqLab(root,o){
+  const id=o.id,N=o.N||8;
+  const st={proto:o.proto||'gbn',W:o.W||4,P:o.P||3,loseD:new Set(o.loseD||[]),loseA:new Set(o.loseA||[]),t:0,play:false,speed:1,res:null,guided:o.guided!==false,paused:false};
+  const fixed=!!o.proto&&o.fixed;
+  const sc=o.scenarios||[];
+  root.innerHTML=`
+  ${sc.length?`<div class="scn"><b class="small">Scenarios:</b> ${sc.map((s,k)=>`<button type="button" class="btn sm" data-sc="${k}">${s.label}</button>`).join('')}</div><div class="callout i small" data-o="scd" style="margin-top:6px">Select a scenario. It sets the protocol and the losses. Then press Play.</div>`:''}
+  <div class="row">${fixed?`<b>${PNAME[st.proto]}</b>`:`Protocol: ${seg(id+'pr',[["sw","Stop-and-Wait"],["gbn","Go-Back-N"],["sr","Selective Repeat"]].sort((a,b)=>(a[0]===st.proto?-1:0)-(b[0]===st.proto?-1:0)))}`}
+    <span data-w>Window <input type="range" min="1" max="6" value="${st.W}" data-in="W" aria-label="Window size"> <b data-o="W">${st.W}</b></span>
+    ${o.pslider?`<span>Link delay <input type="range" min="1" max="12" value="${st.P}" data-in="P" aria-label="Link delay"> <b data-o="P">${st.P}</b> ticks</span>`:''}</div>
+  ${o.loss===false?'':`<div class="row small"><span>Lose frame:</span> ${Array.from({length:N},(_,k)=>`<label class="pill"><input type="checkbox" data-ld="${k}" ${st.loseD.has(k)?'checked':''}>F${k}</label>`).join('')}</div>
+  <div class="row small"><span>Lose ACK:</span> ${Array.from({length:N},(_,k)=>`<label class="pill"><input type="checkbox" data-la="${k}" ${st.loseA.has(k)?'checked':''}>A${k}</label>`).join('')}</div>`}
+  <div class="row"><button type="button" class="btn pri" data-b="play">Play</button><button type="button" class="btn sec" data-b="next">Next event &#9654;</button><button type="button" class="btn" data-b="reset">Restart</button>
+    <span>Speed ${seg(id+'sp',[["1","1x"],["2","2x"],["0.5","0.5x"]],"s")}</span>
+    <label class="pill"><input type="checkbox" data-b="guided" ${st.guided?'checked':''}>Pause at important moments</label><span class="small muted" data-o="clock"></span></div>
+  <div class="cap narr" data-o="cap" aria-live="polite"></div>
+  <div class="seqbox" data-o="seqbox"><svg data-o="svg" role="img" aria-label="Sequence diagram of frames between sender and receiver"></svg></div>
+  <div class="legend small"><span class="lg pd"></span>frame <span class="lg pr"></span>sent again <span class="lg pa"></span>ACK <span class="lg pl"></span>lost &nbsp; Time runs downward. Each slanted line is a frame or an ACK on the link. It takes time to reach the other side.</div>
+  <div class="arqwrap"><div><h4 class="h4">Sender's window</h4><div class="wstrip" data-o="sw"></div><h4 class="h4">Receiver</h4><div class="wstrip" data-o="rw"></div></div>
+  <div><h4 class="h4">Event log</h4><div class="logb" data-o="log"></div></div></div>
+  <div data-o="stats" class="callout i small"></div>${o.compare===false?'':'<div data-o="cmp"></div>'}`;
+  const q=s=>$(`[data-o=${s}]`,root);
+  const S=14,TOP=54,SX=230,RX=570,VW=780;
+  let els=[],evEls=[],cur;
+  const yT=t=>TOP+t*S;
+  function build(){
+    const r=st.res=simARQ(st.proto,{N,P:st.P,W:st.W,loseD:st.loseD,loseA:st.loseA});
+    const H=TOP+(r.fin+3)*S,svg=q('svg');svg.innerHTML='';svg.setAttribute('viewBox',`0 0 ${VW} ${H}`);
+    E('text',{x:SX,y:20,class:'sl hd','text-anchor':'middle'},svg).textContent='SENDER';
+    E('text',{x:RX,y:20,class:'sl hd','text-anchor':'middle'},svg).textContent='RECEIVER';
+    E('line',{x1:SX,y1:TOP-14,x2:SX,y2:H-4,class:'axis'},svg);E('line',{x1:RX,y1:TOP-14,x2:RX,y2:H-4,class:'axis'},svg);
+    for(let t=0;t<=r.fin+2;t+=2){E('text',{x:36,y:yT(t)+4,class:'tk','text-anchor':'end'},svg).textContent='t='+t;E('line',{x1:40,x2:48,y1:yT(t),y2:yT(t),class:'axis'},svg)}
+    els=r.pk.map(p=>{
+      const g=E('g',{style:'display:none'},svg),cls=p.lost?'pl':p.kind==='ack'?'pa':p.re?'pr':'pd';
+      const x1=p.kind==='data'?SX:RX,x2=p.kind==='data'?RX:SX;
+      const ln=E('line',{class:'pkt '+cls,x1,y1:yT(p.ts),x2:x1,y2:yT(p.ts)},g);
+      const dot=E('circle',{r:4.5,class:'pdot '+cls,cx:x1,cy:yT(p.ts)},g);
+      const fr=p.lost?0.55:1,lx=x1+(x2-x1)*0.25,ly=yT(p.ts)+(yT(p.ta)-yT(p.ts))*0.25;
+      const tx=E('text',{x:lx,y:ly-4,class:'sl pk','text-anchor':'middle'},g);tx.textContent=(p.kind==='ack'?'ACK':'F')+p.seq+(p.kind==='data'&&p.re?' (re)':'')+(p.lost?' lost':'');
+      const xx=E('text',{x:x1+(x2-x1)*fr,y:yT(p.ts)+(yT(p.ta)-yT(p.ts))*fr+5,class:'xm','text-anchor':'middle',style:'display:none'},g);xx.textContent='✖';
+      return {p,g,ln,dot,xx,x1,x2}});
+    evEls=r.ev.map(e=>{const R=e.side==='R';const t=E('text',{x:R?RX+14:SX-14,y:yT(e.t)+4,class:'sl ev '+e.cls,'text-anchor':R?'start':'end',style:'display:none'},svg);t.textContent=e.txt;return {e,t}});
+    cur=E('line',{x1:44,x2:VW-6,class:'cursor'},svg);
+    const util=(r.sent/r.fin*100);
+    q('stats').innerHTML=`Finished at tick <b>${r.fin}</b>. Frames sent: <b>${r.sent}</b> for ${N} frames delivered (<b>${r.retx}</b> retransmissions). Lost: ${r.lostD} frame(s), ${r.lostA} ACK(s). The sender transmitted for ${r.sent} of ${r.fin} ticks. Link utilisation is about <b>${util.toFixed(0)}%</b>.`;
+    q('stats').style.visibility='hidden';
+    drawCmp();
+  }
+  const SIDE={S:'Sender',R:'Receiver',N:'The link'};
+  function draw(){
+    const r=st.res,t=st.t;
+    els.forEach(x=>{const p=x.p;if(t<p.ts){x.g.style.display='none';return}x.g.style.display='';
+      const dur=p.ta-p.ts,mx=p.lost?0.55:1,f=Math.min(mx,(t-p.ts)/dur);
+      const ex=x.x1+(x.x2-x.x1)*f,ey=yT(p.ts)+(yT(p.ta)-yT(p.ts))*f;
+      x.ln.setAttribute('x2',ex);x.ln.setAttribute('y2',ey);x.dot.setAttribute('cx',ex);x.dot.setAttribute('cy',ey);
+      const end=(t-p.ts)/dur>=mx;x.dot.style.display=end&&!p.lost?'none':'';x.xx.style.display=end&&p.lost?'':'none'});
+    evEls.forEach(x=>x.t.style.display=t>=x.e.t?'':'none');
+    cur.setAttribute('y1',yT(t));cur.setAttribute('y2',yT(t));
+    const tk=Math.min(Math.floor(t+1e-9),r.snaps.length-1),sn=r.snaps[Math.max(0,tk)];
+    q('clock').textContent=`tick ${Math.floor(t+1e-9)}`;
+    let h='';for(let k=0;k<N;k++){const a=st.proto==='sr'?sn.acked.includes(k):k<sn.base;
+      const c=a?'ack':(k<sn.hi?'sent':'');const inw=k>=sn.base&&k<sn.base+sn.W;
+      h+=`<div class="wb ${c} ${inw?'inwin':''}" title="${a?'acknowledged':k<sn.hi?'sent, waiting for ACK':inw?'in window, not sent yet':'outside window'}">${k}</div>`}
+    q('sw').innerHTML=h+`<div class="small muted" style="width:100%">green = acknowledged, amber = sent and waiting for an ACK, blue bar = the window (the frames that the sender may have unacknowledged)</div>`;
+    let g='';for(let k=0;k<N;k++){const dl=k<sn.rexp,bf=sn.buf.includes(k);
+      g+=`<div class="wb ${dl?'ack':bf?'buf':''} ${k===sn.rexp?'exp':''}">${k}</div>`}
+    q('rw').innerHTML=g+`<div class="small muted" style="width:100%">green = delivered in order, orange = stored in the buffer, ring = the frame that the receiver expects next</div>`;
+    const past=r.say.filter(e=>e.t<=t+1e-9);
+    q('log').innerHTML=r.ev.filter(e=>e.t<=t+1e-9).map(e=>`<div class="${e.cls}">t=${e.t} ${e.side==='R'?'receiver':'sender'}: ${esc(e.txt)}</div>`).join('');q('log').scrollTop=1e6;
+    // narrator
+    const last=past.slice(-3);
+    q('cap').innerHTML=last.length?last.map((e,k)=>`<div class="nl ${k===last.length-1?'new':'old'}"><span class="who ${e.side}">${SIDE[e.side]}</span> <span class="tm">t=${+e.t.toFixed(1)}</span> ${e.txt}</div>`).join(''):`<div class="nl new">Press <b>Play</b> to watch, or <b>Next event</b> to move one moment at a time. A commentary of what each side is thinking appears here.</div>`;
+    const sb=q('seqbox'),want=yT(t)-sb.clientHeight*0.6;if(st.play||t===0||st.nudge)sb.scrollTop=Math.max(0,want);st.nudge=false;
+    q('stats').style.visibility=t>=r.fin?'visible':'hidden';
+    const pb=$('[data-b=play]',root),end=r.fin+r.P+1;pb.textContent=st.play?'Pause':(t>=end?'Replay':(st.paused?'Continue':'Play'));
+  }
+  let last=0;const endT=()=>st.res.fin+st.res.P+1;
+  function loop(ts){if(!st.play)return;const dt=Math.min(0.1,(ts-last)/1000);last=ts;
+    let nt=Math.min(endT(),st.t+dt*3.2*st.speed);
+    if(st.guided){const imp=st.res.say.find(e=>e.imp&&e.t>st.t+1e-9&&e.t<=nt);if(imp){nt=imp.t;st.play=false;st.paused=true}}
+    st.t=nt;draw();
+    if(st.t>=endT()){st.play=false;draw();return}if(st.play)raf(loop)}
+  function play(){if(st.t>=endT()){st.t=0}st.paused=false;st.play=!st.play;if(st.play){last=performance.now();raf(loop)}else draw()}
+  function restart(){st.play=false;st.paused=false;st.t=0;build();draw();q('seqbox').scrollTop=0}
+  function drawCmp(){const c=q('cmp');if(!c)return;
+    const rows=['sw','gbn','sr'].map(p=>({p,r:simARQ(p,{N,P:st.P,W:st.W,loseD:st.loseD,loseA:st.loseA})}));
+    const best=Math.min(...rows.map(x=>x.r.fin));
+    c.innerHTML=`<h4 class="h4">Same losses, all three protocols (window ${st.W}, link delay ${st.P})</h4><table class="dt"><thead><tr><th>Protocol</th><th>Frames sent</th><th>Sent again</th><th>Finish tick</th></tr></thead><tbody>${rows.map(x=>`<tr class="${x.r.fin===best?'bestrow':''}"><td><b>${PNAME[x.p]}</b>${x.p==='sw'?' (window forced to 1)':''}</td><td class="num">${x.r.sent}</td><td class="num">${x.r.retx}</td><td class="num">${x.r.fin}</td></tr>`).join('')}</tbody></table><div class="small muted">The green row finished first.</div>`}
+  function syncUI(){
+    if(!fixed){const g=$('#'+id+'pr',root);if(g)$$('button',g).forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===st.proto))}
+    const w=$('[data-in=W]',root);if(w){w.value=st.W;$('[data-o=W]',root).textContent=st.W}
+    $('[data-w]',root).hidden=(st.proto==='sw');const pw=$('[data-in=P]',root);if(pw){pw.value=st.P;$('[data-o=P]',root).textContent=st.P}
+    $$('[data-ld]',root).forEach(c=>c.checked=st.loseD.has(+c.dataset.ld));$$('[data-la]',root).forEach(c=>c.checked=st.loseA.has(+c.dataset.la))}
+  /* events */
+  if(!fixed)bindSeg(root,id+'pr',v=>{st.proto=v;syncUI();restart()});
+  syncUI();
+  bindSeg(root,id+'sp',v=>{st.speed=+v});
+  $$('[data-in]',root).forEach(i=>i.oninput=()=>{st[i.dataset.in]=+i.value;$(`[data-o=${i.dataset.in}]`,root).textContent=i.value;restart()});
+  $$('[data-ld]',root).forEach(c=>c.onchange=()=>{c.checked?st.loseD.add(+c.dataset.ld):st.loseD.delete(+c.dataset.ld);restart()});
+  $$('[data-la]',root).forEach(c=>c.onchange=()=>{c.checked?st.loseA.add(+c.dataset.la):st.loseA.delete(+c.dataset.la);restart()});
+  $('[data-b=play]',root).onclick=play;
+  $('[data-b=next]',root).onclick=()=>{st.play=false;st.paused=false;const nx=st.res.say.find(e=>e.t>st.t+1e-9);st.t=nx?nx.t:endT();st.nudge=true;draw()};
+  $('[data-b=reset]',root).onclick=restart;
+  $('[data-b=guided]',root).onchange=e=>{st.guided=e.target.checked};
+  $$('[data-sc]',root).forEach(b=>b.onclick=()=>{const s=sc[+b.dataset.sc];if(s.proto)st.proto=s.proto;if(s.W)st.W=s.W;if(s.P)st.P=s.P;st.loseD=new Set(s.loseD||[]);st.loseA=new Set(s.loseA||[]);
+    $$('[data-sc]',root).forEach(x=>x.classList.remove('pri'));b.classList.add('pri');q('scd').innerHTML=s.desc;syncUI();restart()});
+  build();draw();
+  return {st,restart};
+}
+
+/* ===== OSI helpers ===== */
+const OSIL=[[7,"Application"],[6,"Presentation"],[5,"Session"],[4,"Transport"],[3,"Network"],[2,"Data link"],[1,"Physical"]];
+const osiStack=(hi,note)=>`<div class="osiwrap one"><div class="osicol">${OSIL.map(([n,t])=>`<div class="osil${n===hi?' on':''}"><b>${n}</b> ${t}</div>`).join('')}</div>${note?`<div class="osinote">${note}</div>`:''}</div>`;
+function osiStory(){
+  const U={7:'Data',6:'Data',5:'Data',4:'Segment',3:'Packet',2:'Frame',1:'Bits'};
+  const pdu=(low,hasT)=>{const a=[];if(hasT)a.push({t:'T2',cl:'t'});a.push({t:'Data',cl:'d'});for(let n=7;n>=low;n--)a.push({t:'H'+n,cl:'h'});a.reverse();return a};
+  const vis=(side,layer,low,hasT,name)=>{
+    const col=s=>`<div class="osicol"><div class="osih">${s==='S'?'Sender':'Receiver'}</div>${OSIL.map(([n,t])=>`<div class="osil${side===s&&n===layer?' on':''}"><b>${n}</b> ${t}</div>`).join('')}</div>`;
+    return `<div class="osiwrap">${col('S')}${col('R')}</div><div class="small muted" style="margin-top:8px">Data unit at this layer: <b>${name}</b></div><div class="osipdu">${pdu(low,hasT).map(x=>`<span class="${x.cl}">${x.t}</span>`).join('')}</div>`};
+  const S=[];
+  S.push({cap:`<b>Overview.</b> The sender's data moves down the seven layers. Each layer adds control information, called a <b>header</b> (H7 to H2), and the data link layer also adds a <b>trailer</b> (T2). This is called <b>encapsulation</b>. At the receiver the data moves up, and each layer removes its own header. This is called <b>decapsulation</b>. Press <b>Next step</b>.`,vis:vis('S',0,8,false,'Data')});
+  S.push({cap:`<b>Layer 7, application.</b> The user's program gives its data to the application layer. The layer adds header H7. The header carries information for the application layer at the receiver (the peer layer).`,vis:vis('S',7,7,false,'Data')});
+  S.push({cap:`<b>Layer 6, presentation.</b> This layer translates the data into a common format. It also does encryption and compression when they are needed. It adds header H6.`,vis:vis('S',6,6,false,'Data')});
+  S.push({cap:`<b>Layer 5, session.</b> This layer opens, manages and closes the dialog between the two ends. It adds header H5.`,vis:vis('S',5,5,false,'Data')});
+  S.push({cap:`<b>Layer 4, transport.</b> This layer provides process-to-process delivery. Its header H4 holds port numbers and, for TCP, sequence numbers. The data unit is now called a <b>segment</b>.`,vis:vis('S',4,4,false,'Segment')});
+  S.push({cap:`<b>Layer 3, network.</b> This layer provides source-to-destination delivery across networks. Its header H3 holds the logical (IP) source and destination addresses. The data unit is now called a <b>packet</b>.`,vis:vis('S',3,3,false,'Packet')});
+  S.push({cap:`<b>Layer 2, data link.</b> This layer provides node-to-node delivery over one link. It adds header H2 (the physical or MAC addresses) and trailer T2 (error-checking bits). The data unit is now called a <b>frame</b>. This is the layer studied in this unit.`,vis:vis('S',2,2,true,'Frame')});
+  S.push({cap:`<b>Layer 1, physical.</b> This layer changes the bits of the frame into signals (voltage, light or radio waves) and sends them over the medium. It adds no header.`,vis:vis('S',1,2,true,'Bits (signals)')});
+  S.push({cap:`<b>Receiver, layer 1.</b> The physical layer receives the signals and changes them back into bits. It passes the bits to the data link layer.`,vis:vis('R',1,2,true,'Bits (signals)')});
+  S.push({cap:`<b>Receiver, layer 2.</b> The data link layer finds the frame boundaries and uses T2 to check for errors. A damaged frame is discarded. It also checks that H2 holds its own address. It then removes H2 and T2 and passes the packet up.`,vis:vis('R',2,2,true,'Frame')});
+  S.push({cap:`<b>Receiver, layer 3.</b> The network layer reads H3, checks the destination IP address, removes H3 and passes the segment up.`,vis:vis('R',3,3,false,'Packet')});
+  S.push({cap:`<b>Receiver, layer 4.</b> The transport layer reads H4, checks the segment, puts the data in order and delivers it to the correct process. It removes H4.`,vis:vis('R',4,4,false,'Segment')});
+  S.push({cap:`<b>Receiver, layer 5.</b> The session layer reads H5, manages the dialog and removes H5.`,vis:vis('R',5,5,false,'Data')});
+  S.push({cap:`<b>Receiver, layer 6.</b> The presentation layer reads H6. It decrypts and decompresses the data and translates it to the format of the receiver. It removes H6.`,vis:vis('R',6,6,false,'Data')});
+  S.push({cap:`<b>Receiver, layer 7.</b> The application layer reads H7, removes it and gives the original data to the receiving program. Each layer used only the header written by its peer layer on the other side.`,vis:vis('R',7,7,false,'Data')});
+  return S}
+
+/* ===== small shared utilities for lessons ===== */
+function matcher(root,sel,items,opts){const box=$(sel,root);let got=0,tried=new Set();
+  box.innerHTML=items.map((it,i)=>`<div class="card" style="margin:8px 0"><b>${it.q}</b><div style="margin-top:4px">${opts.map((o,k)=>`<button type="button" class="opt2" data-m="${i}" data-k="${k}">${o}</button>`).join("")}</div><div class="small" data-r="${i}" style="margin-top:4px"></div></div>`).join("")+`<div class="callout k small" data-sc></div>`;
+  const sc=()=>$("[data-sc]",box).textContent=`Right first time: ${got} of ${items.length}`;sc();
+  $$("[data-m]",box).forEach(b=>b.onclick=()=>{const i=+b.dataset.m,k=+b.dataset.k,it=items[i],ok=k===it.a;if(!tried.has(i)){tried.add(i);if(ok)got++;sc()}
+    $$(`[data-m="${i}"]`,box).forEach(x=>x.classList.remove("ok","no"));b.classList.add(ok?"ok":"no");$(`[data-r="${i}"]`,box).textContent=ok?"Right. "+it.why:"Not this one. Think about what each service promises, then try another."})}
+function slide(g,x0,y0,x1,y1,ms){return new Promise(res=>{const t0=performance.now();(function f(n){const k=Math.min(1,(n-t0)/ms),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;g.setAttribute('transform',`translate(${x0+(x1-x0)*e},${y0+(y1-y0)*e})`);k<1?raf(f):res()})(t0)})}
+function arrowDefs(svg){if($('#ah',svg))return;const d=E('defs',{},svg);const m=E('marker',{id:'ah',viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'},d);E('path',{d:'M0,0 L10,5 L0,10 z',fill:'var(--muted)'},m)}
+function arrow(svg,a,b,ra,rb,cls,off){const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,ox=-uy*(off||0),oy=ux*(off||0);
+  return E('line',{x1:a[0]+ux*ra+ox,y1:a[1]+uy*ra+oy,x2:b[0]-ux*rb+ox,y2:b[1]-uy*rb+oy,class:'ed '+(cls||''),'marker-end':'url(#ah)'},svg)}
+function boxArrow(svg,a,b,hw,hh,off){const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,r=Math.min(hw/Math.abs(ux||1e-9),hh/Math.abs(uy||1e-9))+4;return arrow(svg,a,b,r,r,'',off)}
+const FLAGB='01111110';
+
+/* ===== Unit III helpers: seeded random numbers, lane (timeline) diagrams, line charts ===== */
+function prng(seed){let s=(seed>>>0)||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296}}
+/* lane diagram: cfg={T,tick,lanes:[{label,segs:[{a,b,cls,txt}]}],marks:[{t,txt,cls}],W}; upto cuts the drawing at time upto */
+function lanes(svg,cfg,upto){
+  const W=cfg.W||760,LH=cfg.LH||34,L=cfg.L||96,R=12,top=22,n=cfg.lanes.length,H=top+n*LH+30,T=cfg.T,sx=(W-L-R)/T,up=upto==null?1e9:upto;
+  svg.innerHTML='';svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const tk=cfg.tick||1;
+  for(let t=0;t<=T+1e-9;t+=tk){const x=L+t*sx;E('line',{x1:x,x2:x,y1:top-4,y2:top+n*LH,stroke:'var(--line2)','stroke-width':1},svg);
+    E('text',{x,y:top+n*LH+14,class:'tk','text-anchor':'middle'},svg).textContent=(cfg.tfmt?cfg.tfmt(t):t)}
+  E('text',{x:L,y:top+n*LH+27,class:'tk'},svg).textContent=cfg.tlabel||'time';
+  cfg.lanes.forEach((ln,k)=>{const y=top+k*LH;
+    E('line',{x1:L,x2:W-R,y1:y+LH,y2:y+LH,stroke:'var(--line2)'},svg);
+    E('text',{x:L-8,y:y+LH/2+4,class:'sl','text-anchor':'end'},svg).textContent=ln.label;
+    ln.segs.forEach(s=>{if(s.a>=up)return;const b=Math.min(s.b,up),w=Math.max(1,(b-s.a)*sx);
+      E('rect',{x:L+s.a*sx,y:y+4,width:w,height:LH-8,rx:3,class:'sg '+(s.cls||'')},svg);
+      if(s.txt&&w>14*s.txt.length*0.5)E('text',{x:L+s.a*sx+w/2,y:y+LH/2+4,class:'sgt','text-anchor':'middle'},svg).textContent=s.txt})});
+  (cfg.marks||[]).forEach(m=>{if(m.t>up)return;const x=L+m.t*sx;E('line',{x1:x,x2:x,y1:top-4,y2:top+n*LH,class:'mk '+(m.cls||'')},svg);
+    E('text',{x,y:12,class:'mkt','text-anchor':'middle'},svg).textContent=m.txt});
+}
+/* line chart as an SVG string. o={W,H,xmax,ymax,xl,yl,series:[{f,name,c}],pts:[{x,y,txt,c}],xt,yt} */
+function lineChart(o){
+  const W=o.W||640,H=o.H||340,m={l:58,r:16,t:18,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b,X=x=>m.l+x/o.xmax*iw,Y=y=>m.t+ih-y/o.ymax*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label||'chart')}">`;
+  const xt=o.xt||5,yt=o.yt||5;
+  for(let i=0;i<=yt;i++){const v=o.ymax*i/yt;s+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line2)"/><text x="${m.l-6}" y="${Y(v)+4}" text-anchor="end" class="tk">${(o.yfmt?o.yfmt(v):+v.toFixed(2))}</text>`}
+  for(let i=0;i<=xt;i++){const v=o.xmax*i/xt;s+=`<line x1="${X(v)}" x2="${X(v)}" y1="${m.t}" y2="${m.t+ih}" stroke="var(--line2)"/><text x="${X(v)}" y="${m.t+ih+15}" text-anchor="middle" class="tk">${+v.toFixed(2)}</text>`}
+  s+=`<line x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${m.t+ih}" class="axis"/><line x1="${m.l}" x2="${W-m.r}" y1="${m.t+ih}" y2="${m.t+ih}" class="axis"/>`;
+  s+=`<text x="${m.l+iw/2}" y="${H-6}" text-anchor="middle" class="sl">${o.xl||''}</text><text x="14" y="${m.t+ih/2}" text-anchor="middle" class="sl" transform="rotate(-90 14 ${m.t+ih/2})">${o.yl||''}</text>`;
+  o.series.forEach((se,k)=>{const col=se.c||PAL[k%6];let d='';for(let i=0;i<=160;i++){const x=o.xmax*i/160,y=se.f(x);if(!isFinite(y))continue;d+=(d?'L':'M')+X(x).toFixed(1)+' '+Y(Math.min(o.ymax,y)).toFixed(1)}
+    s+=`<path d="${d}" fill="none" stroke="${col}" stroke-width="3"/>`;
+    const lx=o.legR?m.l+iw-o.legR:m.l+10;s+=`<rect x="${lx}" y="${m.t+6+k*18}" width="14" height="4" fill="${col}"/><text x="${lx+20}" y="${m.t+12+k*18}" class="sl" style="font-size:12px">${se.name}</text>`});
+  (o.pts||[]).forEach(p=>{s+=`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="5.5" fill="${p.c||'var(--bad)'}" stroke="var(--bg)" stroke-width="2"/>`+(p.txt?`<text x="${X(p.x)+8}" y="${Y(p.y)-8}" class="sl" style="font-size:12px">${p.txt}</text>`:'')});
+  return s+'</svg>'}
+/* small helper: one-line key/value rows */
+const KV=rows=>`<table class="dt cmpt"><tbody>${rows.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td></tr>`).join('')}</tbody></table>`;
+/* station label chip row used in several pictures */
+const hexb=(n,w)=>n.toString(16).toUpperCase().padStart(w||2,'0');
+
+/* ===== Unit IV/V helpers: graph picture, IPv4 utilities ===== */
+const G6={nodes:{A:[70,160],B:[220,50],C:[270,150],D:[470,50],E:[640,150],F:[470,265]},edges:[['A','B',7],['A','C',9],['A','F',14],['B','C',10],['B','D',15],['C','D',11],['C','F',2],['D','E',6],['E','F',9]]};
+const GNET={nodes:{H1:[50,150],R1:[190,150],R2:[350,55],R3:[350,245],R4:[510,150],H2:[650,150]},edges:[['H1','R1',1],['R1','R2',1],['R1','R3',1],['R2','R4',1],['R3','R4',1],['R4','H2',1]]};
+function gpic(svg,G,st){
+  st=st||{};svg.innerHTML='';svg.setAttribute('viewBox','0 0 720 310');const P=G.nodes;
+  const has=(L,u,v)=>(L||[]).some(e=>(e[0]===u&&e[1]===v)||(e[0]===v&&e[1]===u));
+  G.edges.forEach(([u,v,w])=>{const a=P[u],b=P[v],hl=has(st.hl,u,v),tr=has(st.tree,u,v),bd=has(st.bad,u,v);
+    E('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:bd?'var(--bad)':hl?'var(--sec)':tr?'var(--good)':'var(--muted)','stroke-width':hl||bd?7:tr?5:2,'stroke-dasharray':bd?'8 6':''},svg);
+    if(!st.noW){const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;E('rect',{x:mx-11,y:my-10,width:22,height:18,rx:4,fill:'var(--bg)',stroke:'var(--line)'},svg);E('text',{x:mx,y:my+4,'text-anchor':'middle',class:'sl'},svg).textContent=w}});
+  Object.keys(P).forEach(n=>{const [x,y]=P[n],cl=(st.fail||[]).includes(n)?'bad':(st.cur===n?'cur ok':(st.done||[]).includes(n)?'ok':'');
+    E('circle',{cx:x,cy:y,r:n.length>1?24:22,class:'tnode '+cl},svg);E('text',{x,y:y+4,'text-anchor':'middle',class:'sl'},svg).textContent=n;
+    const tg=(st.tag||{})[n];if(tg!=null)E('text',{x,y:y+(y>200?-32:40),'text-anchor':'middle',class:'sl',style:'font-size:12px'},svg).textContent=tg});
+  if(st.pkt){const [x,y]=P[st.pkt.at];const g=E('g',{},svg);E('rect',{x:x-20,y:y-44,width:40,height:20,rx:4,fill:'var(--sec)'},g);E('text',{x,y:y-30,'text-anchor':'middle',class:'sgt',style:'fill:var(--on)'},g).textContent=st.pkt.t}
+}
+const ip2n=s=>{const p=s.trim().split('.').map(Number);if(p.length!==4||p.some(x=>!(x>=0&&x<=255)||!Number.isInteger(x)))return null;return ((p[0]*16777216)+(p[1]<<16)+(p[2]<<8)+p[3])>>>0};
+const n2ip=n=>[n>>>24,(n>>>16)&255,(n>>>8)&255,n&255].join('.');
+const pmask=p=>p===0?0:((0xFFFFFFFF<<(32-p))>>>0);
+const bin32=(n,p)=>{const b=n.toString(2).padStart(32,'0').match(/.{8}/g);return b.map((o,i)=>o.split('').map((c,k)=>`<span class="${i*8+k<p?'hl1':'hl2'}">${c}</span>`).join('')).join('<span style="margin:0 3px">.</span>')};
+
+/* ===== Unit IV guide ===== */
+lesson({guide:true,nav:"Unit guide: start here",title:"Unit IV guide: what we are going to learn",syl:"Network Layer: Need, Services Provided, Design issues, Routing algorithms (Least Cost Routing, Dijkstra, Bellman-Ford, Hierarchical Routing, Multicast Routing), IP Addresses, Header format, Packet forwarding, Fragmentation and reassembly, ICMP, Comparative study of IPv4 & IPv6 (8 hours)",
+html:()=>`
+<div class="synbox"><b>Syllabus of this unit (8 lecture hours):</b><br>"Network Layer: Need, Services Provided, Design issues, Routing algorithms (Least Cost Routing, Dijkstra, Bellman-Ford, Hierarchical Routing, Multicast Routing), IP Addresses, Header format, Packet forwarding, Fragmentation and reassembly, ICMP, Comparative study of IPv4 &amp; IPv6."<br>The eight lessons follow this syllabus in the same order.</div>
+${SEC("G.1","Scope of the unit")}
+<p>The data link layer moves a frame over one link. A message from one computer to another usually crosses many links and many networks. The <b>network layer</b> is responsible for host-to-host delivery across all of them. It gives each host a logical address, chooses a path through the routers and forwards each packet along that path. This unit describes the services of the layer, the algorithms that find the paths, the Internet Protocol (IP) with its addresses and header, and the support protocol ICMP. It ends with IPv6.</p>
+${SEC("G.2","Position of the unit in the OSI model")}
+<p>The network layer is layer 3. It uses the data link layer (layer 2, Units II and III) to cross each link, and it provides a service to the transport layer (layer 4, Unit V). In the TCP/IP model it is the Internet layer.</p>
+<div class="vis">${osiStack(3,"This unit covers layer 3, the network layer. The unit of data is the packet (datagram in IP).")}</div>
+${SEC("G.3","Map of the unit")}
+<table class="dt gt cmpt"><thead><tr><th>Lesson</th><th>Syllabus words</th><th>Question</th><th>After the lesson you can</th><th>Time</th></tr></thead><tbody>
+<tr><td><b>1</b></td><td>Need, services, design issues</td><td>What does the network layer do, and how can it be offered?</td><td>Explain store-and-forward, datagram and virtual-circuit service</td><td>1 h</td></tr>
+<tr><td><b>2</b></td><td>Least cost routing, Dijkstra</td><td>How is the best path found when the whole map is known?</td><td>Run Dijkstra on a graph and build the routing table</td><td>1 h 15 min</td></tr>
+<tr><td><b>3</b></td><td>Bellman-Ford, distance vector</td><td>How do routers find paths with only neighbour information?</td><td>Run Bellman-Ford and explain count to infinity</td><td>1 h 30 min</td></tr>
+<tr><td><b>4</b></td><td>Hierarchical and multicast routing</td><td>How is routing kept small in a large network, and how is one packet sent to a group?</td><td>Calculate table sizes and trace reverse path forwarding</td><td>1 h 15 min</td></tr>
+<tr><td><b>5</b></td><td>IP addresses</td><td>How are hosts identified?</td><td>Use classes, CIDR and subnet masks</td><td>1 h 30 min</td></tr>
+<tr><td><b>6</b></td><td>Header format, packet forwarding</td><td>What is in an IP datagram and how does a router forward it?</td><td>Compute the checksum and apply longest prefix match</td><td>1 h 30 min</td></tr>
+<tr><td><b>7</b></td><td>Fragmentation, reassembly, ICMP</td><td>What if a datagram is larger than the link allows?</td><td>Calculate fragments; explain ping and traceroute</td><td>1 h 30 min</td></tr>
+<tr><td><b>8</b></td><td>IPv4 and IPv6</td><td>Why a new version of IP?</td><td>Compare the two and write IPv6 addresses</td><td>1 h 15 min</td></tr></tbody></table>
+<p>The total time is about 10 hours, including the practice questions. The syllabus allows 8 lecture hours.</p>
+${SEC("G.4","Relation between the lessons")}
+<div class="chain"><div><b>1. Services</b>Datagram or virtual circuit. Routing is needed.</div><div><b>2. Dijkstra</b>Full map known. Link state.</div><div><b>3. Bellman-Ford</b>Only neighbours known. Distance vector.</div><div><b>4. Hierarchy, multicast</b>Smaller tables. One packet to many.</div><div><b>5. IP address</b>Network part and host part.</div><div><b>6. Header, forwarding</b>Table lookup by longest prefix.</div><div><b>7. Fragmentation, ICMP</b>MTU and error reports.</div><div><b>8. IPv6</b>128-bit address, simpler header.</div></div>
+${SEC("G.5","Terms used in this unit")}
+<table class="dt cmpt"><thead><tr><th>Term</th><th>Meaning</th><th>Lesson</th></tr></thead><tbody>
+<tr><td><b>Router</b></td><td>A device that connects networks and forwards packets between them</td><td>1</td></tr>
+<tr><td><b>Routing</b></td><td>Finding the path (building the table). Done by an algorithm.</td><td>2 to 4</td></tr>
+<tr><td><b>Forwarding</b></td><td>Moving one packet to the next hop by using the table</td><td>1, 6</td></tr>
+<tr><td><b>Datagram</b></td><td>A packet that is routed independently of the others</td><td>1, 6</td></tr>
+<tr><td><b>Virtual circuit</b></td><td>A path set up before data is sent. All packets follow it.</td><td>1</td></tr>
+<tr><td><b>Link cost</b></td><td>A number given to a link (delay, distance, price)</td><td>2, 3</td></tr>
+<tr><td><b>Routing table</b></td><td>A list of destinations with the next hop for each</td><td>2, 3, 6</td></tr>
+<tr><td><b>Prefix, mask</b></td><td>The network part of an address, and the bit pattern that selects it</td><td>5, 6</td></tr>
+<tr><td><b>TTL</b></td><td>Time to live: a hop count that is decreased at each router</td><td>6, 7</td></tr>
+<tr><td><b>MTU</b></td><td>The largest packet that a link can carry</td><td>7</td></tr>
+<tr><td><b>ICMP</b></td><td>The protocol used for error reports and queries at the IP level</td><td>7</td></tr></tbody></table>
+${SEC("G.6","How to use the animations")}
+<ul>
+<li><b>Step players</b> (caption box with Back, Next step, Auto-play and Restart): press <b>Next step</b> and read the caption.</li>
+<li><b>Network pictures</b>: circles are routers or hosts, lines are links, and the number on a line is its cost. A thick blue border marks the router that is being examined. The captions explain the other colours.</li>
+<li><b>Calculators</b> (CIDR, subnet, checksum, fragments, IPv6): change a value and the result is recalculated. Check your own working against them.</li>
+<li><b>Dark mode</b> and <b>Text size</b> are in the left panel.</li></ul>
+${SEC("G.7","Relation to the practical list")}
+<p>The practical experiments on IP addressing and subnetting, routing (static and dynamic), and the use of ping and traceroute use the ideas of this unit. Lesson 5 gives the address arithmetic, Lessons 2 and 3 give the algorithms behind the routing protocols, and Lesson 7 explains what ping and traceroute send.</p>
+${SEC("G.8","Check before you start")}
+${quiz("n0q1","Which device forwards packets between different networks?",["Hub","Repeater","Router","Bridge"],2,"A router works at the network layer and connects networks.")}
+${quiz("n0q2","Which layer gives each host a logical address?",["Physical layer","Data link layer","Network layer","Session layer"],2,"The network layer uses logical (IP) addresses. The data link layer uses physical (MAC) addresses.")}
+${SUM(["The unit has eight lessons in the syllabus order: services, Dijkstra, Bellman-Ford, hierarchical and multicast routing, IP addresses, header and forwarding, fragmentation and ICMP, IPv4 and IPv6.","The network layer is layer 3. It provides host-to-host delivery across many networks.","Routing builds the table; forwarding uses the table."])}
+`});
+
+/* ===== Unit IV Lesson 1: network layer need, services, design issues ===== */
+const NL_ROUTE={r2:[['H1','R1'],['R1','R2'],['R2','R4'],['R4','H2']],r3:[['H1','R1'],['R1','R3'],['R3','R4'],['R4','H2']]};
+lesson({nav:"1. Network layer: need, services, design issues",title:"Network layer: need, services provided and design issues",syl:"Network Layer: Need, Services Provided, Design issues",
+html:()=>`
+${GUIDE({"syl":"Network Layer: Need, Services Provided, Design issues","why":"A data link layer moves a frame over one link. A message that goes from one computer to another usually crosses many links and many networks. The network layer is responsible for this journey. This lesson explains what the layer does, which services it offers to the transport layer, and the problems that its designers must solve.","map":[["1.1","The need for a network layer","Why is the data link layer not enough?","Compare delivery over one link and over many links."],["1.2","Store-and-forward packet switching","How does a packet cross a network?","Step through a packet that is stored and forwarded."],["1.3","Services provided to the transport layer","What does the network layer promise?","Read the goals and the two kinds of service."],["1.4","Datagram and virtual-circuit networks","Does every packet take the same path?","Run both animations and compare."],["1.5","Design issues","What must the layer decide?","Read the design issues and the difference between routing and forwarding."]],"osi":"Layer 3 (network layer). It uses the data link layer below it and gives service to the transport layer (layer 4) above it.","pre":"Unit II (frames, ARP) and Unit III (MAC addresses and LANs).","time":"about 1 hour 15 minutes","next":"Lesson 2, least cost routing and Dijkstra's algorithm."})}
+${LEARN(["explain why a network layer is needed and name its data unit and device","describe store-and-forward packet switching","compare connectionless (datagram) and connection-oriented (virtual circuit) service","state the design issues of the network layer and the difference between routing and forwarding"])}
+${SEC("1.1","The need for a network layer")}
+<p>The data link layer delivers a frame between two nodes that share one link or one LAN. Its addresses (MAC addresses) work only on that link. A message from a computer in Bhopal to a server in another country passes through many links and many networks. No single link layer covers this whole path.</p>
+${DEF("Network layer","is layer 3 of the OSI model. It is responsible for delivering a <b>packet</b> from the source host to the destination host, across any number of networks. It uses a logical address (the IP address) that is valid in the whole internetwork.")}
+<table class="dt gt cmpt"><thead><tr><th></th><th>Data link layer (layer 2)</th><th>Network layer (layer 3)</th></tr></thead><tbody>
+<tr><td>Delivers</td><td>Frames from node to node on one link</td><td>Packets from source host to destination host</td></tr>
+<tr><td>Address</td><td>MAC address (valid on the link)</td><td>IP address (valid on the whole internetwork)</td></tr>
+<tr><td>Device</td><td>Switch, bridge</td><td><b>Router</b></td></tr>
+<tr><td>Path</td><td>One hop</td><td>Many hops, chosen by routing</td></tr></tbody></table>
+<div class="vis">${osiStack(3,"Layer 3 is the subject of this unit. Each router has layers 1 to 3.")}</div>
+${SEC("1.2","Store-and-forward packet switching")}
+<p>An internetwork has hosts and <b>routers</b>. A router connects two or more networks. Routers use <b>store-and-forward packet switching</b>: a host sends a packet to the nearest router. The router <b>stores</b> the whole packet, checks it (for example, it checks the checksum), and <b>forwards</b> it to the next router. This is repeated until the packet reaches the destination host.</p>
+<div class="vis"><svg id="sf" role="img" aria-label="A packet crossing routers"></svg><div id="sfs"></div></div>
+${SEC("1.3","Services provided to the transport layer")}
+<p>The network layer gives its service to the transport layer. The designers set three goals (Tanenbaum).</p>
+<ol><li>The service must be <b>independent of the router technology</b>.</li>
+<li>The transport layer must be <b>shielded</b> from the number, type and topology of the routers.</li>
+<li>The network addresses that the transport layer sees must use a <b>uniform numbering plan</b>, even across LANs and WANs.</li></ol>
+<p>There are two kinds of service.</p>
+<table class="dt gt cmpt"><thead><tr><th></th><th>Connectionless service (datagram)</th><th>Connection-oriented service (virtual circuit)</th></tr></thead><tbody>
+<tr><td>Set-up before data</td><td>None. Each packet is sent alone.</td><td>A path is set up first and released at the end.</td></tr>
+<tr><td>Addressing in each packet</td><td>Full destination address</td><td>Only a short virtual-circuit number</td></tr>
+<tr><td>Path of the packets</td><td>Each packet is routed independently, so paths can differ</td><td>All packets follow the same path</td></tr>
+<tr><td>Order of delivery</td><td>Not guaranteed</td><td>Packets arrive in order</td></tr>
+<tr><td>State in routers</td><td>None for each connection (only the routing table)</td><td>One table entry for each open circuit</td></tr>
+<tr><td>Router failure</td><td>Packets use another route</td><td>All circuits through the router are lost</td></tr>
+<tr><td>Used by</td><td>The Internet (IP)</td><td>X.25, Frame Relay, ATM, MPLS</td></tr></tbody></table>
+<p>The Internet uses the connectionless service. The Internet community argued that the network should be simple and may lose packets, and that the hosts (the transport layer, for example TCP) should add reliability. The telephone companies argued for the connection-oriented service, where the network itself gives a reliable service.</p>
+${SEC("1.4","Datagram and virtual-circuit networks")}
+<p>The network below has two hosts H1 and H2 and four routers. There are two paths from R1 to R4, one through R2 and one through R3. Select the kind of network and step through.</p>
+<div class="vis"><div class="row">${seg("nlg",[["d","Datagram network"],["v","Virtual-circuit network"]])}</div><svg id="dv" role="img" aria-label="Datagram and virtual circuit"></svg><div id="dvs"></div></div>
+${SEC("1.5","Design issues")}
+<table class="dt gt cmpt"><thead><tr><th>Issue</th><th>Question</th><th>Solution and where it is described</th></tr></thead><tbody>
+<tr><td><b>Addressing</b></td><td>How is each host identified in the whole network?</td><td>IP addresses (Lesson 5)</td></tr>
+<tr><td><b>Routing</b></td><td>Which path should a packet take?</td><td>Routing algorithms (Lessons 2 to 4)</td></tr>
+<tr><td><b>Forwarding</b></td><td>How does a router send each arriving packet on its way?</td><td>Table look-up (Lesson 6)</td></tr>
+<tr><td><b>Packet size</b></td><td>Networks accept packets of different maximum sizes</td><td>Fragmentation and reassembly (Lesson 7)</td></tr>
+<tr><td><b>Error reporting</b></td><td>How does the network tell a host that a packet failed?</td><td>ICMP (Lesson 7)</td></tr>
+<tr><td><b>Congestion</b></td><td>What if too many packets arrive at a router?</td><td>Congestion control (Unit V for TCP)</td></tr>
+<tr><td><b>Quality of service</b></td><td>Can some traffic get priority or a bounded delay?</td><td>Traffic classes in the IP header (Lesson 6)</td></tr>
+<tr><td><b>Address space</b></td><td>What if 32-bit addresses run out?</td><td>IPv6 (Lesson 8)</td></tr></tbody></table>
+${DEF("Routing and forwarding","are two different tasks. <b>Routing</b> is the process that builds the routing table (it chooses the best path and runs in the background). <b>Forwarding</b> is what a router does for each packet: it looks up the destination in the table and sends the packet to the next hop.")}
+<p>A routing table holds, for each destination network, the <b>next hop</b> and the outgoing interface. Example for router R1 of the network in 1.4:</p>
+<table class="dt cmpt"><thead><tr><th>Destination</th><th>Next hop</th><th>Interface</th></tr></thead><tbody><tr><td>H1 network</td><td>direct</td><td>eth0</td></tr><tr><td>H2 network</td><td>R2</td><td>eth1</td></tr><tr><td>R4</td><td>R2</td><td>eth1</td></tr></tbody></table>
+<p>Routing algorithms are <b>static</b> (non-adaptive: the routes are set by the administrator and do not change with traffic) or <b>dynamic</b> (adaptive: the routes change when the topology or the traffic changes). Dynamic routing is used in the Internet.</p>
+${quiz("n1q1","Which device works at the network layer?",["Hub","Switch","Router","Repeater"],2,"A router forwards packets using IP addresses. A switch works at layer 2.")}
+${quiz("n1q2","In a datagram network what does each packet contain?",["Only a virtual-circuit number","The full destination address","No address","Only the MAC address of the destination"],1,"Each packet is routed alone, so it must carry the full destination address.")}
+${quiz("n1q3","What is the difference between routing and forwarding?",["None","Routing builds the table; forwarding uses the table for each packet","Forwarding builds the table; routing uses it","Routing is at layer 2"],1,"Routing algorithms fill the routing table. Forwarding is the table look-up for each packet.")}
+${EXAM(["Explain the need for a network layer. How is it different from the data link layer?","Explain store-and-forward packet switching.","Compare datagram and virtual-circuit service in a table.","List the design issues of the network layer.","Differentiate between routing and forwarding. What is a routing table?"])}
+${SUM(["The network layer delivers packets from the source host to the destination host over many links. The device is the router.","Routers store each packet and forward it to the next hop.","Datagram (connectionless) service routes each packet independently. A virtual circuit sets up one path first.","The main design issues are addressing, routing, forwarding, packet size, congestion and quality of service. Routing builds the table. Forwarding uses it."])}
+`,
+mount(r){
+  /* store-and-forward */
+  const sv=$("#sf",r),sp={A:'H1',B:'R1',C:'R2'};
+  const stp=[
+   {cap:`<b>Network.</b> Host H1 sends a packet to host H2. The packet must cross the routers R1, R2 and R4.`,st:{pkt:{at:'H1',t:'pkt'},tag:{}}},
+   {cap:`<b>The packet reaches R1.</b> R1 receives all the bits of the packet and <b>stores</b> it in memory. It does not forward a packet before it has received the whole packet.`,st:{pkt:{at:'R1',t:'pkt'},done:['R1'],hl:[['H1','R1']],tag:{R1:'stores packet'}}},
+   {cap:`<b>R1 checks the packet and looks up the destination in its routing table.</b> The table says that the next hop for H2 is R2. R1 <b>forwards</b> the packet over the link R1 to R2.`,st:{pkt:{at:'R1',t:'pkt'},done:['R1'],hl:[['R1','R2']],tag:{R1:'next hop: R2'}}},
+   {cap:`<b>R2 stores the packet</b> and forwards it to R4 in the same way. Each router does the same steps. The time on each link adds to the total delay of the packet.`,st:{pkt:{at:'R2',t:'pkt'},done:['R1','R2'],hl:[['R2','R4']],tag:{R2:'next hop: R4'}}},
+   {cap:`<b>R4 is connected to the network of H2.</b> R4 delivers the packet to H2 in a frame of that network. The packet has crossed three routers.`,st:{pkt:{at:'H2',t:'pkt'},done:['R1','R2','R4','H2'],hl:[['R4','H2']],tag:{}}}];
+  const sst=story(r,"#sfs",{draw:i=>gpic(sv,GNET,{...stp[i].st,noW:true})});sst.set(stp.map(s=>({cap:s.cap})));
+  /* datagram vs virtual circuit */
+  const dv=$("#dv",r);let ds=null;
+  const mk=k=>{const p2=NL_ROUTE.r2,p3=NL_ROUTE.r3;
+    const D=[
+     {cap:`<b>Datagram network.</b> H1 has three packets for H2: P1, P2 and P3. Each packet has the full destination address of H2. No path is set up in advance.`,st:{}},
+     {cap:`<b>P1.</b> R1 looks up H2 in its table. The best next hop is R2. P1 goes through R2 and R4.`,st:{hl:p2,pkt:{at:'R2',t:'P1'}}},
+     {cap:`<b>P2.</b> A little later the table of R1 has changed (the route through R2 is now busy). R1 sends P2 through R3. Routers treat each packet separately. They keep no record of the earlier packet.`,st:{hl:p3,pkt:{at:'R3',t:'P2'}}},
+     {cap:`<b>P3.</b> The table changes back. P3 goes through R2. The packets can arrive in a different order, for example P2 before P1. Putting them in order is the task of the transport layer.`,st:{hl:p2,pkt:{at:'R2',t:'P3'}}},
+     {cap:`<b>If R2 fails</b>, the routers find another route (through R3) and the following packets use it. Packets are lost only if they were in R2 at that time. This is the advantage of the datagram network.`,st:{fail:['R2'],hl:p3,pkt:{at:'R3',t:'P4'}}}];
+    const V=[
+     {cap:`<b>Virtual-circuit network.</b> Before data is sent, H1 asks for a connection to H2. No data is sent yet.`,st:{}},
+     {cap:`<b>Set-up.</b> A set-up packet goes through R1, R2 and R4 to H2. Each router chooses a <b>virtual-circuit (VC) number</b> and stores an entry in its table: for example, R1 stores "in VC 5 from H1, out VC 2 to R2".`,st:{hl:p2,pkt:{at:'R2',t:'setup'},tag:{R1:'VC5 to VC2 (R2)',R2:'VC2 to VC7 (R4)',R4:'VC7 to H2'}}},
+     {cap:`<b>Data.</b> H2 accepts the call. Now every data packet carries only the short VC number. Each router reads the number, finds the entry, replaces the number and forwards the packet. <b>All packets follow the same path</b>, so they arrive in order.`,st:{hl:p2,pkt:{at:'R4',t:'VC 5'},tag:{R1:'VC5 to VC2 (R2)',R2:'VC2 to VC7 (R4)',R4:'VC7 to H2'}}},
+     {cap:`<b>If R2 fails</b>, every circuit that passes through R2 is lost. The hosts must set up a new circuit through R3. This is the disadvantage of the virtual circuit.`,st:{fail:['R2'],bad:[['R1','R2'],['R2','R4']],tag:{R2:'down'}}},
+     {cap:`<b>Release.</b> When the data transfer is finished, a release packet frees the table entries in all routers. The cost of a virtual circuit is the state that routers hold and the delay of set-up. The benefit is a short header and the order of packets.`,st:{hl:p3,tag:{}}}];
+    const S=k==='d'?D:V;ds=story(r,"#dvs",{draw:i=>gpic(dv,GNET,{...S[i].st,noW:true})});ds.set(S.map(s=>({cap:s.cap})))};
+  bindSeg(r,"nlg",mk);mk('d');
+}});
+
+/* ===== Unit IV Lesson 2: least cost routing and Dijkstra ===== */
+function dijk(src){
+  const N=Object.keys(G6.nodes),adj={};N.forEach(n=>adj[n]=[]);G6.edges.forEach(([u,v,w])=>{adj[u].push([v,w]);adj[v].push([u,w])});
+  const dist={},prev={},done=[],steps=[];N.forEach(n=>dist[n]=Infinity);dist[src]=0;
+  const snap=(cap,cur,hl)=>steps.push({cap,dist:{...dist},prev:{...prev},done:[...done],cur,hl:hl||[]});
+  snap(`<b>Start.</b> The source is <b>${src}</b>. Set the distance of ${src} to 0 and the distance of every other node to infinity (no path known yet). No node is final yet.`,null);
+  while(done.length<N.length){
+    let u=null;N.forEach(n=>{if(!done.includes(n)&&dist[n]<Infinity&&(u===null||dist[n]<dist[u]))u=n});if(u===null)break;
+    done.push(u);const ups=[];
+    adj[u].forEach(([v,w])=>{if(done.includes(v))return;const alt=dist[u]+w;if(alt<dist[v]){ups.push(`${v}: ${dist[v]===Infinity?'infinity':dist[v]} becomes ${dist[u]} + ${w} = <b>${alt}</b>`);dist[v]=alt;prev[v]=u}else ups.push(`${v}: ${dist[u]} + ${w} = ${alt}, not better than ${dist[v]}, so no change`)});
+    snap(`<b>Choose ${u}.</b> Among the nodes that are not final, ${u} has the smallest distance (<b>${dist[u]}</b>). Its distance is now final.${ups.length?` Check each neighbour that is not final: ${ups.join('; ')}.`:' It has no neighbour that is not final.'}`,u,adj[u].map(x=>[u,x[0]]));
+  }
+  snap(`<b>Finished.</b> All nodes are final. The green edges form the <b>shortest-path tree</b> of ${src}. The table gives the least cost to each node. The previous node of each node gives the path.`,null);
+  return steps}
+function pathTo(prev,src,t){const p=[t];while(t!==src&&prev[t]){t=prev[t];p.unshift(t)}return p}
+lesson({nav:"2. Least cost routing and Dijkstra's algorithm",title:"Routing: least cost routing and Dijkstra's algorithm",syl:"Routing algorithms: Least Cost Routing algorithm, Dijkstra's algorithm",
+html:()=>`
+${GUIDE({"syl":"Routing algorithms: Least Cost Routing algorithm, Dijkstra's algorithm","why":"A router must decide which neighbour should get each packet. To decide, it needs the best path to every destination. This lesson defines the best path as the least cost path and shows how Dijkstra's algorithm finds it. Link-state routing (OSPF) is built on this algorithm.","map":[["2.1","The routing problem","What is a routing algorithm?","Read the definition and the properties of a good algorithm."],["2.2","Least cost routing","How is the best path defined?","Model a network as a graph with costs."],["2.3","Dijkstra's algorithm","How is the least cost path found?","Step through the algorithm for any source node."],["2.4","From the result to a routing table","How does the router use the result?","Read the routing table that the algorithm gives."],["2.5","Where it is used","Which protocol uses it?","Read the link-state routing summary."]],"osi":"Layer 3 (network layer): the routing function.","pre":"Lesson 1 (routing and forwarding).","time":"about 1 hour 15 minutes","next":"Lesson 3, Bellman-Ford and distance vector routing."})}
+${LEARN(["define least cost routing and model a network as a weighted graph","apply Dijkstra's algorithm and write the distance table","derive the routing table and the shortest-path tree for a router","explain the idea of link-state routing"])}
+${SEC("2.1","The routing problem")}
+${DEF("Routing algorithm","is the part of the network layer that decides which outgoing line a packet should use. For a datagram network it decides for each packet. For a virtual-circuit network it decides when the circuit is set up.")}
+<p>A good routing algorithm is correct, simple, <b>robust</b> (it survives router and line failures), <b>stable</b> (it reaches a steady state), <b>fair</b> and <b>efficient</b>.</p>
+<p>The <b>optimality principle</b> says: if router J is on the best path from router I to router K, then the best path from J to K is the same as the part of that path after J. The best paths from all routers to one destination therefore form a tree, the <b>sink tree</b>, which has no loops. Routing algorithms find these trees.</p>
+${SEC("2.2","Least cost routing")}
+<p>The network is a <b>graph</b>. Each router is a <b>node</b>. Each link is an <b>edge</b> with a number called the <b>cost</b>. The cost can be one unit for each hop, the distance, the delay, the inverse of the bandwidth, or a mixture. The cost of a path is the sum of the costs of its edges.</p>
+${DEF("Least cost routing","is routing in which every packet uses the path with the smallest total cost between the source and the destination.")}
+<p>In the network below the numbers on the edges are the costs. Path A-B-C-D costs 7 + 10 + 11 = 28. Path A-C-D costs 9 + 11 = 20. So A-C-D is better than A-B-C-D. To find the best path for all pairs we need an algorithm.</p>
+${SEC("2.3","Dijkstra's algorithm")}
+<p>Dijkstra's algorithm finds the least cost path from <b>one source node</b> to all other nodes. It needs the cost of every link, so it is used when each router knows the whole network (link-state routing). The steps are:</p>
+<ol><li><b>Initialise.</b> distance(source) = 0. distance(every other node) = infinity. All nodes are not final.</li>
+<li>Choose the node <b>u</b> that is not final and has the smallest distance. Mark u as final.</li>
+<li>For every neighbour <b>v</b> of u that is not final: if distance(u) + cost(u, v) is less than distance(v), set distance(v) to this value and set previous(v) = u. (This step is called <b>relaxation</b>.)</li>
+<li>Repeat from step 2 until all nodes are final.</li></ol>
+<div class="vis"><div class="row"><span>Source node <select id="ds" aria-label="Source node">${'ABCDEF'.split('').map(c=>`<option>${c}</option>`).join('')}</select></span></div><svg id="dj" role="img" aria-label="Dijkstra on a graph"></svg><div id="djs"></div><div id="djt"></div></div>
+<p class="small muted">Thick blue border: the node that was chosen in this step. Green circle: final node. Green edge: edge of the shortest-path tree. Orange edge: edges that are checked in this step.</p>
+${DOIT(["With source A, watch node D. It first gets distance 22 through B (7 + 15). Later C becomes final and D improves to 20 through C (9 + 11).","Look at the step in which C becomes final. F first gets 14 (direct from A) and then <b>improves to 11</b> through C (9 + 2). This is the relaxation step.","Change the source to E and run the algorithm again. Write the shortest-path tree of E."])}
+${SEC("2.4","From the result to a routing table")}
+<p>The <b>previous</b> column gives the path to each node. The router needs only the <b>first hop</b> of the path: the neighbour to which it sends the packet. The table below is built from the last step for the source node that you selected above.</p>
+<div id="rt"></div>
+${SEC("2.5","Where Dijkstra's algorithm is used")}
+<p><b>Link-state routing</b> works in this way. (1) Each router finds its neighbours and the cost of the links. (2) It builds a <b>link-state packet</b> and (3) <b>floods</b> it to all routers. (4) Each router now has the complete map and runs Dijkstra's algorithm with itself as the source. The result is its routing table. OSPF (Open Shortest Path First), the interior routing protocol of large networks, and IS-IS use this method.</p>
+<p><b>Cost of the algorithm.</b> For N nodes the simple version takes about N<sup>2</sup> steps. With a priority queue it takes about E log N steps for E edges. Dijkstra's algorithm does not work if any cost is negative.</p>
+${quiz("n2q1","In Dijkstra's algorithm, which node is made final in each step?",["The node with the largest distance","The node that is not final and has the smallest distance","The node with most neighbours","Any neighbour of the source"],1,"The node with the smallest distance cannot be improved by any other path, because all costs are positive.")}
+${quiz("n2q2","Dijkstra's algorithm gives the least cost path from",["every node to every node","one source node to all other nodes","one source to one destination only","all nodes to one destination only"],1,"One run gives the shortest path tree of one source. Each router runs it for itself.")}
+${quiz("n2q3","Which routing method uses Dijkstra's algorithm?",["Distance vector","Link-state","Static routing","Flooding"],1,"Link-state routing (OSPF, IS-IS) gives each router the whole map and it runs Dijkstra's algorithm.")}
+${EXAM(["Define least cost routing. What can the cost of a link be?","Write the steps of Dijkstra's algorithm.","For the network of 2.3 find the least cost path from A to every other node. (Answer: B 7, C 9, F 11, D 20, E 20.)","Why does Dijkstra's algorithm fail for negative costs?","Explain how a router builds its routing table in link-state routing."])}
+${SUM(["A network is a graph. Routers are nodes and links are edges with costs.","Dijkstra's algorithm: choose the non-final node with the smallest distance, make it final, and relax its neighbours.","The previous-node column gives the path. The first hop goes to the routing table.","Link-state routing floods link-state packets and runs Dijkstra's algorithm in every router."])}
+`,
+mount(r){
+  const svg=$("#dj",r);let st=null,steps=null;
+  const run=()=>{const src=$("#ds",r).value;steps=dijk(src);
+    const N=Object.keys(G6.nodes);
+    const draw=i=>{const s=steps[i],tree=Object.keys(s.prev).filter(n=>s.done.includes(n)).map(n=>[n,s.prev[n]]);
+      const tag={};N.forEach(n=>tag[n]=s.dist[n]===Infinity?'∞':s.dist[n]);
+      gpic(svg,G6,{done:s.done,cur:s.cur,tree,hl:s.hl,tag});
+      $("#djt",r).innerHTML=`<table class="dt cmpt"><thead><tr><th>Node</th>${N.map(n=>`<th>${n}</th>`).join('')}</tr></thead><tbody><tr><td><b>Distance</b></td>${N.map(n=>`<td>${s.dist[n]===Infinity?'∞':s.dist[n]}</td>`).join('')}</tr><tr><td><b>Previous</b></td>${N.map(n=>`<td>${s.prev[n]||'-'}</td>`).join('')}</tr><tr><td><b>Final?</b></td>${N.map(n=>`<td>${s.done.includes(n)?'yes':'no'}</td>`).join('')}</tr></tbody></table>`;
+      if(i===steps.length-1){const rows=N.filter(n=>n!==src).map(n=>{const p=pathTo(s.prev,src,n);return `<tr><td>${n}</td><td>${s.dist[n]}</td><td>${p.join(' - ')}</td><td><b>${p[1]}</b></td></tr>`}).join('');
+        $("#rt",r).innerHTML=`<table class="dt cmpt"><thead><tr><th>Destination</th><th>Least cost</th><th>Path</th><th>Next hop (routing table)</th></tr></thead><tbody>${rows}</tbody></table>`}else $("#rt",r).innerHTML='<div class="callout i small">Step through to the last step of the animation to see the routing table of the selected source.</div>'};
+    st=story(r,"#djs",{draw});st.set(steps.map(s=>({cap:s.cap})))};
+  $("#ds",r).onchange=run;run();
+}});
+
+/* ===== Unit IV Lesson 3: Bellman-Ford and distance vector routing ===== */
+const GN=Object.keys(G6.nodes),INF=1e9,fmtd=d=>d>=INF?'∞':d;
+function bfRounds(src){
+  let d={};GN.forEach(n=>d[n]=INF);d[src]=0;let pv={};const out=[{k:0,d:{...d},pv:{},ch:[],cap:`<b>Start.</b> The distance of ${src} is 0. All other distances are infinity. After round k the algorithm knows the best path that uses at most k links.`}];
+  for(let k=1;k<GN.length;k++){const nd={...d},np={...pv},ch=[];
+    G6.edges.forEach(([u,v,w])=>{[[u,v],[v,u]].forEach(([a,b])=>{if(d[a]<INF&&d[a]+w<nd[b]){nd[b]=d[a]+w;np[b]=a}})});
+    GN.forEach(n=>{if(nd[n]!==d[n])ch.push(`${n} = ${fmtd(d[n])} becomes <b>${nd[n]}</b> (through ${np[n]})`)});
+    d=nd;pv=np;
+    out.push({k,d:{...d},pv:{...pv},ch,cap:`<b>Round ${k}.</b> Every edge is relaxed in both directions: for the edge u-v with cost w, if d(u) + w is less than d(v), then d(v) is set to d(u) + w. The values of the last round are used. ${ch.length?'Changes: '+ch.join('; ')+'.':'<b>Nothing changed.</b> The distances are final, and the algorithm can stop.'}`});
+    if(!ch.length)break}
+  return out}
+function dvRounds(){
+  const cost={};GN.forEach(a=>{cost[a]={};});G6.edges.forEach(([u,v,w])=>{cost[u][v]=w;cost[v][u]=w});
+  let T={};GN.forEach(x=>{T[x]={};GN.forEach(y=>{T[x][y]=x===y?{d:0,nh:'-'}:cost[x][y]!=null?{d:cost[x][y],nh:y}:{d:INF,nh:'-'}})});
+  const out=[{k:0,T:JSON.parse(JSON.stringify(T)),ch:{},cap:`<b>Round 0.</b> Each router knows only the cost of the links to its own neighbours. Distances to routers that are not neighbours are infinity.`}];
+  for(let k=1;k<=8;k++){const N2={},ch={};GN.forEach(x=>{N2[x]={};GN.forEach(y=>{let b=T[x][y];Object.keys(cost[x]).forEach(v=>{const c=cost[x][v]+T[v][y].d;if(x!==y&&c<b.d)b={d:c,nh:v}});N2[x][y]=b;if(b.d!==T[x][y].d)(ch[x]=ch[x]||[]).push(y)})});
+    const any=Object.keys(ch).length;T=N2;out.push({k,T:JSON.parse(JSON.stringify(T)),ch,cap:`<b>Round ${k}.</b> Each router sends its vector (its distance to every destination) to its neighbours. Each router then computes for every destination: <b>D(x, y) = minimum over neighbours v of [ cost(x, v) + D(v, y) ]</b>. ${any?'The cells that changed are marked in orange.':'<b>Nothing changed. The tables are stable.</b>'}`});if(!any)break}
+  return out}
+function c2i(mode){
+  const rows=[],INFV=16;let a=2,b=INFV;// after C fails: A believes 2 (via B), B has lost the direct route
+  if(mode==='plain'){let A=2,B=INFV,t=0;rows.push({cap:`<b>Before the failure.</b> The line A - B - C has cost 1 on each link. B reaches C directly (cost 1). A reaches C through B (cost 2).`,A:2,B:1});
+    rows.push({cap:`<b>The link B to C fails.</b> B sees that C cannot be reached directly, so B sets its cost to C to infinity (16 in RIP). A still has the old route to C with cost 2 through B.`,A:2,B:INFV});
+    let turn='B';for(let i=0;i<16&&!(A>=INFV&&B>=INFV);i++){if(turn==='B'){B=Math.min(INFV,A+1);rows.push({cap:`<b>A sends its vector to B.</b> A says that it can reach C with cost ${A}. B does not know that this route goes through B itself. B sets its cost to <b>${A} + 1 = ${B}</b> through A.`,A,B});turn='A'}else{A=Math.min(INFV,B+1);rows.push({cap:`<b>B sends its vector to A.</b> B says that it can reach C with cost ${B}. A sets its cost to <b>${B} + 1 = ${A}</b> through B.`,A,B});turn='B'}}
+    rows.push({cap:`<b>The cost reaches 16, which RIP treats as infinity.</b> This took many update rounds. During this time packets for C go back and forth between A and B (a routing loop), and the bad news spreads very slowly. This problem is called <b>count to infinity</b>.`,A,B})}
+  else{rows.push({cap:`<b>Before the failure.</b> The line A - B - C has cost 1 on each link. B reaches C directly. A reaches C through B (cost 2).`,A:2,B:1});
+    rows.push({cap:`<b>The link B to C fails.</b> B sets its cost to C to infinity. With <b>split horizon</b>, A does not advertise to B the routes that A learned from B. So A does not tell B that it can reach C.`,A:2,B:INFV});
+    rows.push({cap:`<b>B sends its vector to A.</b> B says that C is unreachable (cost infinity). A had its route to C through B, so A accepts the news and sets its cost to <b>infinity</b>. There is no loop and the network is stable after one update.`,A:INFV,B:INFV});
+    rows.push({cap:`<b>Poison reverse</b> is the stronger form: A tells B explicitly "my cost to C is infinity", because A's route goes through B. Split horizon fails when three or more routers form a loop. Then other methods are used: triggered updates, hold-down timers and a small value for infinity.`,A:INFV,B:INFV})}
+  return rows}
+lesson({nav:"3. Bellman-Ford and distance vector routing",title:"Routing: Bellman-Ford algorithm and distance vector routing",syl:"Routing algorithms: Bellman-Ford algorithm",
+html:()=>`
+${GUIDE({"syl":"Routing algorithms: Bellman-Ford algorithm","why":"Dijkstra's algorithm needs the map of the whole network. Bellman-Ford needs only the information that a router gets from its neighbours. This is the basis of distance vector routing (RIP). The lesson also shows its main weakness, count to infinity.","map":[["3.1","The Bellman-Ford idea","How can a router find the best path with only local information?","Learn the equation."],["3.2","The Bellman-Ford algorithm","How are the distances improved round by round?","Step through the rounds for any source."],["3.3","Distance vector routing","How do routers exchange vectors?","Watch the routing tables of any router change."],["3.4","Count to infinity","What happens when a link fails?","Step through the problem and the split horizon fix."],["3.5","Distance vector and link state","Which one is better?","Compare the two methods."]],"osi":"Layer 3 (network layer): the routing function.","pre":"Lesson 2 (graph, cost, Dijkstra).","time":"about 1 hour 30 minutes","next":"Lesson 4, hierarchical and multicast routing."})}
+${LEARN(["state the Bellman-Ford equation and apply it","run the Bellman-Ford algorithm round by round","explain how distance vector routing builds tables by exchanging vectors","explain count to infinity and split horizon","compare distance vector and link-state routing"])}
+${SEC("3.1","The Bellman-Ford idea")}
+<p>A router does not need the whole map. It needs only two things: the cost of the link to each of its neighbours, and the distance to every destination as reported by each neighbour. The best path through a neighbour v costs cost(x, v) + (the distance from v to the destination). The best of all neighbours gives the distance of x:</p>
+<div class="callout i"><b>D(x, y) = minimum over all neighbours v of x of [ c(x, v) + D(v, y) ]</b><br>D(x, y) is the least cost from x to y. c(x, v) is the cost of the link from x to its neighbour v.</div>
+<p>Example. Router X has two neighbours: Y at cost 2 and Z at cost 7. Y says that it can reach W with cost 1, and Z says that it can reach W with cost 1. Through Y the cost is 2 + 1 = 3. Through Z the cost is 7 + 1 = 8. So D(X, W) = 3 through Y.</p>
+${SEC("3.2","The Bellman-Ford algorithm")}
+<p>The algorithm finds the least cost from one source node to all the others. It repeats a simple <b>relaxation</b> for every edge. If a network has N nodes, the best path has at most N - 1 links, so N - 1 rounds are enough.</p>
+<ol><li>distance(source) = 0. distance(others) = infinity.</li>
+<li>Repeat N - 1 times (a round): for every edge u-v with cost w, if distance(u) + w &lt; distance(v) then distance(v) = distance(u) + w.</li>
+<li>Stop when a round changes nothing.</li></ol>
+<p>After round k the distances are the best that use at most k links. Bellman-Ford is slower than Dijkstra but works also when some costs are negative, and it works with only local information.</p>
+<div class="vis"><div class="row"><span>Source node <select id="bs" aria-label="Source node">${'ABCDEF'.split('').map(c=>`<option>${c}</option>`).join('')}</select></span></div><svg id="bf" role="img" aria-label="Bellman-Ford rounds"></svg><div id="bfs"></div><div id="bft"></div></div>
+${SEC("3.3","Distance vector routing")}
+${DEF("Distance vector routing","is a dynamic routing method in which each router keeps a table (a vector) with the best known distance to every destination and the next hop. Every router sends this vector to its neighbours at regular intervals and updates its own table with the Bellman-Ford equation.")}
+<p>Each router knows only its neighbours and the vectors that they send. No router knows the whole network. In the animation, the same network is used. Select a router and step through the rounds. The table shows the cost and the next hop to each destination.</p>
+<div class="vis"><div class="row"><span>Show the table of router <select id="vr" aria-label="Router">${'ABCDEF'.split('').map(c=>`<option>${c}</option>`).join('')}</select></span></div><svg id="dvg" role="img" aria-label="Distance vector network"></svg><div id="dvs"></div><div id="dvt"></div></div>
+<p><b>RIP</b> (Routing Information Protocol) is the best-known distance vector protocol. Its cost is the <b>hop count</b>. The largest usable distance is 15 (16 is infinity). Routers send their full table every 30 seconds.</p>
+${SEC("3.4","Count to infinity")}
+<p>Distance vector routing spreads <b>good news</b> fast: a new, shorter route is found after a few rounds. It spreads <b>bad news</b> slowly. The animation shows three routers in a line, A - B - C. The link between B and C fails. Select the method.</p>
+<div class="vis"><div class="row">${seg("cig",[["plain","Without split horizon"],["sh","With split horizon"]])}</div><div id="cit"></div><div id="cis"></div></div>
+${SEC("3.5","Distance vector and link state")}
+<table class="dt gt cmpt"><thead><tr><th></th><th>Distance vector (Bellman-Ford)</th><th>Link state (Dijkstra)</th></tr></thead><tbody>
+<tr><td>What a router knows</td><td>Its neighbours and their vectors</td><td>The whole network map</td></tr>
+<tr><td>What it sends</td><td>Its whole table, to the neighbours only</td><td>The state of its own links, to all routers (flooding)</td></tr>
+<tr><td>Algorithm</td><td>Bellman-Ford</td><td>Dijkstra</td></tr>
+<tr><td>Convergence</td><td>Slow (count to infinity)</td><td>Fast</td></tr>
+<tr><td>Memory and processing</td><td>Small</td><td>Larger</td></tr>
+<tr><td>Size of the network</td><td>Small networks</td><td>Large networks</td></tr>
+<tr><td>Protocols</td><td>RIP</td><td>OSPF, IS-IS</td></tr></tbody></table>
+${quiz("n3q1","Router X has neighbour Y at cost 2 and neighbour Z at cost 7. Y reports a distance of 1 to W and Z reports 1 to W. What is D(X, W)?",["2","3","8","1"],1,"Through Y: 2 + 1 = 3. Through Z: 7 + 1 = 8. The minimum is 3.")}
+${quiz("n3q2","How many rounds are enough for Bellman-Ford in a network of N nodes?",["1","N - 1","N squared","log N"],1,"The best path has at most N - 1 links.")}
+${quiz("n3q3","What does split horizon do?",["It splits the network into two parts","A router does not advertise a route back to the neighbour from which it learned the route","It doubles the update rate","It removes the next hop column"],1,"This stops the two routers from passing a lost route back and forth.")}
+${EXAM(["State the Bellman-Ford equation. Find D(X, W) in the example of 3.1 if the link X-Y costs 5.","Explain the Bellman-Ford algorithm. Run it for the network of the animation with source A and write the distances after each round.","Explain how distance vector routing works. What does a router send?","Explain count to infinity with an example. How does split horizon help? When does it fail?","Compare distance vector and link-state routing."])}
+${SUM(["D(x, y) = min over neighbours v of [ c(x, v) + D(v, y) ].","Bellman-Ford relaxes all edges N - 1 times. After round k it knows the best paths with at most k links.","Distance vector: each router sends its table to its neighbours. RIP uses hop count, with 16 as infinity.","Count to infinity: bad news spreads slowly. Split horizon and poison reverse reduce it."])}
+`,
+mount(r){
+  /* Bellman-Ford */
+  const bsv=$("#bf",r);let bst=null;
+  const brun=()=>{const src=$("#bs",r).value,R=bfRounds(src);
+    const draw=i=>{const s=R[i],tag={};GN.forEach(n=>tag[n]=fmtd(s.d[n]));const tree=Object.keys(s.pv).map(n=>[n,s.pv[n]]);
+      gpic(bsv,G6,{tag,tree,done:GN.filter(n=>s.d[n]<INF),cur:src});
+      $("#bft",r).innerHTML=`<table class="dt cmpt"><thead><tr><th>Round</th>${GN.map(n=>`<th>${n}</th>`).join('')}</tr></thead><tbody>${R.slice(0,i+1).map((q,j)=>`<tr><td>${q.k}</td>${GN.map(n=>`<td ${j>0&&q.d[n]!==R[j-1].d[n]?'style="background:var(--sec-soft)"':''}>${fmtd(q.d[n])}</td>`).join('')}</tr>`).join('')}</tbody></table>`};
+    bst=story(r,"#bfs",{draw});bst.set(R.map(s=>({cap:s.cap})))};
+  $("#bs",r).onchange=brun;brun();
+  /* distance vector */
+  const dsv=$("#dvg",r),DV=dvRounds();let dst=null;
+  const drun=()=>{const x=$("#vr",r).value;
+    const draw=i=>{const s=DV[i],tag={};GN.forEach(n=>tag[n]=fmtd(s.T[x][n].d));gpic(dsv,G6,{tag,cur:x});
+      $("#dvt",r).innerHTML=`<table class="dt cmpt"><caption class="small muted" style="text-align:left">Routing table of router ${x} after round ${s.k}</caption><thead><tr><th>Destination</th><th>Cost</th><th>Next hop</th></tr></thead><tbody>${GN.filter(n=>n!==x).map(n=>`<tr ${(s.ch[x]||[]).includes(n)?'style="background:var(--sec-soft)"':''}><td>${n}</td><td>${fmtd(s.T[x][n].d)}</td><td>${s.T[x][n].nh}</td></tr>`).join('')}</tbody></table>`};
+    dst=story(r,"#dvs",{draw});dst.set(DV.map(s=>({cap:s.cap})),true)};
+  $("#vr",r).onchange=drun;drun();
+  /* count to infinity */
+  const crun=m=>{const R=c2i(m);
+    const draw=i=>{const s=R[i];$("#cit",r).innerHTML=`<table class="dt cmpt"><thead><tr><th>Update</th><th>Cost of A to C</th><th>Cost of B to C</th></tr></thead><tbody>${R.slice(Math.max(0,i-5),i+1).map((q,j,a)=>`<tr ${j===a.length-1?'style="background:var(--pri-soft)"':''}><td>${R.indexOf(q)}</td><td>${q.A>=16?'16 (infinity)':q.A}</td><td>${q.B>=16?'16 (infinity)':q.B}</td></tr>`).join('')}</tbody></table>`};
+    const st=story(r,"#cis",{draw,ms:2200});st.set(R.map(s=>({cap:s.cap})))};
+  bindSeg(r,"cig",crun);crun('plain');
+}});
+
+/* ===== Unit IV Lesson 4: hierarchical routing and multicast routing ===== */
+function hierPic(svg,mode){
+  svg.innerHTML='';svg.setAttribute('viewBox','0 0 720 260');
+  const R=[['Region 1',20,['A1','A2','A3']],['Region 2',260,['B1','B2','B3']],['Region 3',500,['C1','C2','C3']]];
+  R.forEach(([n,x,rs],k)=>{E('rect',{x,y:20,width:200,height:200,rx:14,fill:mode>=1?'var(--pri-soft)':'none',stroke:mode>=1?'var(--pri)':'var(--line)','stroke-width':mode>=1?3:1,'stroke-dasharray':mode>=1?'':'5 4'},svg);
+    if(mode>=1)E('text',{x:x+100,y:42,'text-anchor':'middle',class:'sl hd'},svg).textContent=n;
+    E('line',{x1:x+40,y1:130,x2:x+160,y2:130,stroke:'var(--muted)','stroke-width':2},svg)});
+  E('line',{x1:200,y1:130,x2:300,y2:130,stroke:'var(--muted)','stroke-width':2},svg);E('line',{x1:440,y1:130,x2:540,y2:130,stroke:'var(--muted)','stroke-width':2},svg);
+  R.forEach(([n,x,rs])=>rs.forEach((q,i)=>{const cx=x+40+i*60,cy=130;E('circle',{cx,cy,r:22,class:'tnode '+(q==='A1'?'cur ok':'')},svg);E('text',{x:cx,y:cy+4,'text-anchor':'middle',class:'sl'},svg).textContent=q}));
+  E('text',{x:60,y:182,class:'tk'},svg).textContent='table of router A1 is drawn below'}
+function mcastRun(src,members){
+  const adj={};GN.forEach(n=>adj[n]=[]);G6.edges.forEach(([u,v,w])=>{adj[u].push([v,w]);adj[v].push([u,w])});
+  const s=dijk(src),last=s[s.length-1],prev=last.prev;
+  const treeAll=Object.keys(prev).map(n=>[n,prev[n]]);
+  const need=new Set();const ucost=[];members.forEach(m=>{const p=pathTo(prev,src,m);ucost.push([m,p.length-1,p]);for(let i=0;i<p.length-1;i++)need.add([p[i],p[i+1]].sort().join('-'))});
+  const prune=treeAll.filter(e=>need.has([e[0],e[1]].sort().join('-')));
+  return {treeAll,prune,ucost,usum:ucost.reduce((a,b)=>a+b[1],0)}}
+lesson({nav:"4. Hierarchical and multicast routing",title:"Hierarchical routing and multicast routing",syl:"Routing algorithms: Hierarchical Routing, Multicast Routing",
+html:()=>`
+${GUIDE({"syl":"Routing algorithms: Hierarchical Routing, Multicast Routing","why":"Lessons 2 and 3 give each router a table with one entry for every other router. This is impossible in a network with millions of routers. Hierarchical routing reduces the size of the tables. Multicast routing is the method to send one packet to a group of hosts without sending it to everyone.","map":[["4.1","Why a hierarchy is needed","How big does a flat table become?","Compare the size of tables."],["4.2","Hierarchical routing","How are routers grouped?","Step through a table that is reduced from 8 entries to 4, and use the calculator."],["4.3","Autonomous systems and routing protocols","How is the Internet organised?","Read the table of protocols."],["4.4","Unicast, broadcast, multicast","What is a multicast?","Read the definitions and the address range."],["4.5","Multicast routing","How does a packet reach a group by one tree?","Choose a source and the members, and compare the transmissions."]],"osi":"Layer 3 (network layer): the routing function.","pre":"Lessons 2 and 3 (routing tables, shortest paths).","time":"about 1 hour 15 minutes","next":"Lesson 5, IP addresses."})}
+${LEARN(["explain why a flat routing table does not scale and how a hierarchy reduces it","calculate the table size of a two-level hierarchy","distinguish an intra-domain from an inter-domain routing protocol","define unicast, broadcast and multicast and explain reverse path forwarding and the pruned multicast tree"])}
+${SEC("4.1","Why a hierarchy is needed")}
+<p>In a flat network each router has one table entry for every other router. With N routers the table has N - 1 entries. The memory, the time to search the table, and the bandwidth to exchange the tables all grow with N. A network with 720 routers needs 719 entries in every router. The Internet has far more. The solution is to group the routers.</p>
+${SEC("4.2","Hierarchical routing")}
+${DEF("Hierarchical routing","is routing in which the routers are divided into <b>regions</b>. A router knows the details of the routers in its own region, but only the existence of the other regions. A table entry for another region stands for all the routers of that region.")}
+<p>The picture shows 9 routers. Step through the table of router A1.</p>
+<div class="vis"><svg id="hr" role="img" aria-label="Regions of routers"></svg><div id="hrs"></div><div id="hrt"></div></div>
+<p>If R routers are divided into G regions of R / G routers each, a router needs (R / G - 1) entries for its own region and (G - 1) entries for the other regions. Use the calculator.</p>
+<div class="vis"><div class="row"><span>Routers R <select id="hR" aria-label="R"><option>720</option><option>1000</option><option selected>10000</option><option>1000000</option></select></span><span>Regions G <input type="range" id="hG" min="2" max="1000" value="100" aria-label="G"> <b id="hGv">100</b></span></div><div id="hres"></div></div>
+<p><b>The price.</b> The paths can become longer than the best path, because a router that sees a region as one entry cannot choose the best entry point into the region. The saving in table size is usually worth the small increase in path length. The table is smallest when G is about the square root of R. More levels (regions in clusters, clusters in zones) reduce the table further.</p>
+${SEC("4.3","Autonomous systems and routing protocols")}
+<p>The Internet is divided into <b>autonomous systems (AS)</b>. An AS is a group of networks and routers under one administration (for example a university or an ISP). The AS is the region of the hierarchy. Routing is done in two levels.</p>
+<table class="dt gt cmpt"><thead><tr><th></th><th>Intra-domain (interior) routing</th><th>Inter-domain (exterior) routing</th></tr></thead><tbody>
+<tr><td>Where</td><td>Inside one AS</td><td>Between autonomous systems</td></tr>
+<tr><td>Aim</td><td>Best path (least cost)</td><td>Policy of the administrators (who may carry whose traffic)</td></tr>
+<tr><td>Protocols</td><td>RIP (distance vector), OSPF (link state)</td><td>BGP (path vector)</td></tr>
+<tr><td>Algorithm</td><td>Bellman-Ford (RIP), Dijkstra (OSPF)</td><td>A router sends the full path of AS numbers, which avoids count to infinity and loops</td></tr></tbody></table>
+${SEC("4.4","Unicast, broadcast and multicast")}
+<ul><li><b>Unicast:</b> one sender, one receiver.</li><li><b>Broadcast:</b> one sender, all hosts of the network.</li><li><b>Multicast:</b> one sender, a <b>group</b> of receivers. Only the hosts that have joined the group receive the packets. Examples are video conferences, software updates and live video.</li></ul>
+<p>A multicast group has one IP address. In IPv4 the multicast addresses are in the range <b>224.0.0.0 to 239.255.255.255</b> (class D). A host joins a group by a message of the protocol <b>IGMP</b> (Internet Group Management Protocol) to its local router. The router then asks the other routers to send the group traffic.</p>
+${SEC("4.5","Multicast routing")}
+<p>To reach a group, the sender could send one copy to each member (unicast to each). This sends the same data many times over the same links. Broadcast reaches also the hosts that do not want the data. <b>Multicast routing</b> builds a <b>tree</b> that connects the source and the members, and sends one copy of the packet on each link of the tree. A router copies the packet only where the tree branches.</p>
+<p><b>Reverse path forwarding (RPF).</b> This is the rule that stops loops when a packet is flooded. A router accepts a multicast packet only if it arrived on the link that the router itself would use to send a packet <b>to the source</b>. A packet that arrives on another link is a duplicate and is discarded. <b>Pruning</b> then removes the branches that have no member: a router that has no member below it sends a <b>prune</b> message upstream.</p>
+<p>Choose the source and the members. The animation compares the three methods and counts the transmissions over links.</p>
+<div class="vis"><div class="row"><span>Source <select id="ms" aria-label="Source"><option>A</option><option>B</option><option>C</option></select></span><b>Members:</b> ${'BCDEF'.split('').map(c=>`<label class="pill"><input type="checkbox" data-mm="${c}" ${'DE'.includes(c)?'checked':''}>${c}</label>`).join('')}</div><svg id="mc" role="img" aria-label="Multicast tree"></svg><div id="mcs"></div></div>
+<table class="dt gt cmpt"><thead><tr><th>Protocol</th><th>Tree</th><th>Remark</th></tr></thead><tbody>
+<tr><td>DVMRP</td><td>Source-based tree, flood and prune (RPF)</td><td>Distance vector multicast routing</td></tr>
+<tr><td>MOSPF</td><td>Source-based tree from the link-state map</td><td>Multicast extension of OSPF</td></tr>
+<tr><td>PIM-DM, PIM-SM</td><td>Dense mode: flood and prune. Sparse mode: shared tree around a rendezvous point</td><td>Protocol Independent Multicast</td></tr>
+<tr><td>CBT</td><td>One shared tree with a core router</td><td>Core-based trees</td></tr></tbody></table>
+${quiz("n4q1","720 routers are divided into 24 regions of 30 routers. How many entries does a router need in a two-level table?",["720","52","30","24"],1,"(30 - 1) entries for the own region plus (24 - 1) entries for the other regions is 29 + 23 = 52.")}
+${quiz("n4q2","Which protocol is used between autonomous systems?",["RIP","OSPF","BGP","IGMP"],2,"BGP is the exterior (inter-domain) protocol. RIP and OSPF are interior protocols.")}
+${quiz("n4q3","What does reverse path forwarding do?",["It makes a packet go back to the sender","A router accepts a multicast packet only if it arrived on the link towards the source, so duplicates are discarded","It encrypts packets","It adds a prune message to every packet"],1,"This avoids loops when packets are flooded.")}
+${EXAM(["Why is hierarchical routing needed? How does it reduce the table size? State one disadvantage.","A network has 10000 routers. Find the table size in a flat network and in a two-level hierarchy with 100 regions. (Answer: 9999 and 99 + 99 = 198.)","Differentiate intra-domain and inter-domain routing with examples.","Define unicast, broadcast and multicast. Give the range of IPv4 multicast addresses.","Explain reverse path forwarding and pruning in multicast routing."])}
+${SUM(["A flat table has N - 1 entries. A hierarchy groups routers into regions, so a router has (R/G - 1) + (G - 1) entries.","The Internet has autonomous systems. RIP and OSPF work inside, BGP works between.","Multicast sends one copy per link on a tree to a group (224.0.0.0 to 239.255.255.255). Hosts join with IGMP.","RPF removes duplicates. Pruning removes branches that have no members."])}
+`,
+mount(r){
+  /* hierarchy story */
+  const hs=$("#hr",r);
+  const flat=['A2','A3','B1','B2','B3','C1','C2','C3'].map(d=>[d,d.startsWith('A')?d:'B/C side']);
+  const tb=(rows,t)=>`<table class="dt cmpt"><caption class="small muted" style="text-align:left">${t}</caption><thead><tr><th>Destination</th><th>Next hop</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td></tr>`).join('')}</tbody></table>`;
+  const H=[
+   {cap:`<b>Flat routing.</b> Nine routers are connected. Router A1 has a table with <b>8 entries</b>, one for each other router.`,m:0,t:tb([['A2','A2'],['A3','A2'],['B1','B1'],['B2','B1'],['B3','B1'],['C1','C1'],['C2','C1'],['C3','C1']],'Flat table of A1: 8 entries')},
+   {cap:`<b>The routers are grouped into three regions.</b> Routers in one region are close to each other. The regions are connected to each other by a few links.`,m:1,t:tb([['A2','A2'],['A3','A2'],['B1','B1'],['B2','B1'],['B3','B1'],['C1','C1'],['C2','C1'],['C3','C1']],'Flat table of A1: still 8 entries')},
+   {cap:`<b>Hierarchical table.</b> A1 keeps one entry for each router of <b>its own region</b>. For the other regions it keeps <b>one entry for each region</b>. All traffic for any router in Region 2 uses the same next hop. The table has 2 + 2 = <b>4 entries</b>. The saving is larger when the regions are larger.`,m:1,t:tb([['A2','A2'],['A3','A2'],['Region 2 (all routers)','B1'],['Region 3 (all routers)','C1']],'Hierarchical table of A1: 4 entries')}];
+  const hst=story(r,"#hrs",{draw:i=>{hierPic(hs,H[i].m);$("#hrt",r).innerHTML=H[i].t}});hst.set(H.map(x=>({cap:x.cap})));
+  const hc=()=>{const R=+$("#hR",r).value,G=Math.min(+$("#hG",r).value,R);$("#hGv",r).textContent=G;const e=Math.round(R/G-1)+G-1;
+    $("#hres",r).innerHTML=`<table class="dt cmpt"><tbody><tr><td>Flat table</td><td><b>${R-1}</b> entries</td></tr><tr><td>Two levels: (R / G - 1) + (G - 1)</td><td>(${R} / ${G} - 1) + (${G} - 1) = <b>${e}</b> entries</td></tr><tr><td>Reduction</td><td><b>${(100*(1-e/(R-1))).toFixed(1)}%</b> fewer entries. The smallest table is for G about ${Math.round(Math.sqrt(R))}.</td></tr></tbody></table>`};
+  $("#hR",r).onchange=hc;$("#hG",r).oninput=hc;hc();
+  /* multicast */
+  const msv=$("#mc",r);let mst=null;
+  const mrun=()=>{const src=$("#ms",r).value,mem=$$("[data-mm]",r).filter(c=>c.checked).map(c=>c.dataset.mm).filter(m=>m!==src);
+    if(!mem.length){$("#mcs",r).innerHTML='<div class="callout k small">Choose at least one member (not the source).</div>';gpic(msv,G6,{noW:false});return}
+    const M=mcastRun(src,mem),tag={};mem.forEach(m=>tag[m]='member');tag[src]='source';
+    const edgesU=M.ucost.flatMap(([m,n,p])=>p.slice(1).map((q,i)=>[p[i],q]));
+    const St=[
+     {cap:`<b>Setup.</b> The source is <b>${src}</b>. The members of the group are <b>${mem.join(', ')}</b>.`,st:{tag}},
+     {cap:`<b>Separate unicast.</b> The source sends one copy to each member. The paths are ${M.ucost.map(([m,n,p])=>p.join('-')+' ('+n+' links)').join('; ')}. The total is <b>${M.usum} link transmissions</b>. Links near the source carry the same data several times.`,st:{tag,hl:edgesU}},
+     {cap:`<b>The shortest-path tree of ${src}</b> (from Dijkstra, Lesson 2) connects ${src} to all routers. Flooding the packet along this tree with reverse path forwarding sends one copy per edge. The tree has <b>${M.treeAll.length} edges</b>, so the broadcast uses ${M.treeAll.length} transmissions and reaches routers that have no member.`,st:{tag,tree:M.treeAll}},
+     {cap:`<b>Pruning.</b> A router that has no member in its branch sends a prune message to its parent. The branches without members are removed. The multicast tree now has <b>${M.prune.length} edges</b>.`,st:{tag,tree:M.prune}},
+     {cap:`<b>Result.</b> Multicast sends <b>${M.prune.length}</b> copies over links. Separate unicast sends <b>${M.usum}</b>. ${M.prune.length<M.usum?`The multicast tree saves ${M.usum-M.prune.length} transmissions. The saving grows with the number of members.`:'For this small group the two are equal. Add more members to see the saving.'}`,st:{tag,tree:M.prune,hl:[]}}];
+    mst=story(r,"#mcs",{draw:i=>gpic(msv,G6,{...St[i].st,noW:true,done:[src]})});mst.set(St.map(x=>({cap:x.cap})))};
+  $("#ms",r).onchange=mrun;$$("[data-mm]",r).forEach(c=>c.onchange=mrun);mrun();
+}});
+
+/* ===== Unit IV Lesson 5: IP addresses ===== */
+function ipInfo(ip,p){const m=pmask(p),net=(ip&m)>>>0,bc=(net|(~m>>>0))>>>0,hosts=p>=31?(p===31?2:1):Math.pow(2,32-p)-2;
+  return {m,net,bc,hosts,first:p>=31?net:net+1,last:p>=31?bc:bc-1}}
+function ipClass(ip){const a=ip>>>24;return a<128?['A','0','1 to 126',8,'255.0.0.0']:a<192?['B','10','128 to 191',16,'255.255.0.0']:a<224?['C','110','192 to 223',24,'255.255.255.0']:a<240?['D','1110','224 to 239',null,'none (multicast)']:['E','1111','240 to 255',null,'none (reserved)']}
+function ipKind(ip){const a=ip>>>24,b=(ip>>>16)&255;if(ip===0)return 'This host on this network (0.0.0.0)';if(ip===0xFFFFFFFF)return 'Limited broadcast (255.255.255.255)';if(a===127)return 'Loopback (127.0.0.0/8)';if(a===10)return 'Private (10.0.0.0/8)';if(a===172&&b>=16&&b<=31)return 'Private (172.16.0.0/12)';if(a===192&&b===168)return 'Private (192.168.0.0/16)';if(a===169&&b===254)return 'Link-local (169.254.0.0/16, used when no DHCP server answers)';if(a>=224&&a<240)return 'Multicast';return 'Public (globally routable) address'}
+lesson({nav:"5. IP addresses",title:"IPv4 addresses: classes, subnets and CIDR",syl:"IP Addresses",
+html:()=>`
+${GUIDE({"syl":"IP Addresses","why":"Every host and router interface on the Internet needs a logical address so that routers can forward packets to it. This lesson explains the structure of the IPv4 address, the classes, the special addresses, and how subnetting and CIDR divide address blocks. You will calculate the network address, the broadcast address and the host range for any address.","map":[["5.1","The IPv4 address","What is in an address?","Read the structure of an address."],["5.2","Classful addressing","How were addresses divided into classes?","Find the class of any address and read the table."],["5.3","Special addresses","Which addresses are not for hosts?","Read the table."],["5.4","Subnetting and the subnet mask","How is a network divided?","Calculate the network address with a bitwise AND."],["5.5","CIDR","How does a prefix replace the class?","Use the address calculator."],["5.6","Dividing a block into subnets","How are equal subnets made?","Step through a division of a block."]],"osi":"Layer 3 (network layer). The IP address is the logical address. The MAC address (Unit III) is the physical address of layer 2.","pre":"Lesson 1 (network layer), and binary and decimal numbers.","time":"about 2 hours","next":"Lesson 6, IPv4 header format and packet forwarding."})}
+${LEARN(["write an IPv4 address in binary and in dotted decimal","find the class, the network part and the host part of an address","calculate the network address, broadcast address and number of hosts from an address and a mask or prefix","divide an address block into subnets"])}
+${SEC("5.1","The IPv4 address")}
+${DEF("IPv4 address","is a 32-bit number that identifies the connection of a host or router to a network (an <b>interface</b>). It is written as four decimal numbers, one for each byte, separated by dots. This is the <b>dotted decimal notation</b>.")}
+<p>Example: 11000000 10101000 00001010 00000001 is 192.168.10.1. Each byte has a value from 0 to 255. There are 2<sup>32</sup> = 4,294,967,296 addresses. A router has one address for each of its interfaces. The address has two parts: the <b>network part</b> (netid), which is the same for all hosts of one network, and the <b>host part</b> (hostid), which identifies the host in that network. A router forwards a packet by looking only at the network part.</p>
+${SEC("5.2","Classful addressing")}
+<p>In the original design the border between the network part and the host part was fixed by the first bits of the address. This gave five <b>classes</b>.</p>
+<table class="dt gt cmpt"><thead><tr><th>Class</th><th>First bits</th><th>First byte</th><th>Network bits</th><th>Host bits</th><th>Networks</th><th>Hosts for each network</th><th>Default mask</th></tr></thead><tbody>
+<tr><td><b>A</b></td><td>0</td><td>1 to 126</td><td>8</td><td>24</td><td>126</td><td>16,777,214</td><td>255.0.0.0</td></tr>
+<tr><td><b>B</b></td><td>10</td><td>128 to 191</td><td>16</td><td>16</td><td>16,384</td><td>65,534</td><td>255.255.0.0</td></tr>
+<tr><td><b>C</b></td><td>110</td><td>192 to 223</td><td>24</td><td>8</td><td>2,097,152</td><td>254</td><td>255.255.255.0</td></tr>
+<tr><td><b>D</b></td><td>1110</td><td>224 to 239</td><td colspan="2">Multicast groups</td><td colspan="2">not used for hosts</td><td>none</td></tr>
+<tr><td><b>E</b></td><td>1111</td><td>240 to 255</td><td colspan="2">Reserved</td><td colspan="2">not used for hosts</td><td>none</td></tr></tbody></table>
+<p>The number of hosts is 2<sup>host bits</sup> - 2, because the address with all host bits 0 (the network address) and the address with all host bits 1 (the broadcast address) cannot be given to hosts. The first byte 127 is reserved for the loopback address, so class A has 126 usable networks.</p>
+<div class="vis"><div class="row"><label>IP address <input id="ci" value="172.16.45.9" size="18" aria-label="IP address" style="padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--surface)"></label></div><div id="cres"></div></div>
+<p><b>The problem with classes.</b> Class A is too large for most organisations, class C is too small, and class B was used up quickly. An organisation that needed 300 addresses received a whole class B (65,534 addresses) and wasted most of them. Subnetting and CIDR solve this.</p>
+${SEC("5.3","Special addresses")}
+<table class="dt gt cmpt"><thead><tr><th>Address</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>Host part all 0 (for example 192.168.10.0)</td><td><b>Network address</b>: names the network itself</td></tr>
+<tr><td>Host part all 1 (for example 192.168.10.255)</td><td><b>Directed broadcast</b>: all hosts of that network</td></tr>
+<tr><td>255.255.255.255</td><td><b>Limited broadcast</b>: all hosts on the local network (not forwarded by routers)</td></tr>
+<tr><td>0.0.0.0</td><td>This host on this network (used when a host starts, before it has an address)</td></tr>
+<tr><td>127.0.0.0 to 127.255.255.255</td><td><b>Loopback</b>: the host itself (for testing; 127.0.0.1 is localhost)</td></tr>
+<tr><td>10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16</td><td><b>Private addresses</b>: used inside organisations and not routed on the Internet. Network address translation (NAT) lets them reach the Internet.</td></tr>
+<tr><td>169.254.0.0/16</td><td>Link-local: a host gives itself an address when no DHCP server answers</td></tr></tbody></table>
+${SEC("5.4","Subnetting and the subnet mask")}
+<p>With <b>subnetting</b> an organisation divides its address block into smaller networks (<b>subnets</b>). Some bits of the host part are used as network bits. A <b>subnet mask</b> shows which bits are network bits: a 1 for each network bit and a 0 for each host bit. The router finds the network address with a bitwise <b>AND</b> of the address and the mask:</p>
+<div class="callout i"><b>Network address = IP address AND subnet mask</b></div>
+<p>Example: 172.16.45.9 with the mask 255.255.240.0.</p>
+<table class="dt cmpt"><tbody><tr><td>Address</td><td class="num">10101100.00010000.00101101.00001001</td></tr><tr><td>Mask</td><td class="num">11111111.11111111.11110000.00000000</td></tr><tr><td>AND</td><td class="num"><b>10101100.00010000.00100000.00000000</b> = 172.16.32.0</td></tr></tbody></table>
+${SEC("5.5","CIDR: classless addressing")}
+${DEF("CIDR (Classless Inter-Domain Routing)","removes the classes. The network part can have any length. The length is written after the address as a <b>prefix length</b>, for example 172.16.45.9<b>/20</b> means that the first 20 bits are the network part.")}
+<p>A block of 2<sup>(32 - n)</sup> addresses is given for a prefix of length n. An ISP can give a block that fits the need: a /24 block has 256 addresses, a /26 block has 64. CIDR also allows <b>route aggregation</b>: several blocks with a common prefix are announced as one entry in the routing tables (Lesson 4).</p>
+<p>Enter an address and a prefix. The calculator shows the working.</p>
+<div class="vis"><div class="row"><label>Address <input id="ai" value="172.16.45.9" size="16" aria-label="Address" style="padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--surface)"></label><span>Prefix /<input type="range" id="ap" min="1" max="30" value="20" aria-label="Prefix length"> <b id="apv">20</b></span></div><div id="ares"></div></div>
+${DOIT(["Set the prefix to 24 and the address to 192.168.10.77. The network address is 192.168.10.0 and there are 254 hosts.","Move the prefix to 26. The block becomes smaller: the network address is 192.168.10.64 and there are 62 hosts.","Find the prefix that gives at least 500 hosts. (Answer: /23, which has 510 hosts.)"])}
+${SEC("5.6","Dividing a block into subnets")}
+<p>To divide a block into N equal subnets (N is a power of 2) take log<sub>2</sub> N bits from the host part. The new prefix is the old prefix plus log<sub>2</sub> N. Select a block and the number of subnets, and step through.</p>
+<div class="vis"><div class="row"><span>Block <select id="sb" aria-label="Block"><option>192.168.10.0/24</option><option>10.1.0.0/16</option><option>172.16.0.0/20</option></select></span><span>Subnets <select id="sn" aria-label="Number of subnets"><option>2</option><option selected>4</option><option>8</option></select></span></div><div id="sbin"></div><div id="sbs"></div><div id="sbt"></div></div>
+<p><b>VLSM</b> (variable length subnet masks) uses subnets of different sizes in one block. The largest subnet is allocated first, then the next, so that each subnet starts at a boundary that fits its size. Example: from 192.168.1.0/24, a 100-host LAN needs a /25 (126 hosts: 192.168.1.0/25), a 50-host LAN needs a /26 (62 hosts: 192.168.1.128/26), and a 20-host LAN needs a /27 (30 hosts: 192.168.1.192/27).</p>
+${quiz("n5q1","What is the class of the address 200.10.5.3?",["A","B","C","D"],2,"The first byte 200 is in the range 192 to 223, so the class is C.")}
+${quiz("n5q2","How many hosts can a /26 block have?",["64","62","30","126"],1,"2^(32 - 26) = 64 addresses. The network and broadcast addresses are not given to hosts, so 62.")}
+${quiz("n5q3","How is the network address found?",["IP address OR mask","IP address AND mask","IP address XOR mask","IP address + mask"],1,"The bitwise AND of the address and the mask keeps the network bits and clears the host bits.")}
+${EXAM(["Write 192.168.10.1 in binary. Find its class.","Find the network address, broadcast address, first and last host and the number of hosts for 172.16.45.9/20. (Answer: 172.16.32.0, 172.16.47.255, 172.16.32.1, 172.16.47.254, 4094 hosts.)","Divide 192.168.1.0/24 into 4 equal subnets. (Answer: 192.168.1.0/26, .64/26, .128/26 and .192/26. Each has 62 hosts.)","What are private addresses? Give the three ranges.","Explain CIDR. How does it help to solve the shortage of addresses?","Why is the mask 255.255.255.192 equal to /26?"])}
+${SUM(["An IPv4 address has 32 bits: a network part and a host part. Written as four decimal bytes.","Classes: A (first byte 1 to 126), B (128 to 191), C (192 to 223), D multicast, E reserved.","Network address = IP AND mask. Hosts = 2^(host bits) - 2.","CIDR uses a prefix /n instead of a class. Subnetting takes log2 N bits from the host part to make N subnets."])}
+`,
+mount(r){
+  const ci=()=>{const ip=ip2n($("#ci",r).value),o=$("#cres",r);if(ip==null){o.innerHTML='<div class="callout k small">Enter four numbers from 0 to 255 separated by dots.</div>';return}
+    const c=ipClass(ip),np=c[3];o.innerHTML=`<div class="macbox" style="margin:6px 0">${bin32(ip,np||0)}</div><table class="dt cmpt"><tbody><tr><td>Class</td><td><b>${c[0]}</b> (first bits ${c[1]}, first byte ${c[2]})</td></tr><tr><td>Default mask</td><td>${c[4]}</td></tr>${np?`<tr><td>Network part and host part</td><td>${np} network bits (blue) and ${32-np} host bits (orange)</td></tr><tr><td>Network address</td><td><b>${n2ip((ip&pmask(np))>>>0)}</b></td></tr>`:''}<tr><td>Kind of address</td><td>${ipKind(ip)}</td></tr></tbody></table>`};
+  $("#ci",r).oninput=ci;ci();
+  const ac=()=>{const ip=ip2n($("#ai",r).value),p=+$("#ap",r).value;$("#apv",r).textContent=p;const o=$("#ares",r);if(ip==null){o.innerHTML='<div class="callout k small">Enter four numbers from 0 to 255 separated by dots.</div>';return}
+    const x=ipInfo(ip,p);o.innerHTML=`<table class="dt cmpt"><tbody><tr><td>Address</td><td class="macbox">${bin32(ip,p)}</td></tr><tr><td>Mask (/${p})</td><td class="macbox">${bin32(x.m,p)} = <b>${n2ip(x.m)}</b></td></tr><tr><td>Network address (AND)</td><td class="macbox">${bin32(x.net,p)} = <b>${n2ip(x.net)}</b></td></tr><tr><td>Broadcast address (host bits all 1)</td><td><b>${n2ip(x.bc)}</b></td></tr><tr><td>First host and last host</td><td><b>${n2ip(x.first)}</b> to <b>${n2ip(x.last)}</b></td></tr><tr><td>Number of hosts = 2<sup>${32-p}</sup> - 2</td><td><b>${x.hosts.toLocaleString('en-US')}</b></td></tr></tbody></table><div class="small muted">Blue bits: network part. Orange bits: host part.</div>`};
+  $("#ai",r).oninput=ac;$("#ap",r).oninput=ac;ac();
+  let st=null;
+  const sr=()=>{const [bs,bp]=$("#sb",r).value.split('/'),p0=+bp,k=+$("#sn",r).value,add=Math.log2(k),p1=p0+add,base=ip2n(bs),size=Math.pow(2,32-p1);
+    $("#sbin",r).innerHTML=`<div class="macbox" style="margin:6px 0">${bin32(base,p0)}</div><div class="small muted">Blue: network bits of the block (/${p0}). Orange: host bits.</div>`;
+    const subs=Array.from({length:k},(_,i)=>{const n=(base+i*size)>>>0;return {n,x:ipInfo(n,p1)}});
+    const S=[{cap:`<b>The block is ${bs}/${p0}.</b> It has 2<sup>${32-p0}</sup> = ${Math.pow(2,32-p0).toLocaleString('en-US')} addresses. We need <b>${k} equal subnets</b>.`,u:0},
+      {cap:`<b>Borrow ${add} bit${add>1?'s':''} from the host part.</b> ${k} = 2<sup>${add}</sup>, so ${add} bit${add>1?'s':''} gives ${k} subnet numbers. The new prefix is ${p0} + ${add} = <b>/${p1}</b> and the mask is <b>${n2ip(pmask(p1))}</b>. Each subnet has 2<sup>${32-p1}</sup> = ${size.toLocaleString('en-US')} addresses, so ${(subs[0].x.hosts).toLocaleString('en-US')} hosts.`,u:0}].concat(subs.map((s,i)=>({cap:`<b>Subnet ${i+1}.</b> The subnet bits are the binary number ${i.toString(2).padStart(add,'0')}. Network address <b>${n2ip(s.n)}/${p1}</b>. Hosts from ${n2ip(s.x.first)} to ${n2ip(s.x.last)}. Broadcast address ${n2ip(s.x.bc)}.`,u:i+1})));
+    st=story(r,"#sbs",{draw:i=>{const u=S[i].u;$("#sbt",r).innerHTML=`<table class="dt cmpt"><thead><tr><th>Subnet</th><th>Network address</th><th>First host</th><th>Last host</th><th>Broadcast</th></tr></thead><tbody>${subs.slice(0,u).map((s,j)=>`<tr><td>${j+1}</td><td><b>${n2ip(s.n)}/${p1}</b></td><td>${n2ip(s.x.first)}</td><td>${n2ip(s.x.last)}</td><td>${n2ip(s.x.bc)}</td></tr>`).join('')}</tbody></table>`}});st.set(S.map(x=>({cap:x.cap})))};
+  $("#sb",r).onchange=sr;$("#sn",r).onchange=sr;sr();
+}});
+
+/* ===== Unit IV Lesson 6: IPv4 header format and packet forwarding ===== */
+const IPH=[
+ {n:'Version',b:4,row:0,d:'4 bits. The value is 4 for IPv4 (6 for IPv6). The receiver uses it to know how to read the rest of the header.'},
+ {n:'HLEN',b:4,row:0,d:'Header length, 4 bits. The length of the header in units of 4 bytes. The smallest value is 5 (5 x 4 = 20 bytes, no options) and the largest is 15 (60 bytes).'},
+ {n:'DS (ToS)',b:8,row:0,d:'Differentiated services (type of service), 8 bits. The first 6 bits (DSCP) tell the router the class of service (for example, voice before e-mail). The last 2 bits are used for explicit congestion notification (ECN).'},
+ {n:'Total length',b:16,row:0,d:'16 bits. The length of the whole datagram (header and data) in bytes. The largest value is 65,535 bytes. Data length = total length - header length.'},
+ {n:'Identification',b:16,row:1,d:'16 bits. A number that the sender gives to each datagram. All fragments of one datagram have the same value, so the receiver can put them together (Lesson 7).'},
+ {n:'Flags',b:3,row:1,d:'3 bits: the first is reserved (0), the second is <b>DF</b> (Do not Fragment: a router must not fragment this datagram) and the third is <b>MF</b> (More Fragments: 1 means that more fragments follow, 0 means that this is the last fragment).'},
+ {n:'Fragment offset',b:13,row:1,d:'13 bits. The position of the data of this fragment in the original datagram, in units of 8 bytes (Lesson 7).'},
+ {n:'TTL',b:8,row:2,d:'Time to live, 8 bits. The sender sets a value (for example 64). Each router <b>subtracts 1</b>. When it reaches 0, the router discards the datagram and sends an ICMP message. This stops datagrams that loop for ever.'},
+ {n:'Protocol',b:8,row:2,d:'8 bits. The upper layer protocol that gets the data: 1 = ICMP, 2 = IGMP, 6 = TCP, 17 = UDP.'},
+ {n:'Header checksum',b:16,row:2,d:'16 bits. The checksum of the <b>header only</b>. Each router checks it and calculates it again because the TTL changes.'},
+ {n:'Source address',b:32,row:3,d:'32 bits. The IP address of the sender. It does not change on the way (except with NAT).'},
+ {n:'Destination address',b:32,row:4,d:'32 bits. The IP address of the receiver. Routers use it to forward the datagram.'},
+ {n:'Options + padding',b:32,row:5,d:'0 to 40 bytes. Rarely used (for example record route, timestamp, source routing). Padding makes the header a multiple of 4 bytes.'}];
+function ipcs(words){let s=0;words.forEach(w=>s+=w);while(s>>>16)s=(s&0xFFFF)+(s>>>16);return (~s)&0xFFFF}
+const RT=[['192.168.1.0/24','directly connected','eth0'],['192.168.2.0/24','192.168.1.2','eth0'],['10.0.0.0/8','192.168.1.3','eth1'],['10.10.0.0/16','192.168.1.4','eth1'],['10.10.5.0/24','192.168.1.5','eth2'],['0.0.0.0/0 (default)','192.168.1.1','eth0']];
+const G3={nodes:{A:[90,150],R:[360,150],B:[630,150]},edges:[['A','R',1],['R','B',1]]};
+lesson({nav:"6. IPv4 header and packet forwarding",title:"IPv4 header format and packet forwarding",syl:"Header format, Packet forwarding",
+html:()=>`
+${GUIDE({"syl":"Header format, Packet forwarding","why":"The IP header carries everything that a router needs to forward a packet: the addresses, the time to live, the length and the checksum. This lesson explains each field, shows how the checksum is calculated, and follows a packet through a router: which fields change on each hop and which do not.","map":[["6.1","The IPv4 datagram and its header","What does a datagram contain?","Click each header field."],["6.2","The header checksum","How does a router detect a damaged header?","Calculate the checksum and see how a change of TTL changes it."],["6.3","Forwarding and the routing table","How does a router choose the next hop?","Run the longest-prefix match for any destination."],["6.4","A packet through a router","What changes on each hop?","Step through a packet from host A to host B."]],"osi":"Layer 3 (network layer). The IP datagram is carried in the data field of a layer 2 frame.","pre":"Lesson 5 (IP addresses) and Unit II (frames, ARP).","time":"about 1 hour 30 minutes","next":"Lesson 7, fragmentation and ICMP."})}
+${LEARN(["name the fields of the IPv4 header and state the purpose and size of each","calculate the header checksum","use the routing table and the longest prefix match to find the next hop","state which fields change and which stay the same when a packet crosses a router"])}
+${SEC("6.1","The IPv4 datagram and its header")}
+<p>The data unit of the network layer is the <b>datagram</b> (packet). It has a header and a data part. The header is 20 bytes (160 bits) long when there are no options and can be up to 60 bytes. The picture shows the header in rows of 32 bits. The width of each box is in proportion to its number of bits. Click a field.</p>
+<div class="vis" id="iph"></div><div class="callout i" id="ihd"></div>
+<p>IP is a <b>best-effort</b> service. It is connectionless and unreliable: IP does not acknowledge datagrams, does not repeat lost datagrams and does not keep their order. The protocols of the upper layers (TCP) give reliability if the application needs it.</p>
+${SEC("6.2","The header checksum")}
+<p>The checksum finds errors in the header. The sender does this:</p>
+<ol><li>Set the checksum field to 0.</li><li>Add all the 16-bit words of the header. If the sum is more than 16 bits, add the carry to the low 16 bits (<b>one's complement addition</b>).</li><li>Take the <b>complement</b> of the sum (change each bit). This is the checksum.</li></ol>
+<p>The receiver adds all the words including the checksum. If the header is correct, the sum is all 1s (0xFFFF) and the complement is 0. Each router must calculate the checksum again, because the TTL changes at every hop.</p>
+<div class="vis"><div class="row"><span>TTL <input type="range" id="tl" min="1" max="64" value="64" aria-label="TTL"> <b id="tlv">64</b></span></div><div id="cks"></div></div>
+${DOIT(["Set the TTL to 64 and note the checksum. Set it to 63. The checksum changes, because the router has changed the TTL.","Check the last line: the sum of all words including the checksum gives 0000 after the complement, so the header is correct."])}
+${SEC("6.3","Forwarding and the routing table")}
+<p>A router has a <b>routing table</b>. Each entry has a network (with its prefix length), the <b>next hop</b> (the router that is closer to the destination, or "directly connected") and the outgoing <b>interface</b>. For each arriving packet the router finds the entries that match the destination address. A destination matches an entry if (destination AND mask) is equal to the network address of the entry.</p>
+<p>More than one entry can match. The rule is the <b>longest prefix match</b>: the router uses the entry with the <b>longest prefix</b>, that is, the most specific route. The entry 0.0.0.0/0 is the <b>default route</b>. It matches every address and has the shortest prefix, so it is used only when nothing else matches.</p>
+<div class="vis"><div class="row"><label>Destination address <input id="fd" value="10.10.5.9" size="14" aria-label="Destination" style="padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--surface)"></label>${['10.10.5.9','10.10.7.1','10.20.1.1','192.168.2.40','8.8.8.8'].map(a=>`<button class="btn sm" type="button" data-fd="${a}">${a}</button>`).join('')}</div><div id="fres"></div></div>
+${SEC("6.4","A packet through a router")}
+<p>Host A (192.168.1.10) sends a packet to host B (192.168.2.20). They are in different networks, joined by router R. The table below the picture shows the fields of the packet and the frame at each stage. Find the fields that change.</p>
+<div class="vis"><svg id="fw" role="img" aria-label="Host, router and host"></svg><div id="fws"></div><div id="fwt"></div></div>
+${quiz("n6q1","The header length field (HLEN) has the value 5. How long is the header?",["5 bytes","20 bytes","40 bytes","60 bytes"],1,"HLEN is in units of 4 bytes. 5 x 4 = 20 bytes.")}
+${quiz("n6q2","Why does a router calculate the header checksum again?",["Because the data changes","Because the TTL changes at every hop","Because the source address changes","It does not"],1,"The router subtracts 1 from the TTL. The header changes, so the checksum must change.")}
+${quiz("n6q3","A destination matches the entries 10.0.0.0/8, 10.10.0.0/16 and 0.0.0.0/0. Which entry is used?",["10.0.0.0/8","10.10.0.0/16","0.0.0.0/0","None"],1,"The longest prefix match uses the entry with the longest prefix, /16.")}
+${EXAM(["Draw the IPv4 header and state the size of each field.","What is the TTL for? Which fields of the header change when a router forwards a packet?","The header words are 4500 0073 0000 4000 4011 0000 C0A8 0001 C0A8 00C7. Find the checksum. (Answer: B861.)","Explain the longest prefix match with an example. What is the default route?","A packet goes from host A to host B through one router. List the addresses (IP and MAC) in the packet and the frame at each hop."])}
+${SUM(["The IPv4 header is 20 to 60 bytes. Main fields: version, HLEN, total length, identification, flags, offset, TTL, protocol, checksum, source and destination address.","The checksum covers the header only and is calculated again in every router.","A router uses the longest prefix match. 0.0.0.0/0 is the default route.","On each hop the TTL, the checksum and the MAC addresses change. The source and destination IP addresses stay the same."])}
+`,
+mount(r){
+  /* header grid */
+  const box=$("#iph",r);const rows=[0,1,2,3,4,5].map(k=>IPH.filter(f=>f.row===k));
+  box.innerHTML=rows.map(rw=>`<div class="efr" style="margin:0">${rw.map(f=>`<button type="button" data-h="${IPH.indexOf(f)}" aria-pressed="false" style="flex:${f.b} 1 0;min-width:0;font-size:12px">${f.n}<br><span class="small">${f.row===5?'0 to 40 B':f.b+' bits'}</span></button>`).join('')}</div>`).join('');
+  const hd=i=>{$$("[data-h]",r).forEach(b=>b.setAttribute('aria-pressed',+b.dataset.h===i));$("#ihd",r).innerHTML=`<b>${IPH[i].n}</b>. ${IPH[i].d}`};
+  $$("[data-h]",r).forEach(b=>b.onclick=()=>hd(+b.dataset.h));hd(7);
+  /* checksum */
+  const ck=()=>{const t=+$("#tl",r).value;$("#tlv",r).textContent=t;const W=[0x4500,0x0073,0x0000,0x4000,(t<<8)|0x11,0x0000,0xC0A8,0x0001,0xC0A8,0x00C7],h=x=>x.toString(16).toUpperCase().padStart(4,'0');
+    let s=0;W.forEach(w=>{s+=w});const raw=s;while(s>>>16)s=(s&0xFFFF)+(s>>>16);const c=(~s)&0xFFFF,chk=ipcs([...W.slice(0,5),c,...W.slice(6)]);
+    $("#cks",r).innerHTML=`<table class="dt cmpt"><tbody><tr><td>Words (checksum = 0000)</td><td class="num">${W.map(h).join(' ')}</td></tr><tr><td>Sum of the words</td><td class="num">${raw.toString(16).toUpperCase()}</td></tr><tr><td>Add the carry to the low 16 bits</td><td class="num">${h(s)}</td></tr><tr><td>Complement = checksum</td><td class="num"><b>${h(c)}</b></td></tr><tr><td>Check: add all words with the checksum, then complement</td><td class="num">${h(chk)} (0000 means that the header is correct)</td></tr></tbody></table><div class="small muted">Protocol 17 (UDP). Source 192.168.0.1 and destination 192.168.0.199. Total length 0x0073 = 115 bytes.</div>`};
+  $("#tl",r).oninput=ck;ck();
+  /* longest prefix match */
+  const fr=()=>{const ip=ip2n($("#fd",r).value),o=$("#fres",r);if(ip==null){o.innerHTML='<div class="callout k small">Enter four numbers from 0 to 255 separated by dots.</div>';return}
+    const ent=RT.map(e=>{const [a,p]=e[0].split(' ')[0].split('/'),pl=+p,net=ip2n(a),m=pmask(pl),ok=((ip&m)>>>0)===net;return {e,pl,ok}});
+    const best=ent.filter(x=>x.ok).sort((a,b)=>b.pl-a.pl)[0];
+    o.innerHTML=`<table class="dt cmpt"><thead><tr><th>Entry</th><th>Prefix</th><th>(Destination AND mask) = network?</th><th>Next hop</th><th>Interface</th><th></th></tr></thead><tbody>${ent.map(x=>`<tr ${x===best?'style="background:var(--good-soft)"':''}><td>${x.e[0]}</td><td>/${x.pl}</td><td>${x.ok?'<b>yes</b>':'no'}</td><td>${x.e[1]}</td><td>${x.e[2]}</td><td>${x===best?'<b>longest match: used</b>':x.ok?'matches, but shorter':''}</td></tr>`).join('')}</tbody></table><div class="small muted">The router sends the packet to <b>${best.e[1]}</b> through <b>${best.e[2]}</b> (entry ${best.e[0]}).</div>`};
+  $("#fd",r).oninput=fr;$$("[data-fd]",r).forEach(b=>b.onclick=()=>{$("#fd",r).value=b.dataset.fd;fr()});fr();
+  /* forwarding story */
+  const sv=$("#fw",r),MA='AA:AA:AA:AA:AA:AA',R0='R0:R0:R0:R0:R0:R0',R1='R1:R1:R1:R1:R1:R1',MB='BB:BB:BB:BB:BB:BB';
+  const row=(st,dm,sm,ttl,cs)=>`<tr><td><b>${st}</b></td><td>${dm}</td><td>${sm}</td><td>192.168.1.10</td><td>192.168.2.20</td><td>${ttl}</td><td>${cs}</td></tr>`;
+  const T=[
+   {cap:`<b>Network.</b> A (192.168.1.10) and the router interface eth0 (192.168.1.1, MAC R0) are in network 192.168.1.0/24. B (192.168.2.20) and eth1 of the router (192.168.2.1, MAC R1) are in network 192.168.2.0/24.`,st:{},rows:[]},
+   {cap:`<b>A decides where to send.</b> The destination 192.168.2.20 is not in the network of A (AND with the mask gives 192.168.2.0, not 192.168.1.0). A cannot deliver it directly. A sends the packet to its <b>default gateway</b>, the router, and uses ARP (Unit II) to find the MAC address of the router, R0.`,st:{done:['A'],tag:{A:'ARP for 192.168.1.1'}},rows:[]},
+   {cap:`<b>A sends the packet in a frame.</b> The IP header has the source 192.168.1.10, the destination 192.168.2.20 and TTL 64. The frame header has the destination MAC <b>R0</b> (the router) and the source MAC AA:... (A). The MAC address of the destination host B is not used here.`,st:{hl:[['A','R']],pkt:{at:'A',t:'TTL 64'},done:['A']},rows:[row('A to router',R0,MA,64,'C1')]},
+   {cap:`<b>The router receives the frame.</b> The router accepts it because the MAC destination is its own. It removes the frame header, checks the frame check sequence and the <b>IP header checksum</b>, and subtracts 1 from the TTL (64 becomes <b>63</b>). It calculates the header checksum again. Then it looks up the destination 192.168.2.20 in its routing table: the entry 192.168.2.0/24 is directly connected to eth1.`,st:{cur:'R',tag:{R:'TTL 64 to 63, new checksum'}},rows:[row('A to router',R0,MA,64,'C1')]},
+   {cap:`<b>The router builds a new frame.</b> The destination is in a directly connected network, so the next hop is B itself. The router finds the MAC address of B with ARP (BB:...). The new frame has the destination MAC <b>BB:...</b> and the source MAC <b>R1</b> (its eth1). The IP source and destination are not changed.`,st:{hl:[['R','B']],pkt:{at:'R',t:'TTL 63'},cur:'R'},rows:[row('A to router',R0,MA,64,'C1'),row('Router to B',MB,R1,63,'C2')]},
+   {cap:`<b>B receives the packet.</b> The destination MAC is its own and the destination IP is its own address. B checks the checksum and passes the data to the protocol in the Protocol field (for example TCP). <b>Summary.</b> The IP addresses stayed the same all the way. The MAC addresses, the TTL and the checksum were different on each link.`,st:{done:['A','R','B'],tag:{B:'accepted'}},rows:[row('A to router',R0,MA,64,'C1'),row('Router to B',MB,R1,63,'C2')]}];
+  const fst=story(r,"#fws",{draw:i=>{gpic(sv,G3,{...T[i].st,noW:true});$("#fwt",r).innerHTML=T[i].rows.length?`<table class="dt cmpt"><thead><tr><th>Stage</th><th>Destination MAC</th><th>Source MAC</th><th>Source IP</th><th>Destination IP</th><th>TTL</th><th>Header checksum</th></tr></thead><tbody>${T[i].rows.join('')}</tbody></table>`:''}});fst.set(T.map(x=>({cap:x.cap})));
+}});
+
+/* ===== Unit IV Lesson 7: fragmentation, reassembly and ICMP ===== */
+function splitPiece(p,mtu){const per=Math.floor((mtu-20)/8)*8;if(p.len+20<=mtu)return [p];const out=[];let o=0;while(o<p.len){const l=Math.min(per,p.len-o),last=o+l>=p.len;out.push({off:p.off+o,len:l,mf:last?p.mf:1});o+=l}return out}
+const G5={nodes:{H:[50,150],R1:[210,150],R2:[370,150],R3:[530,150],D:[670,150]},edges:[['H','R1',1],['R1','R2',1],['R2','R3',1],['R3','D',1]]};
+const barsHtml=(pcs,total)=>`<div style="margin:6px 0">${pcs.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><div style="width:84px;font:600 12px var(--mono)">Frag ${i+1}</div><div style="display:flex;flex:1;min-width:0"><div style="flex:0 0 22px;background:var(--sec-soft);border:1px solid var(--sec);text-align:center;font:600 10px var(--mono)">H</div><div style="flex:${p.len} 1 0;background:var(--pri-soft);border:1px solid var(--pri);margin-left:${(p.off/total*100).toFixed(1)}%;padding:2px 4px;font:600 11px var(--mono);white-space:nowrap;overflow:hidden">${p.len} bytes</div></div><div style="width:170px;font:12px var(--mono)">offset ${p.off/8}, MF ${p.mf}</div></div>`).join('')}</div>`;
+const ICM=[['8','0','Echo request','Query','Asks "are you there?" (used by ping)'],['0','0','Echo reply','Query','The answer to an echo request'],['3','0 to 5','Destination unreachable','Error','Code 0 network, 1 host, 2 protocol, 3 port unreachable, 4 fragmentation needed but DF set'],['11','0 or 1','Time exceeded','Error','Code 0: TTL reached 0. Code 1: reassembly time exceeded'],['12','0 or 1','Parameter problem','Error','A field in the header is wrong'],['5','0 to 3','Redirect','Error/advice','A better route is through another router'],['4','0','Source quench','Error','Asked a sender to slow down (no longer used)']];
+lesson({nav:"7. Fragmentation, reassembly and ICMP",title:"Fragmentation and reassembly, and ICMP",syl:"Packet forwarding, Fragmentation and reassembly, ICMP",
+html:()=>`
+${GUIDE({"syl":"Fragmentation and reassembly, ICMP","why":"Links have different maximum frame sizes. A router may have to cut a datagram into pieces, and the destination must put the pieces together. IP also has no way to report errors, so a companion protocol, ICMP, carries error messages and queries (ping and traceroute use it).","map":[["7.1","The MTU","Why must a datagram be cut?","Read the definition."],["7.2","Fragmentation rules","Which header fields do the work?","Learn the four rules."],["7.3","Calculate and watch the fragments","How many fragments, which offsets?","Enter a datagram size and two MTU values."],["7.4","ICMP","How does IP report an error?","Read the message types."],["7.5","Ping and traceroute","How are the tools built on ICMP?","Step through both."]],"osi":"Layer 3 (network layer). ICMP is carried inside IP datagrams (protocol number 1).","pre":"Lesson 6 (IPv4 header).","time":"about 1 hour 30 minutes","next":"Lesson 8, IPv4 and IPv6."})}
+${LEARN(["define MTU and explain why fragmentation is needed","calculate the number of fragments, the offsets, the MF flag and the lengths","explain reassembly at the destination","list the ICMP message types and explain ping and traceroute"])}
+${SEC("7.1","The MTU")}
+${DEF("MTU (Maximum Transmission Unit)","is the largest packet that a link-layer frame can carry. Ethernet has an MTU of 1500 bytes. Other networks have different values (for example 576 or 296 bytes on some links).")}
+<p>A datagram can be up to 65,535 bytes. When a router must send a datagram on a link whose MTU is smaller than the datagram, it cuts the datagram into <b>fragments</b>. If the DF (Do not Fragment) flag is 1, the router does not fragment: it discards the datagram and sends an ICMP message "fragmentation needed" to the sender.</p>
+${SEC("7.2","Fragmentation rules")}
+<ol><li><b>Each fragment is a datagram.</b> It has its own header (a copy of the original header, with the total length, the flags, the offset and the checksum changed).</li>
+<li><b>Identification</b> is copied. All fragments of one datagram have the same identification, so the destination knows which fragments belong together.</li>
+<li><b>Fragment offset</b> is the position of the fragment's data in the original data, in units of <b>8 bytes</b>. Because the offset is in 8-byte units, the data length of every fragment except the last must be a <b>multiple of 8</b>.</li>
+<li><b>MF (More Fragments)</b> is 1 in all fragments except the last, where it is 0.</li></ol>
+<p><b>Reassembly</b> is done only at the <b>destination host</b>, never in the routers. The destination uses the identification, the source address and the offsets to put the data in order. The fragment with MF = 0 gives the total length. A fragment can be fragmented again on a link with a smaller MTU; the offset then still refers to the original datagram. If one fragment is lost, the destination discards all the others after a time-out and sends the ICMP message "time exceeded (reassembly)". The sender's upper layer (TCP) must send the whole datagram again, so fragmentation is expensive.</p>
+<p><b>Largest data in a fragment</b> = (MTU - header length) rounded down to a multiple of 8. For MTU 1500 and a 20-byte header: (1500 - 20) = 1480, and 1480 / 8 = 185, so 1480 bytes.</p>
+${SEC("7.3","Calculate and watch the fragments")}
+<p>The datagram has a header of 20 bytes. It crosses a link with MTU 1 and then a link with MTU 2.</p>
+<div class="vis"><div class="row"><span>Datagram size <input type="range" id="fz" min="200" max="9000" step="20" value="4000" aria-label="Datagram size"> <b id="fzv">4000</b> bytes</span><span>MTU 1 <select id="fm1" aria-label="MTU 1"><option>1500</option><option>1000</option><option>576</option></select></span><span>MTU 2 <select id="fm2" aria-label="MTU 2"><option value="0">none</option><option>576</option><option>296</option></select></span></div><div id="fres"></div><div id="fst"></div><div id="fbars"></div></div>
+${DOIT(["With the default values (4000 bytes, MTU 1500) the datagram has 3980 bytes of data. The fragments carry 1480, 1480 and 1020 bytes. The offsets are 0, 185 and 370. MF is 1, 1 and 0.","Set MTU 2 to 576. Every fragment that is longer than 576 bytes is cut again. The offsets of the new fragments still count from the start of the original data.","Reduce the datagram to 1400 bytes. It fits in the MTU, so there is one datagram and MF = 0."])}
+${SEC("7.4","ICMP: Internet Control Message Protocol")}
+<p>IP has no mechanism for error reporting. A router that discards a datagram does not tell the sender by itself. <b>ICMP</b> carries error reports and queries between hosts and routers. An ICMP message is sent <b>in an IP datagram</b> with Protocol = 1. It starts with three fields: <b>type</b> (1 byte), <b>code</b> (1 byte) and <b>checksum</b> (2 bytes). In an error message the data part contains the <b>IP header and the first 8 bytes of the datagram that caused the error</b>. The sender can then find which application is concerned.</p>
+<table class="dt gt cmpt"><thead><tr><th>Type</th><th>Code</th><th>Name</th><th>Class</th><th>Meaning</th></tr></thead><tbody>${ICM.map(x=>`<tr><td><b>${x[0]}</b></td><td>${x[1]}</td><td>${x[2]}</td><td>${x[3]}</td><td>${x[4]}</td></tr>`).join('')}</tbody></table>
+<p>ICMP reports errors to the <b>source</b> only. It does not repair them. To avoid a flood of messages, no ICMP error message is sent for an ICMP error message, for a fragment other than the first, or for a multicast datagram.</p>
+${SEC("7.5","Ping and traceroute")}
+<p><b>Ping</b> sends an ICMP echo request to a host. The host answers with an echo reply. The time between them is the round-trip time. <b>Traceroute</b> finds the routers on the path: it sends datagrams with TTL = 1, 2, 3, ... Each router that finds TTL = 0 discards the datagram and sends back an ICMP time exceeded message, which shows the address of that router.</p>
+<div class="vis"><div class="row">${seg("icg",[["p","Ping"],["t","Traceroute"]])}</div><svg id="ic" role="img" aria-label="Ping and traceroute path"></svg><div id="ics"></div></div>
+${quiz("n7q1","A datagram has 3980 bytes of data. The MTU is 1500 and the header is 20 bytes. How many fragments are made?",["2","3","4","5"],1,"Each fragment carries at most 1480 bytes of data: 1480 + 1480 + 1020 = 3980. That is 3 fragments.")}
+${quiz("n7q2","Where are fragments put together again?",["In the first router","In every router","At the destination host","In the data link layer"],2,"Only the destination reassembles the fragments. Routers forward them separately.")}
+${quiz("n7q3","How does traceroute find the routers on the path?",["It uses the record-route option","It sends probes with increasing TTL and reads the ICMP time exceeded messages","It asks each router by SNMP","It uses ARP"],1,"A router that finds TTL = 0 discards the datagram and sends ICMP type 11, which shows its address.")}
+${EXAM(["Why is fragmentation needed? Which header fields are used?","A datagram of 4000 bytes (header 20 bytes) is sent on a link with MTU 1500. Find the number of fragments and the offset, MF and total length of each. (Answer: 3 fragments. Lengths 1500, 1500, 1040. Offsets 0, 185, 370. MF 1, 1, 0.)","Why must the data length of a fragment (except the last) be a multiple of 8?","What is ICMP? State four message types. Why does ICMP error message include the first 8 bytes of the datagram?","Explain how ping and traceroute work."])}
+${SUM(["A datagram larger than the MTU is fragmented. Each fragment has the same identification, an offset in units of 8 bytes and MF = 1 (0 for the last).","Reassembly is done only at the destination. A lost fragment loses the whole datagram.","ICMP reports errors (destination unreachable, time exceeded) and carries queries (echo). It is carried in IP datagrams.","Ping uses echo request and reply. Traceroute uses TTL and the time exceeded message."])}
+`,
+mount(r){
+  let st=null;
+  const fc=()=>{const tot=+$("#fz",r).value,m1=+$("#fm1",r).value,m2=+$("#fm2",r).value;$("#fzv",r).textContent=tot;const data=tot-20;
+    const p0=[{off:0,len:data,mf:0}],p1=p0.flatMap(p=>splitPiece(p,m1)),p2=m2?p1.flatMap(p=>splitPiece(p,m2)):p1;
+    const tbl=(pcs,t)=>`<table class="dt cmpt"><caption class="small muted" style="text-align:left">${t}</caption><thead><tr><th>Fragment</th><th>Data bytes</th><th>Total length</th><th>Offset (units of 8)</th><th>MF</th></tr></thead><tbody>${pcs.map((p,i)=>`<tr><td>${i+1}</td><td>${p.len}</td><td>${p.len+20}</td><td>${p.off/8} (byte ${p.off})</td><td>${p.mf}</td></tr>`).join('')}</tbody></table>`;
+    $("#fres",r).innerHTML=`<div class="small">Data in the datagram: ${tot} - 20 = <b>${data} bytes</b>. Largest data per fragment on MTU ${m1}: floor((${m1} - 20) / 8) &times; 8 = <b>${Math.floor((m1-20)/8)*8} bytes</b>.</div>`+tbl(p1,'After the link with MTU '+m1)+(m2&&p2.length!==p1.length?tbl(p2,'After the link with MTU '+m2):'');
+    const S=[{cap:`<b>The sender builds a datagram of ${tot} bytes:</b> a header of 20 bytes and ${data} bytes of data. The identification is the same in all the fragments that will follow.`,pc:p0},
+     {cap:`<b>The first router must send it on a link with MTU ${m1}.</b> ${p1.length===1?'The datagram fits, so it is sent as it is (MF = 0).':`The datagram is too large, so it is cut into <b>${p1.length} fragments</b>. Each fragment except the last carries ${p1[0].len} bytes (a multiple of 8). The offsets are ${p1.map(p=>p.off/8).join(', ')} and MF is ${p1.map(p=>p.mf).join(', ')}.`}`,pc:p1}];
+    if(m2&&p2.length!==p1.length)S.push({cap:`<b>A second router sends the fragments on a link with MTU ${m2}.</b> Fragments that are longer than ${m2} bytes are cut again, now into <b>${p2.length} fragments</b>. The offsets still count from the start of the original data. A fragment that was the last one (MF = 0) keeps MF = 0 only for its own last piece.`,pc:p2});
+    S.push({cap:`<b>Reassembly at the destination.</b> The destination collects the ${p2.length} fragment${p2.length>1?'s':''} (same identification, same source address). It puts each fragment at its offset. The fragment with MF = 0 tells that the datagram ends at byte ${data}. When there are no gaps, the original data is complete and goes to the upper layer.`,pc:p2});
+    if(p2.length>1)S.push({cap:`<b>If a fragment is lost</b>, the destination cannot complete the datagram. It starts a timer when the first fragment arrives. When the timer expires, it discards all the fragments and sends an ICMP time exceeded message (code 1). The upper layer then has to send the whole datagram again.`,pc:p2.slice(0,Math.max(1,p2.length-1))});
+    st=story(r,"#fst",{draw:i=>{$("#fbars",r).innerHTML=barsHtml(S[i].pc,data)}});st.set(S.map(x=>({cap:x.cap})))};
+  $("#fz",r).oninput=fc;$("#fm1",r).onchange=fc;$("#fm2",r).onchange=fc;fc();
+  /* ping and traceroute */
+  const sv=$("#ic",r);let ist=null;
+  const run=m=>{let S;
+    if(m==='p')S=[{cap:`<b>Ping.</b> Host H runs <b>ping</b> to host D. The path has three routers.`,st:{}},
+      {cap:`<b>H sends an ICMP echo request</b> (type 8, code 0) to D, in an IP datagram with TTL 64. Each router subtracts 1 from the TTL and forwards it.`,st:{hl:[['H','R1'],['R1','R2'],['R2','R3'],['R3','D']],pkt:{at:'R2',t:'type 8'}}},
+      {cap:`<b>D receives the request</b> and sends an ICMP echo reply (type 0, code 0). The addresses are swapped: the source is D and the destination is H. The data of the request is copied into the reply.`,st:{hl:[['R3','D']],tag:{D:'echo reply'},pkt:{at:'D',t:'type 0'},done:['D']}},
+      {cap:`<b>The reply travels back</b> to H. H measures the time from sending the request to receiving the reply. This is the <b>round-trip time</b>. If no reply arrives, ping reports a time-out.`,st:{hl:[['H','R1'],['R1','R2'],['R2','R3'],['R3','D']],pkt:{at:'R1',t:'type 0'},tag:{H:'RTT measured'}}}];
+    else S=[{cap:`<b>Traceroute.</b> H wants to know which routers are on the path to D. It sends a probe datagram with <b>TTL = 1</b>.`,st:{pkt:{at:'H',t:'TTL 1'}}},
+      {cap:`<b>R1 receives the probe.</b> R1 subtracts 1 and the TTL becomes 0. R1 discards the datagram and sends an <b>ICMP time exceeded</b> message (type 11, code 0) to H. The source address of this message is the address of R1. H now knows router 1.`,st:{hl:[['H','R1']],pkt:{at:'R1',t:'TTL 0'},tag:{R1:'discard, send ICMP 11'}}},
+      {cap:`<b>H sends a probe with TTL = 2.</b> R1 reduces it to 1 and forwards it. R2 reduces it to 0, discards it and sends ICMP time exceeded. H learns router 2.`,st:{hl:[['H','R1'],['R1','R2']],pkt:{at:'R2',t:'TTL 0'},tag:{R2:'discard, send ICMP 11'},done:['R1']}},
+      {cap:`<b>TTL = 3</b> reaches R3 in the same way and gives router 3.`,st:{hl:[['H','R1'],['R1','R2'],['R2','R3']],pkt:{at:'R3',t:'TTL 0'},tag:{R3:'discard, send ICMP 11'},done:['R1','R2']}},
+      {cap:`<b>TTL = 4 reaches D.</b> D does not send time exceeded. It answers differently: for a UDP probe to an unused port, D sends ICMP destination unreachable, port unreachable (type 3, code 3); for an ICMP echo probe it sends an echo reply. This tells traceroute that the destination is reached and it stops. The list of the addresses of R1, R2, R3 and D is the path.`,st:{hl:[['H','R1'],['R1','R2'],['R2','R3'],['R3','D']],pkt:{at:'D',t:'TTL 1'},tag:{D:'ICMP 3 / echo reply'},done:['R1','R2','R3','D']}}];
+    ist=story(r,"#ics",{draw:i=>gpic(sv,G5,{...S[i].st,noW:true})});ist.set(S.map(x=>({cap:x.cap})))};
+  bindSeg(r,"icg",run);run('p');
+}});
+
+/* ===== Unit IV Lesson 8: IPv4 and IPv6 ===== */
+function v6expand(s){s=s.trim().toLowerCase();if(!/^[0-9a-f:]+$/.test(s))return null;const dc=s.split('::');if(dc.length>2)return null;
+  const part=x=>x===''?[]:x.split(':');const a=part(dc[0]),b=dc.length===2?part(dc[1]):[];
+  if(dc.length===1&&a.length!==8)return null;if(dc.length===2&&a.length+b.length>7)return null;
+  const mid=dc.length===2?Array(8-a.length-b.length).fill('0'):[];const g=[...a,...mid,...b];
+  if(g.some(x=>x.length<1||x.length>4))return null;return g.map(x=>x.padStart(4,'0'))}
+function v6short(g){const t=g.map(x=>x.replace(/^0+(?=.)/,''));let bs=-1,bl=0;for(let i=0;i<8;){if(t[i]==='0'){let j=i;while(j<8&&t[j]==='0')j++;if(j-i>bl){bl=j-i;bs=i}i=j}else i++}
+  if(bl<2)return t.join(':');const l=t.slice(0,bs).join(':'),r=t.slice(bs+bl).join(':');return l+'::'+r}
+const V6H=[['Version','4 bits','6','Version','Same field, value 6.','keep'],['Traffic class','8 bits','','Type of service','Renamed. Used for priority (differentiated services).','chg'],['Flow label','20 bits','','(none)','New. Marks a flow so routers can treat its packets alike.','new'],['Payload length','16 bits','','Total length','Counts only the data after the 40-byte base header.','chg'],['Next header','8 bits','','Protocol','Names the next header: TCP 6, UDP 17, ICMPv6 58, or an extension header.','chg'],['Hop limit','8 bits','','Time to live','Renamed. Decreased by 1 at each router.','chg'],['Source address','128 bits','','Source address','Longer.','chg'],['Destination address','128 bits','','Destination address','Longer.','chg']];
+const REMOVED=[['Header length (IHL)','The base header is always 40 bytes. Options are moved to extension headers.'],['Identification, flags, fragment offset','Routers do not fragment in IPv6. The source finds the path MTU and fragments by itself, using a fragment extension header.'],['Header checksum','Removed to save router time. Link layer and transport layer already have checksums (UDP checksum is now required).'],['Options','Replaced by extension headers (hop-by-hop, routing, fragment, authentication, ESP, destination).']];
+const CMP=[['Address size','32 bits','128 bits'],['Address notation','Dotted decimal (192.168.1.1)','Hexadecimal groups with colons (2001:db8::1)'],['Number of addresses','about 4.3 x 10^9','about 3.4 x 10^38'],['Base header','20 bytes plus options (variable)','40 bytes (fixed)'],['Fragmentation','By source and routers','By source only'],['Header checksum','Yes','No'],['Options','In the header (up to 40 bytes)','Extension headers'],['Address configuration','Manual or DHCP','Automatic (stateless autoconfiguration) or DHCPv6'],['Address resolution','ARP (broadcast)','Neighbor Discovery (ICMPv6, multicast)'],['Broadcast','Yes','No (multicast and anycast instead)'],['Security','IPsec optional','IPsec supported in every implementation'],['Quality of service','Type of service field','Traffic class and flow label'],['Minimum MTU','576 bytes','1280 bytes']];
+lesson({nav:"8. IPv4 and IPv6",title:"Comparative study of IPv4 and IPv6",syl:"Comparative study of IPv4 & IPv6",
+html:()=>`
+${GUIDE({"syl":"Comparative study of IPv4 and IPv6","why":"IPv4 has 32-bit addresses, and the supply is exhausted. IPv6 has 128-bit addresses and a simpler header. This lesson compares the two so that you can state the differences in an examination and write IPv6 addresses correctly.","map":[["8.1","Why IPv6","What was wrong with IPv4?","Read the list."],["8.2","The IPv6 header","Which fields were removed, changed or added?","Compare the two headers."],["8.3","IPv6 addresses","How is a 128-bit address written?","Compress and expand an address."],["8.4","Transition","How do IPv4 and IPv6 live together?","Read the three methods."],["8.5","Comparison table","What are the differences?","Learn the table."]],"osi":"Layer 3 (network layer).","pre":"Lessons 5 to 7.","time":"about 1 hour 15 minutes","next":"Unit V, the transport layer."})}
+${LEARN(["state the limits of IPv4 that led to IPv6","describe the IPv6 base header and say which IPv4 fields were removed","write an IPv6 address in full and in compressed form","explain dual stack, tunnelling and translation","compare IPv4 and IPv6"])}
+${SEC("8.1","Why IPv6")}
+<ul><li><b>Address space.</b> IPv4 has 2<sup>32</sup> addresses. Classful allocation and fast growth of the Internet used them up. CIDR, subnetting and NAT delayed the problem but did not remove it.</li>
+<li><b>Header processing.</b> The IPv4 header has a variable length and a checksum that every router must recalculate.</li>
+<li><b>Real-time traffic.</b> IPv4 has little support for audio and video that need a guaranteed service.</li>
+<li><b>Security and autoconfiguration</b> were not part of the original design.</li></ul>
+<p>IPv6 (RFC 8200, first described as IPng) was designed to solve these problems.</p>
+${SEC("8.2","The IPv6 header")}
+<p>The IPv6 base header has a fixed size of <b>40 bytes</b>. Click a field to see how it compares with IPv4.</p>
+<div class="vis"><div id="v6h" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px"></div><div id="v6d" class="small" style="margin-top:8px;min-height:3em"></div></div>
+<p>Fields of the IPv4 header that <b>do not exist</b> in IPv6:</p>
+<table class="dt gt cmpt"><thead><tr><th>IPv4 field</th><th>Why it was removed</th></tr></thead><tbody>${REMOVED.map(x=>`<tr><td><b>${x[0]}</b></td><td>${x[1]}</td></tr>`).join('')}</tbody></table>
+<p><b>Extension headers</b> sit between the base header and the data. Each one has a Next header field that points to the following header, so the headers form a chain. Most extension headers are examined only by the destination, so routers forward faster.</p>
+${SEC("8.3","IPv6 addresses")}
+<p>An IPv6 address has 128 bits. It is written as <b>eight groups of four hexadecimal digits</b> separated by colons. Two rules shorten it:</p>
+<ol><li>Leading zeros in a group may be dropped (<code>0db8</code> becomes <code>db8</code>).</li><li>One run of two or more groups that are all zero may be replaced by <code>::</code>. This may be done <b>only once</b> in an address, otherwise the length would be ambiguous.</li></ol>
+<div class="vis"><div class="row"><span>Address <input id="v6i" type="text" value="2001:db8:0:0:0:0:0:1" size="34" aria-label="IPv6 address" style="font-family:var(--mono)"></span></div><div id="v6r"></div></div>
+${DOIT(["Enter 2001:0db8:0000:0000:0000:0000:0000:0001. The short form is 2001:db8::1.","Enter ::1. This is the loopback address (like 127.0.0.1 in IPv4). Enter :: for the unspecified address (all zeros).","Enter 2001:db8::1::2. The tool rejects it because :: is used twice."])}
+<table class="dt gt cmpt"><caption class="small muted" style="text-align:left">Main address types</caption><thead><tr><th>Type</th><th>Prefix</th><th>Meaning</th></tr></thead><tbody><tr><td><b>Unicast, global</b></td><td>2000::/3</td><td>One interface, routable on the Internet</td></tr><tr><td><b>Unicast, link-local</b></td><td>fe80::/10</td><td>Valid on one link only (used by Neighbor Discovery)</td></tr><tr><td><b>Unique local</b></td><td>fc00::/7</td><td>Private addresses (like 10.x.x.x in IPv4)</td></tr><tr><td><b>Multicast</b></td><td>ff00::/8</td><td>A group of interfaces. Replaces broadcast.</td></tr><tr><td><b>Anycast</b></td><td>from the unicast range</td><td>The same address on several interfaces. The packet goes to the nearest one.</td></tr><tr><td><b>Loopback</b></td><td>::1/128</td><td>The host itself</td></tr></tbody></table>
+${SEC("8.4","Transition from IPv4 to IPv6")}
+<p>All the hosts and routers cannot change on one day. Three methods are used:</p>
+<table class="dt gt cmpt"><thead><tr><th>Method</th><th>How it works</th></tr></thead><tbody><tr><td><b>Dual stack</b></td><td>A node runs both IPv4 and IPv6. It uses IPv6 to talk to an IPv6 host and IPv4 to talk to an IPv4 host. The DNS answer tells which one to use.</td></tr><tr><td><b>Tunnelling</b></td><td>An IPv6 packet is placed inside an IPv4 datagram (protocol number 41) to cross an IPv4-only network. The end of the tunnel removes the IPv4 header.</td></tr><tr><td><b>Header translation</b></td><td>A gateway rewrites the header from IPv4 to IPv6 or the reverse, for a host that understands only one of them.</td></tr></tbody></table>
+${SEC("8.5","Comparison table")}
+<table class="dt gt cmpt"><thead><tr><th>Feature</th><th>IPv4</th><th>IPv6</th></tr></thead><tbody>${CMP.map(x=>`<tr><td><b>${x[0]}</b></td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</tbody></table>
+${quiz("n8q1","How many bits are in an IPv6 address?",["32","64","128","256"],2,"An IPv6 address is 128 bits, written as 8 groups of 16 bits.")}
+${quiz("n8q2","Which field does IPv6 NOT have in its base header?",["Hop limit","Header checksum","Flow label","Next header"],1,"The header checksum was removed. Hop limit, flow label and next header exist.")}
+${quiz("n8q3","Which short form is valid for 2001:0db8:0000:0000:0000:0000:0000:0001?",["2001:db8::1","2001::db8::1","2001:db8:::1","2001:db8:0::1:"],0,"Only one :: is allowed. 2001:db8::1 is correct.")}
+${EXAM(["State four reasons for the introduction of IPv6.","Draw the IPv6 base header and explain each field.","Which IPv4 header fields are absent in IPv6, and why?","Write 2001:0DB8:0000:0000:0008:0800:200C:417A in the shortest form. (Answer: 2001:db8::8:800:200c:417a)","Explain dual stack and tunnelling.","Compare IPv4 and IPv6 in a table."])}
+${SUM(["IPv6 has 128-bit addresses and a fixed 40-byte header with no checksum and no fragmentation fields in routers.","Options are placed in extension headers. Flow label supports real-time traffic.","Addresses are written in hexadecimal with colons; leading zeros are dropped and one run of zeros becomes ::.","Dual stack, tunnelling and translation allow IPv4 and IPv6 to work together."])}
+`,
+mount(r){
+  const g=$("#v6h",r),d=$("#v6d",r);
+  g.innerHTML=V6H.map((f,i)=>`<button class="btn" data-i="${i}" style="text-align:left;padding:8px 10px;border:2px solid ${f[5]==='new'?'var(--ok)':f[5]==='chg'?'var(--sec)':'var(--pri)'};background:var(--card);color:var(--fg);border-radius:8px;cursor:pointer"><b>${f[0]}</b><br><span class="small muted">${f[1]}</span></button>`).join('');
+  const show=i=>{const f=V6H[i];d.innerHTML=`<b>${f[0]}</b> (${f[1]}). IPv4 equivalent: <b>${f[3]}</b>. ${f[4]} <span class="muted">(${f[5]==='new'?'new field':f[5]==='chg'?'changed or renamed':'unchanged'})</span>`};
+  g.onclick=e=>{const b=e.target.closest('button');if(b)show(+b.dataset.i)};show(0);
+  $("#v6h",r).insertAdjacentHTML('afterend','<div class="small muted" style="margin-top:4px">Blue border: unchanged. Orange border: changed or renamed. Green border: new.</div>');
+  const cv=()=>{const s=$("#v6i",r).value,e=v6expand(s),o=$("#v6r",r);
+    if(!e){o.innerHTML='<div class="warn small">This is not a valid IPv6 address. Use hexadecimal groups of 1 to 4 digits, with at most one ::.</div>';return}
+    const sh=v6short(e);o.innerHTML=`<table class="dt cmpt"><tbody><tr><td>Full form</td><td><code>${e.join(':')}</code></td></tr><tr><td>Short form</td><td><code>${sh}</code></td></tr><tr><td>Binary of group 1</td><td><code>${parseInt(e[0],16).toString(2).padStart(16,'0')}</code></td></tr><tr><td>Type</td><td>${e.join('')==='0'.repeat(31)+'1'?'Loopback':/^0+$/.test(e.join(''))?'Unspecified':e[0].startsWith('fe8')||/^fe[89ab]/.test(e[0])?'Link-local unicast':/^f[cd]/.test(e[0])?'Unique local unicast':/^ff/.test(e[0])?'Multicast':/^[23]/.test(e[0])?'Global unicast':'Other'}</td></tr></tbody></table>`};
+  $("#v6i",r).oninput=cv;cv();
+}});
+
+function renderLive(){$("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">Quick reference, Unit IV.</p><h4 style="margin:12px 0 6px">Network layer</h4><div class="code">Layer 3. Data unit: packet\nDevice: router\nDatagram: full address in each packet\nVirtual circuit: VC number, set-up</div><h4 style="margin:12px 0 6px">Routing</h4><div class="code">Dijkstra: pick smallest non-final\n  node, relax its neighbours\nBellman-Ford:\n  D(x,y) = min v [c(x,v) + D(v,y)]\nN - 1 rounds\nSplit horizon stops 2-node loops</div><h4 style="margin:12px 0 6px">Hierarchy</h4><div class="code">Entries = (R/G - 1) + (G - 1)\nIntra-AS: RIP, OSPF\nInter-AS: BGP\nMulticast IPv4: 224.0.0.0/4</div><h4 style="margin:12px 0 6px">IPv4 address</h4><div class="code">A 0.. /8   B 10.. /16  C 110.. /24\nD 1110.. multicast  E 1111..\nPrivate: 10/8, 172.16/12,\n  192.168/16\nHosts = 2^(32-p) - 2\nNetwork = IP AND mask</div><h4 style="margin:12px 0 6px">IPv4 header</h4><div class="code">20 to 60 bytes. HLEN in 4-byte units\nTotal length 16 bits (max 65535)\nTTL, Protocol, Checksum\nID, flags (DF, MF), offset (x8)</div><h4 style="margin:12px 0 6px">Fragmentation</h4><div class="code">Payload per fragment = multiple of 8\nOffset = byte offset / 8\nMF = 1 except last fragment</div><h4 style="margin:12px 0 6px">IPv6</h4><div class="code">128-bit address, 40-byte header\nNo header checksum, no fragmenting\nby routers, flow label, hop limit</div>`}
+
+renderLive();go(0);
+
+</script>
+</body>
+</html>

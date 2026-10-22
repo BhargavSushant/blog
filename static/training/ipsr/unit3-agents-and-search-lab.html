@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IPSR Lab - Unit 3</title>
+<style>
+:root{
+  --bg:#FAF8F3; --surface:#FFFFFF; --surface2:#EFEBE1; --fg:#12110E; --muted:#44403A; --line:#B9B2A2; --line2:#D9D3C4;
+  --pri:#1F3FB5; --pri-soft:#DDE5FA; --sec:#9A4208; --sec-soft:#FBE3CC;
+  --good:#0F6A31; --good-soft:#D5F0DD; --warn:#744500; --warn-soft:#F9E8B8; --bad:#A31D12; --bad-soft:#FADAD5;
+  --code:#EFEBE1; --on:#FFFFFF; --grid:#CFC9BA; --shadow:0 1px 2px rgba(18,17,14,.08),0 6px 18px rgba(18,17,14,.06);
+  --c1:#1F3FB5; --c2:#9A4208; --c3:#0F6A31; --c4:#7A2A9C; --c5:#8A6D00; --c6:#B0235C;
+  --disp:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --body:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  --mono:ui-monospace,'Cascadia Code',Consolas,Menlo,monospace;
+  --zoom:1;
+}
+:root[data-theme="dark"]{
+  --bg:#0C0C0A; --surface:#181714; --surface2:#242320; --fg:#F7F4EA; --muted:#CFCABD; --line:#5B574B; --line2:#35332C;
+  --pri:#9DB1FF; --pri-soft:#1B2350; --sec:#FFAE6B; --sec-soft:#40240E;
+  --good:#6FE09A; --good-soft:#0F3320; --warn:#F5C964; --warn-soft:#3B2E0A; --bad:#FF9A8C; --bad-soft:#451A15;
+  --code:#1F1E1A; --on:#0C0C0A; --grid:#46433A; --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.3);
+  --c1:#9DB1FF; --c2:#FFAE6B; --c3:#6FE09A; --c4:#D9A0FF; --c5:#F0D060; --c6:#FF8FB8;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body);zoom:var(--zoom)}
+button,select,input{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:240px minmax(0,1fr) 310px;min-height:calc(100vh / var(--zoom))}
+.nav{background:var(--surface);border-right:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.brand{font-family:var(--disp);font-size:20px;line-height:1.15;margin:0 4px 4px}
+.brand small{display:block;font:12.5px var(--body);color:var(--muted);margin-top:4px}
+.nav ol{list-style:none;margin:16px 0 0;padding:0}
+.nav li button{width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;color:var(--fg)}
+.nav li button:hover{background:var(--surface2)}
+.nav li button[aria-current="true"]{background:var(--pri-soft);font-weight:600}
+.nav .n{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--muted);display:grid;place-items:center;font-size:12px;color:var(--muted)}
+.nav li.done .n{background:var(--good);color:var(--on);border-color:var(--good)}
+.nav .t{font-size:13.5px;line-height:1.3}
+.nav .hero .n{border-color:var(--sec);color:var(--sec)}
+.tools{margin:18px 4px 0;display:grid;gap:8px}
+.tools button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 10px;cursor:pointer;font-weight:600;text-align:left}
+.tools button:hover{border-color:var(--fg)}
+.tools .hint{font-size:12px;color:var(--muted)}
+main{padding:26px 30px 70px;min-width:0}
+.crumb{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.15;margin:4px 0 6px}
+h2{font-family:var(--disp);font-size:20px;margin:0 0 8px}
+h3{font-size:13.5px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.syl{display:inline-block;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0;box-shadow:var(--shadow)}
+.card.try{border-left:5px solid var(--pri)}
+.card.sec{border-left:5px solid var(--sec)}
+.lead{font-size:16.5px}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:5px;padding:2px 7px}
+.tag.p{background:var(--pri-soft);color:var(--pri)} .tag.s{background:var(--sec-soft);color:var(--sec)}
+.tag.g{background:var(--good-soft);color:var(--good)} .tag.w{background:var(--warn-soft);color:var(--warn)} .tag.b{background:var(--bad-soft);color:var(--bad)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--fg)}
+.btn.pri{background:var(--pri);color:var(--on);border-color:var(--pri)} .btn.sec{background:var(--sec);color:var(--on);border-color:var(--sec)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+table.dt{border-collapse:collapse;width:100%;font-size:13.5px}
+table.dt th{background:var(--surface2);text-align:left;padding:6px 9px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+table.dt td{padding:5px 9px;border-bottom:1px solid var(--line2);white-space:nowrap}
+table.dt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:340px}
+.tw.sm{max-height:none}
+.new{animation:pop .6s ease both}
+@keyframes pop{from{background:var(--sec-soft);transform:translateY(-4px);opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.new{animation:none}}
+.code{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:7px 10px;overflow:auto;white-space:pre-wrap;color:var(--fg)}
+code{font-family:var(--mono);font-size:.92em;background:var(--code);padding:1px 5px;border-radius:4px}
+.muted{color:var(--muted)} .small{font-size:13px}
+.callout{border-radius:8px;padding:10px 14px;margin:10px 0;background:var(--surface2);border:1px solid var(--line2)}
+.callout.k{background:var(--sec-soft);border-color:transparent} .callout.i{background:var(--pri-soft);border-color:transparent}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:7px 13px;cursor:pointer;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--pri);color:var(--on)}
+.seg.s button[aria-pressed="true"]{background:var(--sec)}
+select,input[type=text],input[type=number]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px}
+input[type=range]{accent-color:var(--pri);vertical-align:middle}
+label.chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer;margin-right:12px}
+.live{background:var(--surface);border-left:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:calc(100vh / var(--zoom));overflow:auto}
+.live .tw{max-height:none}
+.opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;margin:6px 0;cursor:pointer}
+.opt:hover{border-color:var(--fg)} .opt.ok{background:var(--good-soft);border-color:var(--good)} .opt.no{background:var(--bad-soft);border-color:var(--bad)}
+.bar{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden;border:1px solid var(--line2)}
+.bar i{display:block;height:100%;background:var(--sec);transition:width .4s}
+.flow{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+.arrow{font-size:28px;color:var(--sec);text-align:center}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:12.5px;margin:2px 4px 2px 0;background:var(--surface)}
+td.ix{background:var(--bad-soft)} td.iy{background:var(--warn-soft)} td.iz{background:var(--pri-soft)} td.chg{background:var(--good-soft)}
+.cardsel{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.kpi b{font-size:22px;display:block;font-variant-numeric:tabular-nums}
+.nextrow{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
+svg.chart{width:100%;height:auto;display:block;max-height:420px}
+svg.chart text{fill:var(--fg);font:12px var(--body)}
+svg.chart .ax{stroke:var(--muted);stroke-width:1}
+svg.chart .gr{stroke:var(--grid);stroke-width:1}
+svg.chart .lbl{fill:var(--muted)}
+.sheet{border-collapse:collapse;font-size:13.5px;font-family:var(--mono);width:100%}
+.sheet th{background:var(--surface2);border:1px solid var(--line);padding:3px 8px;text-align:center;font-weight:600;color:var(--muted)}
+.sheet td{border:1px solid var(--line);padding:0;min-width:80px}
+.sheet td input{width:100%;border:0;background:transparent;padding:4px 7px;font:inherit;border-radius:0}
+.sheet td.sel{outline:2px solid var(--pri);outline-offset:-2px}
+:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+@media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.live{grid-column:1/-1;position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
+@media (max-width:760px){.app{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav ol{display:flex;overflow:auto;gap:4px}.nav li{flex:none}.nav .t{display:none}main{padding:18px 16px 60px}.grid2,.grid3,.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+
+textarea,input[type=search]{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 9px;font:inherit;color:var(--fg)}
+textarea.py{width:100%;font-family:var(--mono);font-size:13.5px;min-height:62px;resize:vertical;background:var(--code)}
+input.wide{width:100%;font-family:var(--mono)}
+.cell{border:1px solid var(--line);border-radius:10px;margin:10px 0;overflow:hidden;background:var(--surface)}
+.cell .hd{display:flex;gap:10px;align-items:center;background:var(--surface2);padding:5px 10px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.cell .bd{padding:8px 10px}
+.out{font-family:var(--mono);font-size:13px;white-space:pre-wrap;padding:6px 10px;border-top:1px dashed var(--line2);color:var(--fg)}
+.out.err{color:var(--bad);background:var(--bad-soft)}
+.out.ok{background:var(--good-soft)}
+.kv{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.kv span{font-family:var(--mono);font-size:12.5px;background:var(--code);border:1px solid var(--line2);border-radius:6px;padding:2px 8px}
+.mk{background:var(--warn-soft);color:var(--fg);outline:2px solid var(--warn);border-radius:3px;padding:0 2px}
+.boxes{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
+.bx{min-width:38px;border:1px solid var(--line);border-radius:6px;text-align:center;background:var(--surface);padding:2px 6px;font-family:var(--mono)}
+.bx small{display:block;font-size:11px;color:var(--muted)}
+.bx.hi{background:var(--pri);color:var(--on);border-color:var(--pri)}
+.bx.hi small{color:var(--on)}
+.bx.ok{background:var(--good-soft);border-color:var(--good)}
+.bx.no{background:var(--bad-soft);border-color:var(--bad)}
+.bx.cur{background:var(--warn-soft);border-color:var(--warn)}
+.cmark{font-family:var(--mono);font-size:13px;line-height:1.65;background:var(--code);border:1px solid var(--line2);border-radius:8px;padding:8px 12px;white-space:pre}
+.cmark .ln{display:block;padding:0 4px;border-radius:3px}
+.cmark .ln.on{background:var(--warn-soft);outline:1px solid var(--warn)}
+.t{font-family:var(--mono)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:760px){.grid4{grid-template-columns:1fr 1fr}}
+.world{display:flex;gap:10px;margin:8px 0;flex-wrap:wrap}
+.sq{width:130px;height:90px;border:2px solid var(--line);border-radius:10px;display:grid;place-items:center;text-align:center;background:var(--surface);position:relative}
+.sq.dirty{background:var(--warn-soft);border-color:var(--warn)}
+.sq.here{outline:4px solid var(--pri)}
+.sq small{position:absolute;top:2px;left:6px;color:var(--muted)}
+.fnode{fill:var(--surface);stroke:var(--fg);stroke-width:2}
+.fnode.front{fill:var(--warn-soft);stroke:var(--warn)}
+.fnode.exp{fill:var(--good-soft);stroke:var(--good)}
+.fnode.cur{fill:var(--pri);stroke:var(--pri)}
+.fnode.path{fill:var(--sec-soft);stroke:var(--sec);stroke-width:3.5}
+.edge{stroke:var(--muted);stroke-width:2;fill:none}
+.edge.path{stroke:var(--sec);stroke-width:4}
+svg.g text{fill:var(--fg);font:600 14px var(--body);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+svg.g text.cur{fill:var(--on)}
+table.tt{border-collapse:collapse;font-family:var(--mono);font-size:13.5px}
+table.tt th,table.tt td{border:1px solid var(--line);padding:4px 10px;text-align:center}
+table.tt th{background:var(--surface2)}
+table.tt td.T{background:var(--good-soft)} table.tt td.F{background:var(--bad-soft)}
+.stack{display:flex;flex-direction:column-reverse;align-items:center;min-width:70px;border-bottom:4px solid var(--fg);padding:0 8px}
+.blk{width:56px;height:38px;border:2px solid var(--fg);border-radius:6px;display:grid;place-items:center;font-weight:700;margin-top:2px;background:var(--pri-soft)}
+.blk.held{background:var(--sec-soft);border-color:var(--sec)}
+.tag.big{font-size:13px;padding:3px 10px}
+.opt2{display:inline-block;margin:3px;padding:6px 12px;border:1px solid var(--line);background:var(--surface);border-radius:999px;cursor:pointer;font-weight:600}
+.opt2:hover{border-color:var(--fg)}
+.opt2.ok{background:var(--good-soft);border-color:var(--good)}
+.opt2.no{background:var(--bad-soft);border-color:var(--bad)}
+.opt2[aria-pressed=true]{background:var(--pri);color:var(--on);border-color:var(--pri)}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="nav" aria-label="Lessons">
+    <h2 class="brand">IPSR Lab<small>Unit 3, Problem Solving Techniques and Agents<br>B.Tech Sem I, Introduction to Problem Solving and Reasoning</small></h2>
+    <ol id="navlist"></ol>
+    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
+  </nav>
+  <main id="stage" tabindex="-1"></main>
+  <aside class="live" aria-label="Live data"><h3>Quick reference: agent types</h3><div id="livebox"></div></aside>
+</div>
+<script>
+"use strict";
+/* ===== helpers ===== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-US"):v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/(a.length-1))};
+const quant=(a,q)=>{const s=[...a].sort((x,y)=>x-y),p=(s.length-1)*q,l=Math.floor(p);return s[l]+(s[Math.min(l+1,s.length-1)]-s[l])*(p-l)};
+const mode=a=>{const c={};a.forEach(v=>c[v]=(c[v]||0)+1);const mx=Math.max(...Object.values(c));return Object.keys(c).filter(k=>c[k]===mx).join(", ")};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const groupBy=(rows,f)=>{const g={};rows.forEach(r=>{const k=f(r);(g[k]=g[k]||[]).push(r)});return g};
+const corr=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0,c=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2;c+=(y[i]-my)**2});return a/Math.sqrt(b*c)};
+const linfit=(x,y)=>{const mx=mean(x),my=mean(y);let a=0,b=0;x.forEach((v,i)=>{a+=(v-mx)*(y[i]-my);b+=(v-mx)**2});const m=a/b;return {m,b:my-m*mx,r:corr(x,y)}};
+function table(rows,cols,opts={}){
+  const head=cols.map(c=>`<th>${esc(c[1])}</th>`).join("");
+  const body=rows.map((r,i)=>`<tr${opts.newFrom!=null&&i>=opts.newFrom?' class="new"':''}>`+cols.map(c=>{
+    const v=r[c[0]],cls=(typeof v==="number"?"num":"")+((opts.cellClass&&opts.cellClass(r,c[0],i))||"");
+    return `<td class="${cls.trim()}">${v===""||v==null?'<span class="muted">(blank)</span>':esc(typeof v==="number"?fmt(v,c[2]!=null?c[2]:(Number.isInteger(v)?0:2)):v)}</td>`}).join("")+"</tr>").join("");
+  return `<div class="tw${opts.small?' sm':''}"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+const QUIZ={};
+function quiz(id,q,opts,ans,why){QUIZ[id]={ans,why};
+  return `<div class="card"><h3>Quick check</h3><p style="margin:0 0 6px"><b>${q}</b></p>`+opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" style="margin-top:6px"></div></div>`;}
+function regQuiz(id,ans,why){QUIZ[id]={ans,why}}
+function seg(id,items,cls=""){return `<div class="seg ${cls}" id="${id}" role="group">`+items.map((x,i)=>`<button type="button" data-v="${x[0]}" aria-pressed="${i===0}">${x[1]}</button>`).join("")+`</div>`}
+function bindSeg(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)});return ()=>$$("[aria-pressed=true]",g)[0].dataset.v}
+const IN=n=>n.toLocaleString("en-US",{maximumFractionDigits:0});
+
+/* ===== SVG charts (colours come from CSS variables, so both themes work) ===== */
+const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
+const nice=(max)=>{const e=Math.pow(10,Math.floor(Math.log10(max||1))),f=max/e;const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*e};
+function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(lo+st*i);return out}
+const short=v=>Math.abs(v)>=100000?(v/100000).toFixed(1).replace(/\.0$/,"")+"L":Math.abs(v)>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":(Math.round(v*100)/100)+"";
+function chartBar(items,o={}){ // items:[{label,value,color}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...items.map(i=>i.value))*1.08),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  items.forEach((it,i)=>{const x=m.l+i*bw+bw*.15,w=bw*.7,y=sy(Math.max(it.value,mn));
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,sy(mn)-y)}" fill="${it.color||o.color||"var(--c1)"}" rx="2"><title>${esc(it.label)}: ${fmt(it.value)}</title></rect>`;
+    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:11px">${short(it.value)}</text>`;
+    const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  return s+"</svg>";}
+function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
+  const W=o.w||640,H=o.h||320,m={l:56,r:o.legendRight?110:16,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...all)*1.08);
+  const sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  const step=Math.ceil(labels.length/(o.maxLabels||12));labels.forEach((l,i)=>{if(i%step===0)s+=`<text class="lbl" x="${sx(i)}" y="${H-m.b+16}" text-anchor="middle">${esc(l)}</text>`});
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
+  series.forEach((se,k)=>{const c=se.color||PAL[k%6];let d="";se.vals.forEach((v,i)=>{if(v!=null)d+=(d?"L":"M")+sx(i).toFixed(1)+" "+sy(v).toFixed(1)});
+    if(o.area&&k===0)s+=`<path d="${d}L${sx(se.vals.length-1)} ${sy(mn)}L${sx(0)} ${sy(mn)}Z" fill="${c}" opacity=".18"/>`;
+    s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${se.w||2.5}" ${se.dash?'stroke-dasharray="6 4"':""} stroke-linejoin="round"/>`;
+    if(o.dots!==false&&!se.dash)se.vals.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${sx(i)}" cy="${sy(v)}" r="3.5" fill="${c}"><title>${esc(labels[i])}: ${fmt(v)}</title></circle>`});
+    if(o.legendRight)s+=`<text x="${W-m.r+8}" y="${m.t+14+k*16}" style="fill:${c};font-weight:600">${esc(se.name)}</text>`;
+    else if(series.length>1)s+=`<text x="${m.l+8+k*150}" y="${H-6}" style="fill:${c};font-weight:600">&#9632; ${esc(se.name)}</text>`});
+  (o.marks||[]).forEach(mk=>{s+=`<text x="${sx(mk.i)}" y="${sy(mk.v)-10}" text-anchor="middle" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
+  return s+"</svg>";}
+function chartScatter(pts,o={}){ // pts:[{x,y,r,color,label}]
+  const W=o.w||640,H=o.h||340,m={l:60,r:16,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||nice(Math.max(...ys)*1.05);
+  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}">`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
+  ticks(y0,y1).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+  ticks(x0,x1).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${short(t)}</text>`);
+  s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(y0)}" y2="${sy(y0)}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${sy(y0)}"/>`;
+  if(o.xlabel)s+=`<text class="lbl" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${esc(o.xlabel)}</text>`;
+  if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  if(o.fit){const f=o.fit;s+=`<line x1="${sx(x0)}" y1="${sy(f.m*x0+f.b)}" x2="${sx(x1)}" y2="${sy(f.m*x1+f.b)}" stroke="var(--sec)" stroke-width="2.5" stroke-dasharray="7 4"/>`}
+  pts.forEach(p=>{s+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="${p.r||4}" fill="${p.color||"var(--c1)"}" fill-opacity="${o.alpha||.65}" stroke="${p.color||"var(--c1)"}"><title>${esc(p.label||"")} (${fmt(p.x)}, ${fmt(p.y)})</title></circle>`;
+    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:11px">${esc(p.label)}</text>`});
+  return s+"</svg>";}
+function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart">`;
+  items.forEach((it,k)=>{const ang=it.value/tot*2*Math.PI,x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(a+ang),y2=cy+R*Math.sin(a+ang);
+    s+=`<path d="M${cx} ${cy}L${x1} ${y1}A${R} ${R} 0 ${ang>Math.PI?1:0} 1 ${x2} ${y2}Z" fill="${it.color||PAL[k%6]}" stroke="var(--surface)" stroke-width="2"><title>${esc(it.label)}: ${(100*it.value/tot).toFixed(1)}%</title></path>`;a+=ang;
+    s+=`<text x="250" y="${40+k*22}" style="fill:${it.color||PAL[k%6]};font-weight:700">&#9632; <tspan style="fill:var(--fg);font-weight:400">${esc(it.label)} ${(100*it.value/tot).toFixed(1)}%</tspan></text>`});
+  return s+"</svg>";}
+function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:short(lo+i*w),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+
+/* ===== lesson framework ===== */
+const L=[];
+function lesson(o){L.push(o)}
+let cur=0, done=new Set();
+const UKEY="dalab_"+(document.title||"x");
+try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e){}
+function go(i){
+  cur=Math.max(0,Math.min(L.length-1,i));
+  const l=L[cur],st=$("#stage");
+  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
+  $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
+  l.mount&&l.mount(st);
+  $$("[data-q]",st).forEach(b=>b.onclick=()=>{
+    const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
+    $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
+    b.classList.add(ok?"ok":"no");
+    $("#why-"+id,st).textContent=(ok?"Correct. ":"Not quite. ")+k.why;
+    if(ok){done.add(cur);try{localStorage.setItem(UKEY,JSON.stringify([...done]))}catch(e){}drawNav()}
+  });
+  drawNav(); window.scrollTo(0,0); st.focus({preventScroll:true});
+}
+function drawNav(){
+  $("#navlist").innerHTML=L.map((l,i)=>`<li class="${done.has(i)?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${done.has(i)?"&#10003;":i+1}</span><span class="t">${l.nav}</span></button></li>`).join("");
+  $$("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
+}
+/* theme + text size (for projectors) */
+(function(){
+  const R=document.documentElement;let theme=null,zi=0;const Z=[1,1.15,1.3];
+  try{theme=localStorage.getItem("dalab_theme")}catch(e){}
+  if(!theme)theme=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
+  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);
+    const b=$("#themeBtn"),z=$("#zoomBtn");if(b)b.innerHTML=theme==="dark"?"&#9728; Switch to LIGHT mode":"&#9790; Switch to DARK mode";if(z)z.textContent="Text size: "+Math.round(Z[zi]*100)+"%";}
+  window.addEventListener("DOMContentLoaded",()=>{
+    $("#themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("dalab_theme",theme)}catch(e){}apply()};
+    $("#zoomBtn").onclick=()=>{zi=(zi+1)%3;apply()};apply();
+    document.addEventListener("keydown",e=>{if(e.altKey&&(e.key==="d"||e.key==="D")){$("#themeBtn").click()}});
+  });
+  apply();
+})();
+
+/* ===== IPSR common: tiny Python-expression engine + stepper ===== */
+class PyErr extends Error{constructor(t,m){super(m);this.pt=t}}
+const V=(v,k)=>({v,k});
+const fRepr=n=>{if(Number.isNaN(n))return"nan";if(!isFinite(n))return n>0?"inf":"-inf";let s=String(n);if(/^-?\d+$/.test(s))s+=".0";return s};
+function pyRepr(x){if(x.k==="str")return"'"+x.v.replace(/'/g,"\\'")+"'";if(x.k==="bool")return x.v?"True":"False";if(x.k==="NoneType")return"None";if(x.k==="float")return fRepr(x.v);if(x.k==="list")return"["+x.v.map(pyRepr).join(", ")+"]";return String(x.v)}
+const pyStr=x=>x.k==="str"?x.v:pyRepr(x);
+const isNum=x=>x.k==="int"||x.k==="float"||x.k==="bool";
+const nv=x=>x.k==="bool"?V(+x.v,"int"):x;
+const truthy=x=>x.k==="str"?x.v.length>0:x.k==="NoneType"?false:x.k==="list"?x.v.length>0:!!x.v;
+function tokenize(src){
+  const re=/\s*(?:(\d+\.\d*|\.\d+|\d+)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|([A-Za-z_]\w*)|(\*\*|\/\/|==|!=|<=|>=|[-+*\/%<>(),=\[\]]))/y;
+  const out=[];let i=0;src=src.trim();
+  while(i<src.length){re.lastIndex=i;const m=re.exec(src);if(!m)throw new PyErr("SyntaxError","invalid syntax near '"+src.slice(i,i+6)+"'");
+    if(m[1]!==undefined)out.push({t:"num",v:m[1]});else if(m[2]!==undefined)out.push({t:"str",v:m[2].slice(1,-1)});
+    else if(m[3]!==undefined)out.push({t:["and","or","not","True","False","None"].includes(m[3])?"kw":"name",v:m[3]});else out.push({t:"op",v:m[4]});
+    i=re.lastIndex;while(src[i]===" ")i++}
+  return out}
+function parsePy(src){
+  const T=tokenize(src);let p=0;const pk=()=>T[p],nx=()=>T[p++];
+  const isOp=v=>pk()&&pk().t==="op"&&pk().v===v, isKw=v=>pk()&&pk().t==="kw"&&pk().v===v;
+  function or(){let l=and();while(isKw("or")){nx();l={t:"or",l,r:and()}}return l}
+  function and(){let l=not();while(isKw("and")){nx();l={t:"and",l,r:not()}}return l}
+  function not(){if(isKw("not")){nx();return{t:"un",op:"not",x:not()}}return cmp()}
+  function cmp(){let l=add();const ops=[],items=[l];while(pk()&&pk().t==="op"&&["==","!=","<",">","<=",">="].includes(pk().v)){ops.push(nx().v);items.push(add())}return ops.length?{t:"cmp",ops,items}:l}
+  function add(){let l=mul();while(isOp("+")||isOp("-")){const op=nx().v;l={t:"bin",op,l,r:mul()}}return l}
+  function mul(){let l=unary();while(isOp("*")||isOp("/")||isOp("//")||isOp("%")){const op=nx().v;l={t:"bin",op,l,r:unary()}}return l}
+  function unary(){if(isOp("-")||isOp("+")){const op=nx().v;return{t:"un",op,x:unary()}}return pow()}
+  function pow(){const b=atom();if(isOp("**")){nx();return{t:"bin",op:"**",l:b,r:unary()}}return b}
+  function atom(){const k=nx();if(!k)throw new PyErr("SyntaxError","unexpected end of expression");
+    if(k.t==="num")return{t:"val",val:/[.]/.test(k.v)?V(parseFloat(k.v),"float"):V(parseInt(k.v,10),"int")};
+    if(k.t==="str")return{t:"val",val:V(k.v,"str")};
+    if(k.t==="kw"){if(k.v==="True")return{t:"val",val:V(true,"bool")};if(k.v==="False")return{t:"val",val:V(false,"bool")};if(k.v==="None")return{t:"val",val:V(null,"NoneType")};throw new PyErr("SyntaxError","invalid syntax")}
+    if(k.t==="name"){if(isOp("(")){nx();const args=[];if(!isOp(")")){args.push(or());while(isOp(",")){nx();args.push(or())}}if(!isOp(")"))throw new PyErr("SyntaxError","'(' was never closed");nx();return{t:"call",name:k.v,args}}return{t:"name",name:k.v}}
+    if(k.t==="op"&&k.v==="("){const e=or();if(!isOp(")"))throw new PyErr("SyntaxError","'(' was never closed");nx();return e}
+    if(k.t==="op"&&k.v==="["){const items=[];if(!isOp("]")){items.push(or());while(isOp(",")){nx();items.push(or())}}if(!isOp("]"))throw new PyErr("SyntaxError","'[' was never closed");nx();return{t:"list",items}}
+    throw new PyErr("SyntaxError","invalid syntax near '"+k.v+"'")}
+  const e=or();if(p<T.length)throw new PyErr("SyntaxError","invalid syntax near '"+T[p].v+"'");return e}
+const tn=x=>x.k;
+function applyBin(op,a,b){
+  const A=isNum(a)?nv(a):a,B=isNum(b)?nv(b):b;
+  if(op==="+"){if(isNum(A)&&isNum(B))return V(A.v+B.v,A.k==="float"||B.k==="float"?"float":"int");
+    if(A.k==="str"&&B.k==="str")return V(A.v+B.v,"str");
+    if(A.k==="list"&&B.k==="list")return V(A.v.concat(B.v),"list");
+    if(A.k==="str")throw new PyErr("TypeError",`can only concatenate str (not "${tn(b)}") to str`);
+    throw new PyErr("TypeError",`unsupported operand type(s) for +: '${tn(a)}' and '${tn(b)}'`)}
+  if(op==="*"){if(isNum(A)&&isNum(B))return V(A.v*B.v,A.k==="float"||B.k==="float"?"float":"int");
+    if(A.k==="str"&&B.k==="int")return V(B.v>0?A.v.repeat(B.v):"","str");if(B.k==="str"&&A.k==="int")return V(A.v>0?B.v.repeat(A.v):"","str");
+    throw new PyErr("TypeError",`can't multiply sequence by non-int of type '${isNum(A)?tn(A):tn(B)}'`.replace(/^can't.*$/,m=>(A.k==="str"||B.k==="str")?m:`unsupported operand type(s) for *: '${tn(a)}' and '${tn(b)}'`))}
+  if(!isNum(A)||!isNum(B))throw new PyErr("TypeError",`unsupported operand type(s) for ${op}: '${tn(a)}' and '${tn(b)}'`);
+  const fl=A.k==="float"||B.k==="float";
+  if(op==="-")return V(A.v-B.v,fl?"float":"int");
+  if(op==="/"){if(B.v===0)throw new PyErr("ZeroDivisionError","division by zero");return V(A.v/B.v,"float")}
+  if(op==="//"){if(B.v===0)throw new PyErr("ZeroDivisionError",fl?"float floor division by zero":"integer division or modulo by zero");return V(Math.floor(A.v/B.v),fl?"float":"int")}
+  if(op==="%"){if(B.v===0)throw new PyErr("ZeroDivisionError",fl?"float modulo by zero":"integer modulo by zero");return V(A.v-B.v*Math.floor(A.v/B.v),fl?"float":"int")}
+  if(op==="**"){if(A.v===0&&B.v<0)throw new PyErr("ZeroDivisionError","0.0 cannot be raised to a negative power");const r=Math.pow(A.v,B.v);return V(r,(fl||B.v<0)?"float":"int")}
+  throw new PyErr("SyntaxError","unknown operator")}
+function applyCmp(op,a,b){const A=isNum(a)?nv(a):a,B=isNum(b)?nv(b):b;
+  if(op==="=="||op==="!="){let eq=(isNum(A)&&isNum(B))||(A.k===B.k)?(A.k==="list"?JSON.stringify(A.v)===JSON.stringify(B.v):A.v===B.v):false;return V(op==="=="?eq:!eq,"bool")}
+  if((isNum(A)&&isNum(B))||(A.k==="str"&&B.k==="str")){const x=A.v,y=B.v;return V(op==="<"?x<y:op===">"?x>y:op==="<="?x<=y:x>=y,"bool")}
+  throw new PyErr("TypeError",`'${op}' not supported between instances of '${tn(a)}' and '${tn(b)}'`)}
+const FUN={abs:a=>V(Math.abs(a[0].v),a[0].k==="bool"?"int":a[0].k),
+  round:a=>{const d=a[1]?a[1].v:0,f=Math.pow(10,d);let r=Math.round(a[0].v*f)/f;const x=a[0].v*f;if(Math.abs(x%1)===0.5)r=(Math.floor(x)%2===0?Math.floor(x):Math.ceil(x))/f;return a[1]?V(r,a[0].k):V(r,"int")},
+  int:a=>{if(a[0].k==="str"){if(!/^\s*[-+]?\d+\s*$/.test(a[0].v))throw new PyErr("ValueError",`invalid literal for int() with base 10: '${a[0].v}'`);return V(parseInt(a[0].v,10),"int")}return V(Math.trunc(a[0].v),"int")},
+  float:a=>{if(a[0].k==="str"){if(isNaN(parseFloat(a[0].v)))throw new PyErr("ValueError",`could not convert string to float: '${a[0].v}'`);return V(parseFloat(a[0].v),"float")}return V(+a[0].v,"float")},
+  str:a=>V(pyStr(a[0]),"str"),len:a=>{if(a[0].k!=="str"&&a[0].k!=="list")throw new PyErr("TypeError",`object of type '${tn(a[0])}' has no len()`);return V(a[0].v.length,"int")},
+  max:a=>a.reduce((m,x)=>applyCmp(">",x,m).v?x:m),min:a=>a.reduce((m,x)=>applyCmp("<",x,m).v?x:m),
+  bool:a=>V(truthy(a[0]),"bool"),type:a=>V(`<class '${a[0].k==="NoneType"?"NoneType":a[0].k}'>`,"str")};
+function evalPy(n,env,ctx){
+  switch(n.t){
+    case"val":return n.val;
+    case"name":if(env&&n.name in env)return env[n.name];throw new PyErr("NameError",`name '${n.name}' is not defined`);
+    case"list":return V(n.items.map(i=>evalPy(i,env,ctx)),"list");
+    case"un":{const x=evalPy(n.x,env,ctx);if(n.op==="not")return V(!truthy(x),"bool");if(!isNum(x))throw new PyErr("TypeError",`bad operand type for unary ${n.op}: '${tn(x)}'`);const y=nv(x);return n.op==="-"?V(-y.v,y.k):y}
+    case"bin":return applyBin(n.op,evalPy(n.l,env,ctx),evalPy(n.r,env,ctx));
+    case"and":{const l=evalPy(n.l,env,ctx);return truthy(l)?evalPy(n.r,env,ctx):l}
+    case"or":{const l=evalPy(n.l,env,ctx);return truthy(l)?l:evalPy(n.r,env,ctx)}
+    case"cmp":{let l=evalPy(n.items[0],env,ctx);for(let i=0;i<n.ops.length;i++){const r=evalPy(n.items[i+1],env,ctx);if(!applyCmp(n.ops[i],l,r).v)return V(false,"bool");l=r}return V(true,"bool")}
+    case"call":{const args=n.args.map(a=>evalPy(a,env,ctx));if(n.name==="print"){if(ctx)ctx.out.push(args.map(pyStr).join(" "));return V(null,"NoneType")}
+      if(!FUN[n.name])throw new PyErr("NameError",`name '${n.name}' is not defined`);try{return FUN[n.name](args)}catch(e){if(e instanceof PyErr)throw e;throw new PyErr("TypeError","bad arguments for "+n.name+"()")}}
+  }}
+function stripComment(s){let q=null;for(let i=0;i<s.length;i++){const c=s[i];if(q){if(c===q)q=null}else if(c==='"'||c==="'")q=c;else if(c==="#")return s.slice(0,i)}return s}
+/* run a few lines like a notebook cell; returns {out:[lines], val, err} */
+function runCell(src,env){const ctx={out:[]};let last=null;
+  try{for(const raw of src.split("\n")){const line=stripComment(raw).trim();if(!line)continue;
+    const m=line.match(/^([A-Za-z_]\w*)\s*=(?!=)\s*(.+)$/);
+    if(m){env[m[1]]=evalPy(parsePy(m[2]),env,ctx);last=null}else{const v=evalPy(parsePy(line),env,ctx);last=/^print\s*\(/.test(line)?null:v}}
+    return{out:ctx.out,val:last}}
+  catch(e){if(e instanceof PyErr)return{out:ctx.out,err:e.pt+": "+e.message,et:e.pt};throw e}}
+/* printing an AST with minimal brackets, for step-by-step evaluation */
+const PREC={or:1,and:2,not:3,cmp:4,bin:{"+":6,"-":6,"*":7,"/":7,"//":7,"%":7,"**":9},un:8,atom:10};
+function prc(n){if(n.t==="or")return 1;if(n.t==="and")return 2;if(n.t==="un")return n.op==="not"?3:8;if(n.t==="cmp")return 4;if(n.t==="bin")return PREC.bin[n.op];return 10}
+function astStr(n,hl){
+  const wrap=(c,min,strict)=>{const s=astStr(c,hl);const p=prc(c);return(p<min||(strict&&p===min))?"("+s+")":s};
+  let s;
+  switch(n.t){
+    case"val":s=esc(pyRepr(n.val));break;
+    case"name":s=esc(n.name);break;
+    case"list":s="["+n.items.map(i=>astStr(i,hl)).join(", ")+"]";break;
+    case"call":s=esc(n.name)+"("+n.args.map(a=>astStr(a,hl)).join(", ")+")";break;
+    case"un":s=(n.op==="not"?"not ":n.op)+wrap(n.x,n.op==="not"?3:8,false);break;
+    case"bin":{const p=prc(n);s=n.op==="**"?wrap(n.l,p,true)+" ** "+wrap(n.r,8,false):wrap(n.l,p,false)+" "+esc(n.op)+" "+wrap(n.r,p,true);break}
+    case"and":s=wrap(n.l,2,false)+" and "+wrap(n.r,2,true);break;
+    case"or":s=wrap(n.l,1,false)+" or "+wrap(n.r,1,true);break;
+    case"cmp":s=n.items.map((x,i)=>wrap(x,5,false)+(i<n.ops.length?" "+esc(n.ops[i])+" ":"")).join("");break;
+  }
+  return n===hl?`<span class="mk">${s}</span>`:s}
+/* find next reducible node (postorder, left first, honours short-circuit); returns {node, replace(fn)} via path */
+function nextReducible(n,env){
+  const isV=x=>x.t==="val";
+  function rec(n){
+    if(isV(n))return null;
+    if(n.t==="name")return{node:n,note:"look up the value of the name"};
+    if(n.t==="and"||n.t==="or"){
+      if(!isV(n.l)){const r=rec(n.l);if(r)return r;return null}
+      const sc=n.t==="and"?!truthy(n.l.val):truthy(n.l.val);
+      if(sc)return{node:n,short:true,note:"short-circuit: the left side already decides, the right side is NOT evaluated"};
+      if(!isV(n.r)){const r=rec(n.r);if(r)return r;return null}
+      return{node:n,note:"left side did not decide, so the right side is used"}}
+    const kids=n.t==="bin"?[n.l,n.r]:n.t==="un"?[n.x]:n.t==="cmp"?n.items:n.t==="call"?n.args:n.t==="list"?n.items:[];
+    for(const k of kids){const r=rec(k);if(r)return r}
+    return{node:n,note:n.t==="bin"?"do "+n.op:n.t==="un"?"apply "+n.op:n.t==="cmp"?"compare":n.t==="call"?"call "+n.name+"()":"build the list"}}
+  return rec(n)}
+function replaceNode(root,target,val){if(root===target)return{t:"val",val};
+  for(const k of["l","r","x"])if(root[k])root[k]=replaceNode(root[k],target,val);
+  for(const k of["items","args"])if(root[k])root[k]=root[k].map(c=>replaceNode(c,target,val));return root}
+function evalSteps(src,env){
+  let ast=parsePy(src);const steps=[{html:astStr(ast),note:"start: the whole expression"}];let guard=0;
+  while(ast.t!=="val"&&guard++<60){const r=nextReducible(ast,env);if(!r)break;
+    const before=astStr(ast,r.node);
+    let v;const ctx={out:[]};
+    if(r.short)v=r.node.l.val;else if(r.node.t==="and"||r.node.t==="or")v=r.node.t==="and"?(truthy(r.node.l.val)?r.node.r.val:r.node.l.val):(truthy(r.node.l.val)?r.node.l.val:r.node.r.val);
+    else if(r.node.t==="name"){v=evalPy(r.node,env,ctx)}
+    else{const tmp=JSON.parse(JSON.stringify(r.node));v=evalPy(r.node,env,ctx)}
+    ast=replaceNode(ast,r.node,v);
+    steps.push({html:astStr(ast),before,note:r.note+" = "+esc(pyRepr(v))});}
+  return{steps,result:ast.val}}
+/* generic stepper widget */
+function stepper(root,sel,getSteps,draw){
+  const box=$(sel,root);let i=0,steps=getSteps();
+  box.innerHTML=`<div class="row"><button class="btn sm" type="button" data-a="b">Back</button><button class="btn pri sm" type="button" data-a="n">Step</button><button class="btn sm" type="button" data-a="a">Run all</button><button class="btn sm" type="button" data-a="r">Reset</button><span class="small muted" data-a="c"></span></div><div data-a="v"></div>`;
+  const v=$("[data-a=v]",box),c=$("[data-a=c]",box);
+  function show(){c.textContent=`step ${i} of ${steps.length-1}`;v.innerHTML=draw(steps[i],i,steps)}
+  $("[data-a=b]",box).onclick=()=>{if(i>0){i--;show()}};
+  $("[data-a=n]",box).onclick=()=>{if(i<steps.length-1){i++;show()}};
+  $("[data-a=a]",box).onclick=()=>{i=steps.length-1;show()};
+  $("[data-a=r]",box).onclick=()=>{i=0;show()};
+  show();
+  return{reset(){steps=getSteps();i=0;show()}}}
+const chips=(id,items,sel)=>`<div id="${id}">`+items.map((x,k)=>`<button type="button" class="opt2" data-v="${esc(x)}" aria-pressed="${k===sel}">${esc(x)}</button>`).join("")+`</div>`;
+function bindChips(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)})}
+/* seeded random, so every run of a demo is repeatable */
+function rng(seed){let s=seed>>>0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+const q2=n=>String(n).padStart(2," ");
+
+const CODE=s=>`<div class="code">${esc(s)}</div>`;
+const KV=o=>`<div class="kv">`+Object.entries(o).map(([k,v])=>`<span>${esc(k)} = ${esc(v)}</span>`).join("")+`</div>`;
+
+/* ===== IPSR Unit 3: Problem Solving Techniques and Agents ===== */
+const NBREF=n=>`<span class="small muted">Notebook: IPSR_Unit3_Lab.ipynb, sections ${n}</span>`;
+
+/* --- agent diagrams (SVG) --- */
+function dgm(nodes,edges,W,H){
+  const N={};nodes.forEach(n=>{n.cx=n.x+n.w/2;n.cy=n.y+n.h/2;N[n.id]=n});
+  let s=`<svg class="g chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="agent diagram"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(--fg)"/></marker></defs>`;
+  edges.forEach(([a,b,lb])=>{const A=N[a],B=N[b];let x1,y1,x2,y2;const dx=B.cx-A.cx,dy=B.cy-A.cy;
+    if(Math.abs(dx)>Math.abs(dy)*1.2||Math.abs(dy)<A.h/2+B.h/2&&Math.abs(dx)>A.w/2+B.w/2){const y=A.h>B.h?B.cy:A.cy;y1=y2=y;x1=dx>0?A.x+A.w:A.x;x2=dx>0?B.x:B.x+B.w}
+    else{const x=Math.abs(A.cx-B.cx)<20?(A.cx+B.cx)/2:A.w<B.w?A.cx:B.cx;x1=x2=x;y1=dy>0?A.y+A.h:A.y;y2=dy>0?B.y:B.y+B.h}
+    s+=`<line class="edge" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-end="url(#ar)"/>`;if(lb)s+=`<text x="${(x1+x2)/2+(x1===x2?30:0)}" y="${(y1+y2)/2-(x1===x2?0:8)}" style="font-size:11px;font-weight:500">${esc(lb)}</text>`});
+  nodes.forEach(n=>{const lines=n.t.split("\n");s+=`<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="8" class="${n.c==="env"?"fnode exp":n.c==="side"?"fnode front":"fnode"}" style="stroke-width:1.8"/>`+lines.map((l,i)=>`<text x="${n.cx}" y="${n.cy+(i-(lines.length-1)/2)*15}" style="font-size:12.5px">${esc(l)}</text>`).join("")});
+  return s+"</svg>"}
+const DG={
+ reflex:()=>dgm([{id:"env",x:8,y:20,w:110,h:280,t:"Environment",c:"env"},{id:"se",x:210,y:14,w:210,h:40,t:"Sensors"},{id:"now",x:210,y:90,w:210,h:48,t:"What the world\nis like now"},{id:"ru",x:210,y:176,w:210,h:48,t:"Condition-action\nrules (if ... then ...)"},{id:"ac",x:210,y:260,w:210,h:40,t:"Actuators"}],[["env","se","percepts"],["se","now"],["now","ru"],["ru","ac"],["ac","env","actions"]],460,314),
+ model:()=>dgm([{id:"env",x:8,y:20,w:110,h:300,t:"Environment",c:"env"},{id:"se",x:200,y:14,w:190,h:40,t:"Sensors"},{id:"st",x:200,y:92,w:190,h:56,t:"State:\nwhat the world is like now"},{id:"ru",x:200,y:196,w:190,h:48,t:"Condition-action\nrules"},{id:"ac",x:200,y:280,w:190,h:40,t:"Actuators"},{id:"ev",x:450,y:70,w:200,h:40,t:"How the world evolves",c:"side"},{id:"ma",x:450,y:130,w:200,h:40,t:"What my actions do",c:"side"}],[["env","se","percepts"],["se","st"],["st","ru"],["ru","ac"],["ac","env","actions"],["ev","st"],["ma","st"]],670,334),
+ goal:()=>dgm([{id:"env",x:8,y:20,w:110,h:350,t:"Environment",c:"env"},{id:"se",x:200,y:14,w:200,h:38,t:"Sensors"},{id:"st",x:200,y:84,w:200,h:50,t:"State:\nwhat the world is like now"},{id:"pr",x:200,y:166,w:200,h:56,t:"What it will be like\nif I do action A"},{id:"ch",x:200,y:254,w:200,h:50,t:"What action\nshould I do now?"},{id:"ac",x:200,y:334,w:200,h:36,t:"Actuators"},{id:"ev",x:460,y:78,w:200,h:36,t:"How the world evolves",c:"side"},{id:"ma",x:460,y:152,w:200,h:36,t:"What my actions do",c:"side"},{id:"go",x:460,y:261,w:200,h:36,t:"GOALS",c:"side"}],[["env","se","percepts"],["se","st"],["st","pr"],["pr","ch"],["ch","ac"],["ac","env","actions"],["ev","st"],["ma","pr"],["go","ch"]],680,384),
+ utility:()=>dgm([{id:"env",x:8,y:20,w:110,h:400,t:"Environment",c:"env"},{id:"se",x:200,y:14,w:200,h:36,t:"Sensors"},{id:"st",x:200,y:78,w:200,h:50,t:"State:\nwhat the world is like now"},{id:"pr",x:200,y:154,w:200,h:50,t:"What it will be like\nif I do action A"},{id:"ut",x:200,y:230,w:200,h:50,t:"How happy I will be\nin such a state (utility)"},{id:"ch",x:200,y:306,w:200,h:44,t:"What action\nshould I do now?"},{id:"ac",x:200,y:376,w:200,h:36,t:"Actuators"},{id:"ev",x:460,y:72,w:200,h:36,t:"How the world evolves",c:"side"},{id:"ma",x:460,y:148,w:200,h:36,t:"What my actions do",c:"side"}],[["env","se","percepts"],["se","st"],["st","pr"],["pr","ut"],["ut","ch"],["ch","ac"],["ac","env","actions"],["ev","st"],["ma","pr"]],680,426),
+ learning:()=>dgm([{id:"env",x:8,y:20,w:110,h:300,t:"Environment",c:"env"},{id:"se",x:190,y:14,w:190,h:38,t:"Sensors"},{id:"cr",x:190,y:80,w:190,h:44,t:"Critic"},{id:"le",x:190,y:152,w:190,h:44,t:"Learning element"},{id:"pe",x:190,y:224,w:190,h:44,t:"Performance element"},{id:"ac",x:190,y:292,w:190,h:36,t:"Actuators"},{id:"ps",x:450,y:80,w:210,h:44,t:"Performance standard",c:"side"},{id:"pg",x:450,y:224,w:210,h:44,t:"Problem generator",c:"side"}],[["env","se","percepts"],["se","cr"],["cr","le","feedback"],["le","pe","changes"],["pe","ac"],["ac","env","actions"],["ps","cr"],["pg","pe","new things to try"]],670,340)};
+
+/* --- shared vacuum world --- */
+function vacRun(fn,seed,p,steps){const rd=rng(seed),rd2=rng(seed+101);let dirt={A:rd()<.7,B:rd()<.7},loc="A",score=0;const mem={};const tr=[{loc,dirt:{...dirt},act:"(start)",score,mem:JSON.stringify(mem),why:""}];
+  for(let t=0;t<steps;t++){const r=fn({loc,dirty:dirt[loc]},mem,t,rd2);let act=r.act;
+    if(act==="Suck"){if(dirt[loc])score+=10;dirt[loc]=false}else if(act==="Right"){loc="B";score-=1}else if(act==="Left"){loc="A";score-=1}
+    for(const s of["A","B"]){const x=rd();if(!dirt[s]&&x<p)dirt[s]=true}tr.push({loc,dirt:{...dirt},act,score,why:r.why||"",mem:JSON.parse(JSON.stringify(mem))})}return tr}
+const worldHtml=s=>`<div class="world">${["A","B"].map(q=>`<div class="sq ${s.dirt[q]?"dirty":""} ${s.loc===q?"here":""}"><small>${q}</small><span>${s.dirt[q]?"DIRTY":"clean"}${s.loc===q?"<br><b>[ VacBot ]</b>":""}</span></div>`).join("")}<div class="kpi" style="min-width:120px"><span class="small muted">Score</span><b>${s.score}</b></div></div>`;
+const reflexFn=(pc)=>({act:pc.dirty?"Suck":pc.loc==="A"?"Right":"Left",why:pc.dirty?"dirty here: Suck":"clean here: move to the other square"});
+const modelFn=(pc,m,t)=>{m.bel=m.bel||{A:null,B:null};m.seen=m.seen||{A:-99,B:-99};m.bel[pc.loc]=pc.dirty;m.seen[pc.loc]=t;const fresh=q=>m.bel[q]!==null&&t-m.seen[q]<4;
+  if(pc.dirty){m.bel[pc.loc]=false;return{act:"Suck",why:"dirty here: Suck, and my model says it is now clean"}}
+  if(fresh("A")&&fresh("B")&&m.bel.A===false&&m.bel.B===false)return{act:"NoOp",why:"my state says both squares were clean recently: do nothing, save energy"};
+  return{act:pc.loc==="A"?"Right":"Left",why:"I do not know the other square: go and look"}};
+const pctl=()=>`dirt reappears with chance <input type="range" class="vp" min="0" max="0.2" step="0.01" value="0.04"> <b class="vpv">0.04</b>`;
+
+/* 1 agent description */
+lesson({nav:"Description of an agent",title:"Description of an agent",syl:"Description of an agent",
+html:()=>`<p class="lead">An agent is anything that perceives its environment through sensors and acts on it through actuators. Mathematically the <b>agent function</b> maps every possible <b>percept sequence</b> to an action. The <b>agent program</b> is the compact code that implements that function. A <b>rational agent</b> picks the action expected to maximise its performance measure, given what it has perceived and what it knows.</p>
+<div class="card try"><h3>Why we write programs, not tables</h3><p class="small muted">VacBot has 4 possible percepts at each moment (square A or B, dirty or clean). A table-driven agent needs one row for every possible percept <i>history</i>.</p>
+<div class="row">Look back over <input type="range" id="ts" min="1" max="14" value="5"> <b id="tsv">5</b> steps</div><div id="tout"></div></div>
+<div class="card"><h3>Four ideas to keep apart</h3><div class="grid2"><div class="cardsel"><b>Percept</b><br><span class="small">what the sensors give right now: (A, dirty)</span></div><div class="cardsel"><b>Percept sequence</b><br><span class="small">everything perceived so far</span></div><div class="cardsel"><b>Agent function</b><br><span class="small">the ideal mapping: sequence to action</span></div><div class="cardsel"><b>Agent program</b><br><span class="small">the code that implements it, e.g. 4 if-rules</span></div></div></div>
+${quiz("i3q1","Why is a table-driven agent impractical?",["Tables are slow to read","The table grows exponentially with the length of the percept history","Python cannot store tables"],1,"With 4 percepts per step the number of sequences is 4^T, which explodes. A short program (rules or a model) compresses it.")}
+${NBREF("3.1")}`,
+mount(r){function t(){const T=+$("#ts",r).value;$("#tsv",r).textContent=T;let rows=0n;for(let i=1;i<=T;i++)rows+=4n**BigInt(i);const n=Number(rows);const gb=n*100/1e9;
+    $("#tout",r).innerHTML=`<div class="grid3"><div class="kpi"><span class="small muted">Table rows needed</span><b>${rows.toLocaleString("en-US")}</b></div><div class="kpi"><span class="small muted">If a row costs 100 bytes</span><b>${gb<0.001?(n*100/1e3).toFixed(1)+" KB":gb<1?(gb*1000).toFixed(1)+" MB":gb<1000?gb.toFixed(1)+" GB":(gb/1000).toFixed(1)+" TB"}</b></div><div class="kpi"><span class="small muted">Rows in the rule program</span><b>4</b></div></div><div class="callout k small">Table: 4 + 16 + 64 + ... = ${rows.toLocaleString("en-US")} rows for ${T} steps. Program: <code>if dirty: Suck; elif at A: Right; else: Left</code>.</div>`}
+  $("#ts",r).oninput=t;t()}});
+
+/* 2 reflex agent */
+lesson({hero:true,nav:"Simple reflex agent",title:"Simple reflex agent: diagram and program",syl:"Reflex agent diagram and program",
+html:()=>`<p class="lead">A <b>simple reflex agent</b> picks an action using only the <b>current percept</b>, through condition-action rules. No memory, no look-ahead. It works when the right action can be decided from what it sees right now.</p>
+<div class="card"><h3>Diagram</h3>${DG.reflex()}</div>
+<div class="card try"><h3>Try it: write the rules yourself</h3><p class="small muted">Choose an action for each percept, then step through the run. Score: +10 per dirty square cleaned, -1 per move.</p>
+${chips("rp",["Good rules","Lazy: never moves","Wasteful: sucks when clean"],0)}
+<table class="dt"><tbody>${[["A","D","at A, dirty"],["A","C","at A, clean"],["B","D","at B, dirty"],["B","C","at B, clean"]].map(x=>`<tr><td>${x[2]}</td><td><select data-rule="${x[0]+x[1]}">${["Suck","Left","Right","NoOp"].map(a=>`<option>${a}</option>`).join("")}</select></td></tr>`).join("")}</tbody></table>
+<div class="row">${pctl()}</div><div id="rst"></div></div>
+<div class="callout i small"><b>Limit.</b> The rule table cannot know that both squares are already clean, because it sees only its own square. It keeps moving and loses points. Fixing that needs memory: the model-based agent.</div>
+${quiz("i3q2","What does a simple reflex agent use to choose its action?",["The whole percept history","Only the current percept","A model of the world"],1,"Only the current percept, matched against condition-action rules.")}
+${NBREF("3.2")}`,
+mount(r){const P={"Good rules":{AD:"Suck",AC:"Right",BD:"Suck",BC:"Left"},"Lazy: never moves":{AD:"Suck",AC:"NoOp",BD:"Suck",BC:"NoOp"},"Wasteful: sucks when clean":{AD:"Suck",AC:"Suck",BD:"Suck",BC:"Suck"}};
+  const set=k=>{Object.entries(P[k]).forEach(([a,v])=>$(`[data-rule="${a}"]`,r).value=v);run()};
+  function run(){const rules={};$$("[data-rule]",r).forEach(s=>rules[s.dataset.rule]=s.value);const p=+$(".vp",r).value;$(".vpv",r).textContent=p.toFixed(2);
+    stepper(r,"#rst",()=>vacRun(pc=>({act:rules[pc.loc+(pc.dirty?"D":"C")],why:`rule for (${pc.loc}, ${pc.dirty?"dirty":"clean"}) says ${rules[pc.loc+(pc.dirty?"D":"C")]}`}),3,p,30),(s,i)=>worldHtml(s)+`<div class="small">${i?`Step ${i}: <b>${s.act}</b> <span class="muted">(${esc(s.why)})</span>`:"Start."}</div>`)}
+  $$("[data-rule]",r).forEach(s=>s.onchange=run);$(".vp",r).oninput=run;bindChips(r,"rp",set);set("Good rules")}});
+
+/* 3 model-based */
+lesson({nav:"Model-based reflex agent",title:"Model-based reflex agent: diagram and program",syl:"Model-based reflex agent diagram and program",
+html:()=>`<p class="lead">A <b>model-based reflex agent</b> keeps an internal <b>state</b>: what it remembers about parts of the world it cannot see now. It updates the state using a <b>model</b>: how the world evolves by itself, and what its own actions do. Then it applies condition-action rules to the <i>state</i>, not just the percept.</p>
+<div class="card"><h3>Diagram</h3>${DG.model()}</div>
+<div class="card try"><h3>Try it: reflex versus model-based, same dirt, same start</h3><div class="row">${pctl()}</div><div id="mst"></div></div>
+<div class="callout i small">The model-based agent <b>remembers</b> it just saw both squares clean and stops moving. Its belief expires after a few steps, because dirt can reappear (the model of how the world evolves).</div>
+${quiz("i3q3","What does the 'state' of a model-based agent hold?",["The agent's score","What the agent believes about the world, including unseen parts","The next action"],1,"The state is the agent's belief about the world, built from past percepts and the model.")}
+${NBREF("3.3")}`,
+mount(r){function run(){const p=+$(".vp",r).value;$(".vpv",r).textContent=p.toFixed(2);const A=vacRun(reflexFn,3,p,40),B=vacRun(modelFn,3,p,40);
+    stepper(r,"#mst",()=>A.map((a,i)=>({a,b:B[i]})),(s,i)=>`<div class="grid2"><div><b>Simple reflex</b>${worldHtml(s.a)}<div class="small">${i?`<b>${s.a.act}</b> <span class="muted">${esc(s.a.why)}</span>`:"Start"}</div></div><div><b>Model-based</b>${worldHtml(s.b)}<div class="small">${i?`<b>${s.b.act}</b> <span class="muted">${esc(s.b.why)}</span>`:"Start"}</div>${s.b.mem&&s.b.mem.bel?`<div class="kv"><span>belief A = ${s.b.mem.bel.A===null?"unknown":s.b.mem.bel.A?"dirty":"clean"}</span><span>belief B = ${s.b.mem.bel.B===null?"unknown":s.b.mem.bel.B?"dirty":"clean"}</span></div>`:""}</div></div>${i===40?`<div class="callout k">After 40 steps: reflex <b>${s.a.score}</b>, model-based <b>${s.b.score}</b>.</div>`:""}`)}
+  $(".vp",r).oninput=run;run()}});
+
+/* 4 goal and utility */
+const ROUTES=[{n:"Highway taxi",time:30,cost:400,risk:20,comfort:70},{n:"City bus",time:55,cost:30,risk:5,comfort:40},{n:"Metro",time:40,cost:60,risk:3,comfort:80},{n:"Own bike",time:50,cost:0,risk:25,comfort:30}];
+lesson({hero:true,nav:"Goal and utility agents",title:"Goal-based and utility-based agents",syl:"Goal-based agent diagram; Utility-based agent diagram",
+html:()=>`<p class="lead">A <b>goal-based agent</b> asks: <i>"what will happen if I do A, and does that reach my goal?"</i> It looks ahead, so changing the goal changes its behaviour without rewriting rules. But a goal is only success or failure. A <b>utility-based agent</b> scores how good each outcome is with a number (<b>utility</b>), so it can trade off speed against cost against safety and choose the <i>best</i> way.</p>
+${seg("gu",[["goal","Goal-based"],["util","Utility-based"]])}<div class="card" id="gd"></div>
+<div class="card try"><h3>Try it: reach the campus by 9:00</h3><p class="small muted"><b>Goal-based:</b> any route that arrives within the time limit counts as success; it takes the first. <b>Utility-based:</b> every route gets a score from your weights; it takes the best.</p>
+<div class="row">Time limit (min) <input type="number" id="lim" value="60" style="width:70px"></div>
+<div class="grid4"><div>Time weight <input type="range" id="wt" min="0" max="10" value="5"></div><div>Cost weight <input type="range" id="wc" min="0" max="10" value="2"></div><div>Risk weight <input type="range" id="wr" min="0" max="10" value="4"></div><div>Comfort weight <input type="range" id="wf" min="0" max="10" value="3"></div></div><div id="rt"></div></div>
+${quiz("i3q4","What does a utility function add that a goal does not?",["Memory","A degree of how good each outcome is","Sensors"],1,"A goal splits outcomes into 'achieved' and 'not achieved'. Utility ranks them, so the agent can compare and trade off.")}
+${NBREF("3.4 and 3.5")}`,
+mount(r){let k="goal";const dg=()=>$("#gd",r).innerHTML=`<h3>${k==="goal"?"Goal-based agent":"Utility-based agent"}: diagram</h3>${k==="goal"?DG.goal():DG.utility()}`;bindSeg(r,"gu",v=>{k=v;dg()});dg();
+  function rt(){const lim=+$("#lim",r).value,w={t:+$("#wt",r).value,c:+$("#wc",r).value,r:+$("#wr",r).value,f:+$("#wf",r).value};
+    const U=x=>-w.t*x.time/10-w.c*x.cost/100-w.r*x.risk/10+w.f*x.comfort/10;const sc=ROUTES.map(x=>({...x,u:U(x),ok:x.time<=lim}));
+    const goalPick=sc.find(x=>x.ok),utilPick=[...sc].sort((a,b)=>b.u-a.u)[0];
+    $("#rt",r).innerHTML=`<table class="dt"><thead><tr><th>Route</th><th>Time</th><th>Cost (Rs)</th><th>Risk</th><th>Comfort</th><th>Reaches goal?</th><th>Utility</th></tr></thead><tbody>${sc.map(x=>`<tr><td>${x.n}</td><td class="num">${x.time}</td><td class="num">${x.cost}</td><td class="num">${x.risk}</td><td class="num">${x.comfort}</td><td>${x.ok?"yes":"no"}</td><td class="num">${x.u.toFixed(1)}</td></tr>`).join("")}</tbody></table>
+    <div class="grid2" style="margin-top:8px"><div class="callout i"><b>Goal-based picks:</b> ${goalPick?goalPick.n:"nothing (goal cannot be reached)"}<br><span class="small">the first route that meets the goal</span></div><div class="callout k"><b>Utility-based picks:</b> ${utilPick.n}<br><span class="small">the highest utility with your weights</span></div></div>`+(()=>{const mx=Math.max(...sc.map(x=>Math.abs(x.u)),1);return`<div class="small" style="margin:10px 0 4px"><b>Utility of each route</b> (bars grow right for good, left for bad; the line is zero)</div>`+sc.map(x=>{const w=Math.abs(x.u)/mx*50,best=x===utilPick;return`<div style="display:grid;grid-template-columns:110px 1fr 56px;gap:8px;align-items:center;margin:4px 0"><span class="small">${x.n}</span><span style="position:relative;height:20px;background:var(--surface2);border-radius:4px;border-left:0"><span style="position:absolute;left:50%;top:-2px;bottom:-2px;border-left:2px solid var(--fg)"></span><span style="position:absolute;top:2px;bottom:2px;border-radius:3px;background:${best?"var(--c2)":"var(--c1)"};${x.u>=0?`left:50%;width:${w}%`:`left:${50-w}%;width:${w}%`}"></span></span><b class="small" style="text-align:right">${x.u.toFixed(1)}</b></div>`}).join("")})()}
+  ["lim","wt","wc","wr","wf"].forEach(i=>$("#"+i,r).oninput=rt);rt()}});
+
+/* 5 BFS */
+const GR={"Notebook graph (directed)":{dir:true,start:"S",goals:["G","C","E"],pos:{S:[60,160],A:[190,70],B:[190,250],C:[330,30],D:[330,160],E:[330,290],G:[470,160]},adj:{S:["A","B"],A:["C","D"],B:["D","E"],C:[],D:["G"],E:["G"],G:[]}},
+ "Graph with a cycle (undirected)":{dir:false,start:"A",goals:["F","E","D"],pos:{A:[60,160],B:[190,60],C:[190,260],D:[330,60],E:[460,160],F:[330,260]},adj:{A:["B","C"],B:["A","D"],C:["A","D","F"],D:["B","C","E"],E:["D","F"],F:["C","E"]}}};
+function bfsSteps(g,start,goal,kind){const front=[start],seen=new Set([start]),par={[start]:null},exp=[];const steps=[{cur:null,front:[...front],seen:[...seen],exp:[...exp],note:`Start: put ${start} in the ${kind==="bfs"?"queue":"stack"}.`}];let guard=0;
+  while(front.length&&guard++<80){const cur=kind==="bfs"?front.shift():front.pop();exp.push(cur);
+    if(cur===goal){const path=[];let x=cur;while(x){path.push(x);x=par[x]}path.reverse();steps.push({cur,front:[...front],seen:[...seen],exp:[...exp],note:`Take ${cur} from the ${kind==="bfs"?"front":"top"}: it is the GOAL. Path: ${path.join(" > ")} (${path.length-1} steps).`,path});return steps}
+    const added=[];for(const nx of g.adj[cur])if(!seen.has(nx)){seen.add(nx);par[nx]=cur;front.push(nx);added.push(nx)}
+    steps.push({cur,front:[...front],seen:[...seen],exp:[...exp],note:`Take ${cur}${kind==="bfs"?" from the front":" from the top"}. ${added.length?"Add new neighbours "+added.join(", ")+".":"No new neighbours."}`})}
+  steps.push({cur:null,front:[],seen:[...seen],exp:[...exp],note:`${goal} cannot be reached from ${start}.`,none:true});return steps}
+function graphSvg(g,s){let o=`<svg class="g chart" viewBox="0 0 540 330" role="img" aria-label="search graph"><defs><marker id="ga" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--muted)"/></marker></defs>`;
+  const onPath=(a,b)=>s.path&&s.path.some((n,i)=>i<s.path.length-1&&((n===a&&s.path[i+1]===b)||(!g.dir&&n===b&&s.path[i+1]===a)));const R=24;const done=new Set();
+  for(const a in g.adj)for(const b of g.adj[a]){const key=g.dir?a+b:[a,b].sort().join("");if(done.has(key))continue;done.add(key);const[x1,y1]=g.pos[a],[x2,y2]=g.pos[b],L=Math.hypot(x2-x1,y2-y1),ux=(x2-x1)/L,uy=(y2-y1)/L;
+    o+=`<line class="edge ${onPath(a,b)?"path":""}" x1="${x1+ux*R}" y1="${y1+uy*R}" x2="${x2-ux*(R+(g.dir?3:0))}" y2="${y2-uy*(R+(g.dir?3:0))}" ${g.dir?'marker-end="url(#ga)"':""}/>`}
+  for(const n in g.pos){const[x,y]=g.pos[n];const cls=s.path&&s.path.includes(n)?"path":s.cur===n?"cur":s.exp.includes(n)?"exp":s.front.includes(n)?"front":"";o+=`<circle class="fnode ${cls}" cx="${x}" cy="${y}" r="${R}"/><text class="${cls==="cur"?"cur":""}" x="${x}" y="${y}">${n}</text>`}
+  return o+"</svg>"}
+lesson({hero:true,nav:"Breadth-first search",title:"Breadth-first search: queue, worked example and complexity",syl:"Breadth-first search; BFS worked example with the frontier queue; BFS time and space complexity",
+html:()=>`<p class="lead"><b>Breadth-first search (BFS)</b> explores level by level: all nodes 1 step from the start, then 2 steps, and so on. It uses a <b>queue</b> (first in, first out) called the <b>frontier</b>, plus a set of nodes already discovered so it never repeats work. Because it goes outward evenly, the first time it reaches the goal it has used the <b>fewest steps</b>.</p>
+<div class="card try"><h3>Step through the search</h3><div class="row"><b>Graph:</b> ${chips("gsel",Object.keys(GR),0)}</div><div class="row"><b>Goal:</b> <span id="goals"></span> &nbsp; <b>Frontier is a:</b> ${seg("kd",[["bfs","Queue (BFS)"],["dfs","Stack (for comparison)"]])}</div>
+<div id="bst"></div><p class="small muted">Colours: blue = being looked at, yellow = in the frontier (waiting), green = already expanded, orange = the path found.</p></div>
+<div class="card try"><h3>Time and space: the b^d problem</h3><p class="small muted">b = branching factor (children per node), d = depth of the shallowest goal. BFS may create about 1 + b + b&sup2; + ... + b<sup>d</sup> nodes, which is O(b<sup>d</sup>) for both time and memory.</p>
+<div class="row">b = <input type="range" id="bb" min="2" max="10" value="10"> <b id="bbv">10</b></div><div id="cx"></div></div>
+<div class="grid2"><div class="card"><h3>Properties of BFS</h3><ul class="small"><li><b>Complete:</b> finds a solution if one exists (b finite).</li><li><b>Optimal:</b> shortest path when every step costs the same.</li><li><b>Time:</b> O(b<sup>d</sup>).</li><li><b>Space:</b> O(b<sup>d</sup>), the real bottleneck.</li></ul></div><div class="card"><h3>Pseudocode</h3><div class="code">frontier = queue([start]); seen = {start}\nwhile frontier:\n    node = frontier.pop_front()\n    if node is goal: return path\n    for child in neighbours(node):\n        if child not in seen:\n            seen.add(child)\n            frontier.push_back(child)\nreturn failure</div></div></div>
+${quiz("i3q5","For b = 10 and d = 6, BFS may need about how many nodes?",["60","About a million","About 10"],1,"1 + 10 + 100 + ... + 10^6 = 1,111,111 nodes. Memory, not time, usually runs out first.")}
+${quiz("i3q5b","Which data structure makes a search breadth-first?",["Stack","Queue","Sorted list"],1,"A queue serves the oldest (shallowest) node first. A stack gives depth-first search.")}
+${NBREF("3.6, 3.7 and 3.8")}`,
+mount(r){let gk="Notebook graph (directed)",goal="G",kind="bfs";const gsel=()=>{const g=GR[gk];$("#goals",r).innerHTML=g.goals.map((x,i)=>`<button type="button" class="opt2" data-g="${x}" aria-pressed="${x===goal}">${x}</button>`).join("")+' <span class="small muted">start: '+g.start+'</span>';$$("[data-g]",r).forEach(b=>b.onclick=()=>{goal=b.dataset.g;gsel();run()})};
+  function run(){const g=GR[gk];stepper(r,"#bst",()=>bfsSteps(g,g.start,goal,kind),(s,i)=>`<div class="grid2"><div>${graphSvg(g,s)}</div><div><div class="small"><b>${kind==="bfs"?"Frontier (queue, front on the left)":"Frontier (stack, top on the right)"}</b></div><div class="boxes">${s.front.map(n=>`<div class="bx cur">${n}</div>`).join("")||'<span class="muted">(empty)</span>'}</div><div class="small"><b>Discovered set</b></div><div class="boxes">${s.seen.map(n=>`<div class="bx">${n}</div>`).join("")}</div><div class="small"><b>Expanded, in order</b></div><div class="boxes">${s.exp.map(n=>`<div class="bx ok">${n}</div>`).join("")||'<span class="muted">(none yet)</span>'}</div></div></div><div class="callout ${s.path?"k":"i"}">${esc(s.note)}</div>`)}
+  bindChips(r,"gsel",v=>{gk=v;goal=GR[gk].goals[0];gsel();run()});bindSeg(r,"kd",v=>{kind=v;run()});gsel();run();
+  function cx(){const b=+$("#bb",r).value;$("#bbv",r).textContent=b;const rows=[];for(let d=0;d<=10;d+=1){const nodes=Array.from({length:d+1},(_,i)=>b**i).reduce((x,y)=>x+y,0);const gb=nodes*1000/1e9;rows.push({d,nodes,mem:gb<1e-3?(nodes).toFixed(0)+" KB":gb<1?(gb*1000).toFixed(1)+" MB":gb<1000?gb.toFixed(1)+" GB":(gb/1000).toFixed(1)+" TB",t:nodes/1e6<60?(nodes/1e6).toFixed(2)+" s":nodes/1e6<3600?(nodes/1e6/60).toFixed(1)+" min":(nodes/1e6/3600).toFixed(1)+" h"})}
+    $("#cx",r).innerHTML=table(rows,[["d","depth d"],["nodes","nodes",0],["mem","memory at 1 KB/node"],["t","time at 1M nodes/s"]],{small:true})}
+  $("#bb",r).oninput=cx;cx()}});
+
+/* 6 learning agents */
+lesson({nav:"Learning agents",title:"Learning agents and the learning agent diagram",syl:"Learning agents and learning agent diagram",
+html:()=>`<p class="lead">A <b>learning agent</b> improves with experience. It has four parts: the <b>performance element</b> (chooses actions, like any agent above), the <b>critic</b> (tells how well it is doing against a <b>performance standard</b>), the <b>learning element</b> (uses the critic's feedback to improve the performance element) and the <b>problem generator</b> (suggests new things to try, so it does not get stuck repeating what it already knows).</p>
+<div class="card"><h3>Diagram</h3>${DG.learning()}</div>
+<div class="card try"><h3>Try it: a VacBot that learns where dirt appears</h3><p class="small muted">Each step the agent waits at square A or B. The <b>critic</b> gives +10 if dirt is found. Hidden truth: how often each square gets dirty. The agent keeps an average reward for each square (<b>learning element</b>) and mostly picks the best (<b>performance element</b>). With chance &epsilon; it tries a random square (<b>problem generator</b>).</p>
+<div class="grid3"><div>True dirt rate at A <input type="range" id="ra" min="0.05" max="0.95" step="0.05" value="0.2"> <b id="rav">0.20</b></div><div>True dirt rate at B <input type="range" id="rb" min="0.05" max="0.95" step="0.05" value="0.7"> <b id="rbv">0.70</b></div><div>Exploration &epsilon; <input type="range" id="ep" min="0" max="0.5" step="0.05" value="0.2"> <b id="epv">0.20</b></div></div>
+<div class="row"><button class="btn pri" type="button" id="lnew">Run again with new luck</button></div><div id="lout"></div></div>
+${quiz("i3q6","Which part of a learning agent suggests new actions to try?",["Critic","Problem generator","Actuators"],1,"The problem generator explores. Without it (epsilon = 0) the agent may lock onto the first option that looked fine and never discover a better one.")}
+${NBREF("3.9")}`,
+mount(r){let seed=42;function run(){const ra=+$("#ra",r).value,rb=+$("#rb",r).value,ep=+$("#ep",r).value;$("#rav",r).textContent=ra.toFixed(2);$("#rbv",r).textContent=rb.toFixed(2);$("#epv",r).textContent=ep.toFixed(2);
+    const rd=rng(seed),env=rng(seed+9);const val={A:0,B:0},cnt={A:0,B:0},rate={A:ra,B:rb};const hA=[],hB=[];let total=0;
+    for(let t=0;t<300;t++){let sq;if(rd()<ep)sq=rd()<.5?"A":"B";else sq=val.A===val.B?(rd()<.5?"A":"B"):(val.A>val.B?"A":"B");const rew=env()<rate[sq]?10:0;total+=rew;cnt[sq]++;val[sq]+=(rew-val[sq])/cnt[sq];hA.push(val.A);hB.push(val.B)}
+    const pick=val.A>val.B?"A":"B",truth=ra>rb?"A":"B";
+    $("#lout",r).innerHTML=chartLine([{name:"learned value of A",vals:hA,color:"var(--c1)"},{name:"learned value of B",vals:hB,color:"var(--c2)"}],hA.map((_,i)=>String(i+1)),{w:640,h:260,min:0,max:10,dots:false,maxLabels:10})+
+    `<div class="grid3"><div class="kpi"><span class="small muted">Visits A / B</span><b>${cnt.A} / ${cnt.B}</b></div><div class="kpi"><span class="small muted">Total reward</span><b>${total}</b></div><div class="kpi"><span class="small muted">Agent now prefers</span><b>${pick}</b></div></div><div class="callout ${pick===truth?"k":"i"} small">${pick===truth?"It learned the better square.":"It settled on the wrong square. With little exploration an early lucky or unlucky result can fool the agent."} True values are ${(ra*10).toFixed(1)} for A and ${(rb*10).toFixed(1)} for B. Try &epsilon; = 0 and press the button a few times.</div>`}
+  ["ra","rb","ep"].forEach(i=>$("#"+i,r).oninput=run);$("#lnew",r).onclick=()=>{seed+=17;run()};run()}});
+
+/* live pane */
+function renderLive(){$("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">Compare the agent types at a glance.</p><table class="dt"><thead><tr><th>Agent</th><th>Decides using</th></tr></thead><tbody><tr><td><b>Simple reflex</b></td><td class="small" style="white-space:normal">current percept and if-then rules</td></tr><tr><td><b>Model-based</b></td><td class="small" style="white-space:normal">percept plus remembered state and a model of the world</td></tr><tr><td><b>Goal-based</b></td><td class="small" style="white-space:normal">look-ahead: will this action reach the goal?</td></tr><tr><td><b>Utility-based</b></td><td class="small" style="white-space:normal">look-ahead plus a score for how good the result is</td></tr><tr><td><b>Learning</b></td><td class="small" style="white-space:normal">critic feedback improves any of the above</td></tr></tbody></table><h4 style="margin:12px 0 6px">BFS in one line</h4><div class="code">queue (FIFO), expand shallowest\nfirst, complete, optimal for\nequal step costs, O(b^d)</div>`}
+
+renderLive();go(0);
+
+</script>
+</body>
+</html>

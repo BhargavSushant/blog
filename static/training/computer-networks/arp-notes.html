@@ -1,0 +1,398 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARP — Address Resolution Protocol (Notes)</title>
+<style>
+  :root{
+    --ink:#1b2430; --mut:#5b6878; --line:#d7dee8; --bg:#f6f8fb;
+    --blue:#2563eb; --green:#16a34a; --red:#dc2626; --amber:#d97706; --violet:#7c3aed;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.65 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px}
+  header.title{border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:28px}
+  h1{font-size:30px;margin:0 0 6px}
+  h2{font-size:21px;margin:38px 0 10px;padding-top:10px;border-top:1px solid var(--line)}
+  h3{font-size:16px;margin:22px 0 6px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+  p{margin:10px 0}
+  code{background:#e8edf4;padding:1px 6px;border-radius:4px;font-size:14px}
+  .lede{color:var(--mut)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;margin:16px 0}
+  .key{border-left:4px solid var(--amber);background:#fffbeb}
+  .scroll{overflow-x:auto}
+
+  /* ---------- animation stages ---------- */
+  .stage{position:relative;width:820px;height:360px;margin:6px auto;
+         background:#fff;border:1px solid var(--line);border-radius:10px}
+  .stage.short{height:250px}
+  .wires{position:absolute;inset:0}
+  .dev{position:absolute;width:140px;padding:8px 10px;border-radius:9px;text-align:center;
+       background:#eef2f8;border:2px solid #b9c5d6;font-weight:600;font-size:14px;
+       transition:all .4s ease;z-index:2}
+  .dev small{display:block;font-weight:400;font-size:11px;color:var(--mut);line-height:1.45}
+  .dev.net{background:#e0e7ff;border-color:#a5b4fc}
+  .dev.match{border-color:var(--green);background:#dcfce7;box-shadow:0 0 0 6px rgba(22,163,74,.15)}
+  .dev.drop{opacity:.45}
+  .dev .verdict{display:none;font-size:11px;font-weight:700;margin-top:3px}
+  .dev.match .verdict{display:block;color:var(--green)}
+  .dev.drop .verdict{display:block;color:var(--red)}
+
+  .pkt{position:absolute;opacity:0;padding:5px 9px;border-radius:6px;font-size:11px;
+       font-weight:700;color:#fff;white-space:nowrap;z-index:3;
+       transition:left .85s ease, top .85s ease, opacity .35s ease}
+  .pkt.req{background:var(--blue)}
+  .pkt.rep{background:var(--green)}
+  .pkt.data{background:var(--violet)}
+  .pkt.dead{background:var(--red)}
+
+  .pulse{position:absolute;width:26px;height:26px;border-radius:50%;opacity:0;
+         border:3px solid var(--blue);z-index:1}
+  .pulse.on{animation:ripple 1.4s ease-out infinite}
+  @keyframes ripple{0%{transform:scale(.4);opacity:.9}100%{transform:scale(7);opacity:0}}
+
+  .ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0 4px}
+  button{font:600 14px inherit;padding:7px 14px;border-radius:7px;border:1px solid #b9c5d6;
+         background:#fff;color:var(--ink);cursor:pointer}
+  button:hover{background:#eef2f8}
+  button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .count{color:var(--mut);font-size:13px;margin-left:auto}
+  .cap{background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue);
+       border-radius:8px;padding:12px 14px;min-height:74px}
+  .cap b{display:block;margin-bottom:2px}
+
+  table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  th{background:#eef2f8;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  tr.row{opacity:.15;transition:opacity .5s ease}
+  tr.row.show{opacity:1}
+  .mono{font-family:ui-monospace,Consolas,monospace;font-size:13px}
+
+  /* header rewrite box for scene 2 */
+  .hdr{display:flex;gap:0;margin:14px auto 0;max-width:700px;border:1px solid var(--line);
+       border-radius:8px;overflow:hidden;font-size:12px;background:#fff}
+  .hdr div{flex:1;padding:8px;text-align:center;border-right:1px solid var(--line)}
+  .hdr div:last-child{border-right:0}
+  .hdr span{display:block;font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+  .hdr .l2{background:#eff6ff}
+  .hdr .l3{background:#f5f3ff}
+  .flash{animation:flash 1s ease}
+  @keyframes flash{0%{background:#fde68a}100%{background:inherit}}
+
+  /* packet format grid */
+  .fmt{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;font-size:12px;text-align:center}
+  .fmt div{background:#eef2f8;border:1px solid #c7d2e0;border-radius:5px;padding:9px 4px}
+  .fmt .span2{grid-column:span 2}
+  .fmt .span4{grid-column:span 4}
+  .fmt .hi{background:#dbeafe;border-color:#93c5fd}
+  .fmt .hl{background:#dcfce7;border-color:#86efac}
+  .fmt b{display:block;font-size:11px}
+  .fmt em{font-style:normal;color:var(--mut);font-size:10px}
+
+  footer{margin-top:40px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+  .printonly{display:none}
+  @media print{
+    body{background:#fff}
+    .ctrl{display:none}
+    .pkt{opacity:1 !important}
+    .printonly{display:block;color:#666;font-size:12px}
+    h2{page-break-after:avoid}
+    .card,.stage{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="title">
+  <h1>ARP — Address Resolution Protocol</h1>
+  <p class="lede">Study notes with interactive diagrams. How a device turns an IP address into the MAC
+  address it needs to actually put a frame on the wire.</p>
+</header>
+
+<h2>1. Why ARP has to exist</h2>
+<p>Two different addressing systems meet inside every packet you send. Software thinks in
+<b>IP addresses</b> (Layer 3) — logical, assignable, and structured so routers can tell which network a host
+belongs to. But the frame that physically crosses an Ethernet segment is delivered using a
+<b>MAC address</b> (Layer 2), a flat hardware identifier baked into the network card.</p>
+<p>A host that only knows "I need to reach 192.168.1.50" therefore cannot yet build a frame: the
+destination MAC field is empty. ARP is the lookup service that fills it in, by asking the local
+network directly.</p>
+
+<div class="card scroll">
+<svg width="820" height="210" viewBox="0 0 820 210" role="img" aria-label="Encapsulation diagram">
+  <rect x="20" y="30" width="780" height="60" rx="8" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="2"/>
+  <text x="40" y="58" font-size="13" font-weight="700" fill="#5b21b6">LAYER 3 — IP header</text>
+  <text x="40" y="78" font-size="12" fill="#4c1d95">Source IP 192.168.1.10 → Destination IP 192.168.1.50 &#160;&#160;(known by the application)</text>
+
+  <rect x="20" y="110" width="780" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="2"/>
+  <text x="40" y="138" font-size="13" font-weight="700" fill="#1e40af">LAYER 2 — Ethernet header</text>
+  <text x="40" y="158" font-size="12" fill="#1e3a8a">Source MAC AA:AA:AA:00:00:01 → Destination MAC &#160;</text>
+  <rect x="372" y="144" width="150" height="20" rx="4" fill="#fecaca" stroke="#dc2626"/>
+  <text x="378" y="159" font-size="12" font-weight="700" fill="#991b1b">? ? ? — ARP's job</text>
+  <text x="600" y="192" font-size="12" fill="#5b6878">ARP resolves the red field.</text>
+</svg>
+</div>
+
+<h2>2. The exchange: one broadcast question, one unicast answer</h2>
+<p>Step through the animation below. PC-A wants to talk to 192.168.1.50 and has nothing in its cache.</p>
+
+<div class="scroll">
+<div class="stage" id="st1">
+  <svg class="wires" width="820" height="360">
+    <line x1="150" y1="178" x2="345" y2="178" stroke="#cbd5e1" stroke-width="3"/>
+    <line x1="485" y1="178" x2="670" y2="58"  stroke="#cbd5e1" stroke-width="3"/>
+    <line x1="485" y1="178" x2="670" y2="178" stroke="#cbd5e1" stroke-width="3"/>
+    <line x1="485" y1="178" x2="670" y2="296" stroke="#cbd5e1" stroke-width="3"/>
+  </svg>
+  <div class="pulse" id="pulse" style="left:398px;top:166px"></div>
+
+  <div class="dev" id="pcA" style="left:10px;top:140px">PC-A
+    <small>192.168.1.10</small><small>AA:AA:AA:00:00:01</small></div>
+  <div class="dev net" id="sw" style="left:345px;top:152px">Switch
+    <small>floods broadcasts</small></div>
+  <div class="dev" id="pcB" style="left:670px;top:20px">PC-B
+    <small>192.168.1.20</small><small>BB:BB:BB:00:00:02</small><span class="verdict">not mine — discard</span></div>
+  <div class="dev" id="pcC" style="left:670px;top:140px">PC-C
+    <small>192.168.1.50</small><small>CC:CC:CC:00:00:03</small><span class="verdict">that's me!</span></div>
+  <div class="dev" id="pcD" style="left:670px;top:258px">PC-D
+    <small>192.168.1.70</small><small>DD:DD:DD:00:00:04</small><span class="verdict">not mine — discard</span></div>
+
+  <div class="pkt req" id="p0"  style="left:150px;top:164px">ARP Request</div>
+  <div class="pkt req" id="f1"  style="left:470px;top:164px">copy</div>
+  <div class="pkt req" id="f2"  style="left:470px;top:164px">copy</div>
+  <div class="pkt req" id="f3"  style="left:470px;top:164px">copy</div>
+  <div class="pkt rep" id="rp"  style="left:520px;top:164px">ARP Reply</div>
+  <div class="pkt data" id="dt" style="left:150px;top:200px">Data frame</div>
+</div>
+</div>
+
+<div class="ctrl">
+  <button class="primary" id="b1play">▶ Play</button>
+  <button id="b1back">‹ Back</button>
+  <button id="b1next">Next ›</button>
+  <button id="b1reset">Reset</button>
+  <span class="count" id="c1"></span>
+</div>
+<div class="cap" id="cap1"></div>
+
+<p class="printonly">Sequence: (1) no mapping known → (2) broadcast request to FF:FF:FF:FF:FF:FF →
+(3) switch floods the segment → (4) non-matching hosts discard, the owner recognises its IP →
+(5–6) owner answers with a unicast reply → (7) sender caches the mapping → (8) real data is sent.</p>
+
+<div class="card key">
+  <b>The two asymmetries worth memorising</b>
+  <p>The <b>question is a broadcast</b> (destination MAC <code>FF:FF:FF:FF:FF:FF</code>) because nobody knows
+  yet who should answer. The <b>answer is a unicast</b>, because the request already carried the asker's own
+  IP and MAC — the replier knows exactly where to send it.</p>
+</div>
+
+<h3>ARP cache</h3>
+<p>Broadcasting for every packet would be ruinous, so each host keeps a table of recently learned
+mappings. Dynamic entries age out after a few minutes so stale information cannot linger when a host
+changes address or NIC; static entries can be added by hand and never expire.</p>
+<table>
+  <thead><tr><th>IP address</th><th>MAC address</th><th>Type</th><th>Age</th></tr></thead>
+  <tbody>
+    <tr class="row show"><td class="mono">192.168.1.1</td><td class="mono">11:22:33:44:55:66</td><td>dynamic</td><td>3m 02s</td></tr>
+    <tr class="row" id="cacheRow"><td class="mono">192.168.1.50</td><td class="mono">CC:CC:CC:00:00:03</td><td>dynamic</td><td>just learned</td></tr>
+  </tbody>
+</table>
+<p>Inspect your own with <code>arp -a</code> (Windows), <code>ip neigh</code> (modern Linux) or
+<code>arp -an</code> (macOS/BSD).</p>
+
+<h2>3. When the destination is on another network</h2>
+<p>This is the part that trips people up. ARP is strictly local — broadcasts do not cross routers.
+If the target IP is outside the sender's own subnet, the host never ARPs for it. It consults its
+routing table, decides the traffic must go to the default gateway, and ARPs for <em>the gateway</em>.
+The frame is then addressed to the router's MAC while the IP header still names the final
+destination. Each router repeats this for the next hop.</p>
+
+<div class="scroll">
+<div class="stage short" id="st2">
+  <svg class="wires" width="820" height="250">
+    <line x1="150" y1="128" x2="240" y2="128" stroke="#cbd5e1" stroke-width="3"/>
+    <line x1="380" y1="128" x2="470" y2="128" stroke="#cbd5e1" stroke-width="3"/>
+    <line x1="610" y1="128" x2="680" y2="128" stroke="#cbd5e1" stroke-width="3"/>
+  </svg>
+  <div class="dev" style="left:10px;top:92px">PC-A<small>192.168.1.10</small><small>AA:…:01</small></div>
+  <div class="dev net" style="left:240px;top:92px">Router 1<small>gateway 192.168.1.1</small><small>R1:…:AA</small></div>
+  <div class="dev net" style="left:470px;top:92px">Router 2<small>transit</small><small>R2:…:BB</small></div>
+  <div class="dev" style="left:680px;top:92px">Server<small>10.0.5.9</small><small>SS:…:99</small></div>
+  <div class="pkt data" id="fr" style="left:150px;top:60px">frame</div>
+</div>
+</div>
+
+<div class="hdr">
+  <div class="l2"><span>Src MAC (hop)</span><b id="h1">—</b></div>
+  <div class="l2"><span>Dst MAC (hop)</span><b id="h2">—</b></div>
+  <div class="l3"><span>Src IP (fixed)</span><b id="h3">192.168.1.10</b></div>
+  <div class="l3"><span>Dst IP (fixed)</span><b id="h4">10.0.5.9</b></div>
+</div>
+
+<div class="ctrl">
+  <button class="primary" id="b2play">▶ Play</button>
+  <button id="b2back">‹ Back</button>
+  <button id="b2next">Next ›</button>
+  <button id="b2reset">Reset</button>
+  <span class="count" id="c2"></span>
+</div>
+<div class="cap" id="cap2"></div>
+
+<div class="card key">
+  <b>Rule of thumb</b>
+  <p>Layer 2 addresses are rewritten at <em>every</em> hop. Layer 3 addresses stay the same from end to
+  end. ARP only ever resolves an address that lives on your own local segment.</p>
+</div>
+
+<h2>4. What is actually inside an ARP packet</h2>
+<p>ARP rides directly on Ethernet (EtherType <code>0x0806</code>) — there is no IP header involved, which is
+why ARP cannot be routed. On an Ethernet/IPv4 network the fields are:</p>
+<div class="card">
+  <div class="fmt">
+    <div><b>Hardware type</b><em>1 = Ethernet</em></div>
+    <div><b>Protocol type</b><em>0x0800 = IPv4</em></div>
+    <div><b>HW addr len</b><em>6 bytes</em></div>
+    <div><b>Proto addr len</b><em>4 bytes</em></div>
+    <div class="span4 hi"><b>Operation</b><em>1 = request &#160;|&#160; 2 = reply</em></div>
+    <div class="span2"><b>Sender hardware address</b><em>asker's MAC</em></div>
+    <div class="span2"><b>Sender protocol address</b><em>asker's IP</em></div>
+    <div class="span2 hl"><b>Target hardware address</b><em>all zeros in a request — the unknown</em></div>
+    <div class="span2"><b>Target protocol address</b><em>the IP being resolved</em></div>
+  </div>
+</div>
+<p>Note that the request already contains the sender's own MAC and IP. That is a free gift: every host
+that hears the broadcast can also refresh its cache entry for the sender, not just the one that answers.</p>
+
+<h2>5. Variants and the security problem</h2>
+<h3>Gratuitous ARP</h3>
+<p>An unsolicited announcement about your own mapping, sent to nobody in particular. Used to detect
+duplicate IP addresses on a segment and, after a failover, to tell every neighbour to update its cache
+for an address that has moved to new hardware.</p>
+
+<h3>Proxy ARP</h3>
+<p>A router answers on behalf of a host that lives on another segment, lending out its own MAC. The
+asking host believes the destination is local. It can glue segments together transparently, but it
+blurs network boundaries and is usually best avoided.</p>
+
+<h3>ARP spoofing / cache poisoning</h3>
+<p>ARP has no authentication whatsoever: any host can claim any IP, and replies are accepted even
+when nothing was asked. An attacker forges replies so that victims cache the attacker's MAC for the
+gateway's IP, and traffic flows through the attacker's machine. Mitigations are switch-side —
+dynamic ARP inspection, DHCP snooping bindings, port security — plus encryption so intercepted
+traffic is useless.</p>
+
+<h3>IPv6 does it differently</h3>
+<p>IPv6 removes ARP entirely. Neighbor Discovery uses ICMPv6 Neighbor Solicitation and Neighbor
+Advertisement messages sent to a solicited-node multicast group, so only a small set of hosts is
+bothered instead of the entire segment.</p>
+
+<h2>6. One-minute recap</h2>
+<table>
+  <tr><th style="width:34%">Question</th><th>Answer</th></tr>
+  <tr><td>What does ARP map?</td><td>A known IPv4 address → the unknown MAC address on the local segment.</td></tr>
+  <tr><td>Which layer?</td><td>Sits between 2 and 3; carried directly in Ethernet, EtherType 0x0806.</td></tr>
+  <tr><td>Request destination MAC?</td><td><span class="mono">FF:FF:FF:FF:FF:FF</span> — broadcast.</td></tr>
+  <tr><td>Reply type?</td><td>Unicast, straight back to the asker.</td></tr>
+  <tr><td>Off-subnet target?</td><td>ARP for the default gateway instead; routers rewrite L2 at every hop.</td></tr>
+  <tr><td>Main weakness?</td><td>No authentication → spoofing / cache poisoning.</td></tr>
+  <tr><td>IPv6 equivalent?</td><td>Neighbor Discovery over ICMPv6 multicast.</td></tr>
+</table>
+
+<footer>Personal study notes. Open the file in any browser — the diagrams are self-contained.</footer>
+</div>
+
+<script>
+(function(){
+  function el(id){return document.getElementById(id);}
+  function P(id,l,t,o,txt){var e=el(id);e.style.left=l+"px";e.style.top=t+"px";e.style.opacity=o;
+    if(txt!==undefined)e.textContent=txt;}
+  function cls(id,c,on){el(id).classList[on?"add":"remove"](c);}
+
+  /* ---------------- Scene 1 ---------------- */
+  function base1(){
+    ["p0","f1","f2","f3","rp","dt"].forEach(function(i){el(i).style.opacity=0;});
+    ["pcB","pcC","pcD"].forEach(function(i){el(i).classList.remove("match","drop");});
+    el("pulse").classList.remove("on");
+  }
+  var S1=[
+    {t:"The problem",d:"PC-A wants to reach 192.168.1.50. It has the IP, but the Ethernet frame needs a destination MAC address and the cache is empty. Nothing can be sent yet.",
+     f:function(){base1();}},
+    {t:"Build the request",d:"PC-A creates an ARP request: \u201cWho has 192.168.1.50? Tell 192.168.1.10.\u201d The target hardware address field is left as all zeros.",
+     f:function(){base1();P("p0",150,164,1,"ARP Request: who has 192.168.1.50?");}},
+    {t:"Broadcast it",d:"The frame is addressed to FF:FF:FF:FF:FF:FF, so every device on the local segment is obliged to receive and inspect it.",
+     f:function(){base1();P("p0",310,164,1,"dst MAC FF:FF:FF:FF:FF:FF");el("pulse").classList.add("on");}},
+    {t:"The switch floods",d:"A switch never learns broadcast addresses, so it forwards the frame out of every port except the one it arrived on. All three hosts get a copy.",
+     f:function(){base1();el("pulse").classList.add("on");
+       P("f1",520,44,1,"copy");P("f2",520,164,1,"copy");P("f3",520,282,1,"copy");}},
+    {t:"Everyone checks, one matches",d:"Each host compares the target IP with its own. PC-B and PC-D silently discard the frame. PC-C sees its own address and is the only one that will answer.",
+     f:function(){base1();P("f1",640,44,1,"copy");P("f2",640,164,1,"copy");P("f3",640,282,1,"copy");
+       cls("pcB","drop",1);cls("pcD","drop",1);cls("pcC","match",1);}},
+    {t:"The reply is unicast",d:"PC-C answers \u201c192.168.1.50 is at CC:CC:CC:00:00:03.\u201d Because the request carried PC-A's own MAC, this reply is sent directly to PC-A rather than broadcast.",
+     f:function(){base1();cls("pcC","match",1);P("rp",520,164,1,"ARP Reply: .50 is at CC:CC:CC:00:00:03");}},
+    {t:"Back through the switch",d:"The switch already learned PC-A's MAC from the request, so it forwards the unicast reply out of exactly one port. No other host is disturbed.",
+     f:function(){base1();cls("pcC","match",1);P("rp",310,164,1,"ARP Reply (unicast)");}},
+    {t:"Cache the mapping",d:"PC-A stores the IP-to-MAC pair in its ARP cache (see the table below) so the next hundred packets need no broadcast at all. The entry will age out in a few minutes.",
+     f:function(){base1();cls("pcC","match",1);P("rp",150,164,1,"ARP Reply received");
+       el("cacheRow").classList.add("show");}},
+    {t:"Finally, real data",d:"Only now can PC-A build a complete frame and send the data it wanted to send in the first place. Resolution happened once; delivery happens many times.",
+     f:function(){base1();cls("pcC","match",1);el("cacheRow").classList.add("show");
+       P("dt",640,200,1,"Data \u2192 CC:CC:CC:00:00:03");}}
+  ];
+
+  /* ---------------- Scene 2 ---------------- */
+  var S2=[
+    {t:"Different network detected",d:"PC-A wants 10.0.5.9. Its routing table says that is not local, so it does NOT ARP for the server. It ARPs for its default gateway, 192.168.1.1, instead.",
+     f:function(){P("fr",150,60,1,"frame");el("h1").textContent="\u2014";el("h2").textContent="\u2014";}},
+    {t:"Hop 1 — host to router",d:"The frame's destination MAC is Router 1's, but the destination IP is still the server's. The two layers point at different things, and that is entirely normal.",
+     f:function(){P("fr",220,60,1,"frame");el("h1").textContent="AA:\u2026:01";el("h2").textContent="R1:\u2026:AA";
+       el("h2").classList.remove("flash");void el("h2").offsetWidth;el("h2").classList.add("flash");}},
+    {t:"Hop 2 — router rewrites L2",d:"Router 1 strips the old Ethernet header, ARPs on its outgoing segment if needed, and builds a brand-new frame for Router 2. The IP header is untouched (bar the TTL).",
+     f:function(){P("fr",450,60,1,"frame");el("h1").textContent="R1:\u2026:AA";el("h2").textContent="R2:\u2026:BB";
+       el("h2").classList.remove("flash");void el("h2").offsetWidth;el("h2").classList.add("flash");}},
+    {t:"Final hop — delivery",d:"Router 2 is on the server's own segment, so here it ARPs for 10.0.5.9 itself and addresses the last frame to the server's real MAC. Source and destination IPs never changed.",
+     f:function(){P("fr",660,60,1,"frame");el("h1").textContent="R2:\u2026:BB";el("h2").textContent="SS:\u2026:99";
+       el("h2").classList.remove("flash");void el("h2").offsetWidth;el("h2").classList.add("flash");}}
+  ];
+
+  function engine(steps,capId,countId,ids){
+    var i=0,timer=null;
+    function draw(){
+      steps[i].f();
+      el(capId).innerHTML="<b>"+steps[i].t+"</b>"+steps[i].d;
+      el(countId).textContent="Step "+(i+1)+" of "+steps.length;
+    }
+     function go(n){
+      i = Math.max(0, Math.min(steps.length - 1, n));
+      draw();
+    }
+    function stop(){
+      if (timer){ clearInterval(timer); timer = null; }
+      el(ids.play).textContent = "\u25B6 Play";
+    }
+
+    el(ids.next).onclick  = function(){ stop(); go(i + 1); };
+    el(ids.back).onclick  = function(){ stop(); go(i - 1); };
+    el(ids.reset).onclick = function(){ stop(); go(0); };
+    el(ids.play).onclick  = function(){
+      if (timer){ stop(); return; }                 /* second click pauses */
+      if (i >= steps.length - 1){ go(0); }           /* replay from the start */
+      el(ids.play).textContent = "\u23F8 Pause";
+      timer = setInterval(function(){
+        if (i >= steps.length - 1){ stop(); return; }
+        go(i + 1);
+      }, 2300);
+    };
+
+    go(0);
+  }
+
+  engine(S1, "cap1", "c1", {play:"b1play", next:"b1next", back:"b1back", reset:"b1reset"});
+  engine(S2, "cap2", "c2", {play:"b2play", next:"b2next", back:"b2back", reset:"b2reset"});
+})();
+</script>
+</body>
+</html>
