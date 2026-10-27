@@ -18,3 +18,4 @@ Each lab is a single HTML page with step-through simulations and exercises.
 ## Notes
 
 - [ARP: Address Resolution Protocol](/training/computer-networks/arp-notes.html)
+- [Unit 2 & 3 practice set](/training/computer-networks/unit_2_3_prep.html)
