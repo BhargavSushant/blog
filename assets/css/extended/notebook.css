@@ -1,0 +1,82 @@
+/* Notebook pages (layouts/_shortcodes/notebook.html) */
+
+.nb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 28px;
+}
+
+.post-content .nb-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+  font-size: 15px;
+  text-decoration: none;
+  color: var(--primary);
+}
+
+.post-content .nb-btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--theme);
+}
+
+.post-content .nb-btn:hover {
+  opacity: 0.85;
+}
+
+.nb-cell {
+  margin: 0 0 24px;
+}
+
+.nb-label,
+.nb-out-label {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  color: var(--secondary);
+  margin-bottom: 4px;
+}
+
+.nb-out-label {
+  margin-top: 8px;
+}
+
+.post-content pre.nb-out {
+  background: var(--code-bg);
+  border-left: 3px solid var(--tertiary);
+  white-space: pre-wrap;
+}
+
+.post-content pre.nb-out code {
+  color: var(--primary);
+  background: none;
+}
+
+.nb-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.post-content .nb-nav a {
+  box-shadow: none;
+  text-decoration: none;
+  max-width: 48%;
+}
+
+.nb-nav a span {
+  display: block;
+  font-size: 13px;
+  color: var(--secondary);
+}
+
+.nb-nav-next {
+  text-align: right;
+  margin-left: auto;
+}

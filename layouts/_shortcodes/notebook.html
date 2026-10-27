@@ -1,0 +1,92 @@
+{{- /*
+  Renders a Jupyter notebook from the page bundle, with Open in Colab and
+  Download buttons, then prev/next links to sibling topics.
+
+  Usage in a page bundle's index.md:
+    {{< notebook >}}                 first .ipynb in the bundle
+    {{< notebook "other.ipynb" >}}   a specific one
+
+  Cell display rules (for C taught through Colab):
+    %%writefile name.c   -> the file name as a label, the rest highlighted as C
+    lines starting with ! -> shown as a console session with $ prompts
+    a leading "# Title" in a markdown cell is dropped (the page title replaces it)
+*/ -}}
+{{- $page := .Page -}}
+{{- $nbFile := "" -}}
+{{- with .Get 0 }}{{ $nbFile = $page.Resources.Get . }}{{ else }}{{ $nbFile = $page.Resources.GetMatch "*.ipynb" }}{{ end -}}
+{{- if not $nbFile }}{{ errorf "notebook shortcode: no .ipynb in bundle %s" $page.File.Path }}{{ end -}}
+{{- $nb := transform.Unmarshal (dict "format" "json") $nbFile.Content -}}
+
+{{- $dir := replace $page.File.Dir "\\" "/" -}}
+{{- $repoPath := printf "content/%s%s" $dir $nbFile.Name -}}
+{{- $colab := printf "https://colab.research.google.com/github/%s/blob/%s/%s" site.Params.notebookRepo (site.Params.notebookBranch | default "main") $repoPath -}}
+
+<div class="nb-actions">
+  <a class="nb-btn nb-btn-primary" href="{{ $colab }}" target="_blank" rel="noopener">Open in Colab</a>
+  <a class="nb-btn" href="{{ $nbFile.RelPermalink }}" download>Download .ipynb</a>
+</div>
+
+<div class="nb">
+{{- range $nb.cells }}
+  {{- $src := .source }}
+  {{- if reflect.IsSlice $src }}{{ $src = delimit $src "" }}{{ end }}
+
+  {{- if eq .cell_type "markdown" }}
+    {{- $src = replaceRE `\A\s*# [^\n]*\n?` "" $src }}
+    {{- with strings.TrimSpace $src }}
+<div class="nb-md">{{ $page.RenderString (dict "display" "block") . }}</div>
+    {{- end }}
+
+  {{- else if eq .cell_type "code" }}
+    {{- $lang := "c" }}
+    {{- $label := "" }}
+    {{- $lines := split $src "\n" }}
+    {{- $first := index $lines 0 }}
+    {{- if hasPrefix $first "%%writefile" }}
+      {{- $label = strings.TrimSpace (strings.TrimPrefix "%%writefile" $first) }}
+      {{- $label = strings.TrimSpace (strings.TrimPrefix "-a" $label) }}
+      {{- $src = delimit (after 1 $lines) "\n" }}
+    {{- else if hasPrefix $first "!" }}
+      {{- $lang = "console" }}
+      {{- $src = replaceRE `(?m)^!` "$ " $src }}
+    {{- else if hasPrefix $first "%" }}
+      {{- $lang = "text" }}
+    {{- end }}
+<div class="nb-cell">
+  {{- with $label }}<div class="nb-label">{{ . }}</div>{{ end }}
+  {{ highlight (strings.TrimRight "\n" $src) $lang "" }}
+  {{- range .outputs }}
+    {{- $text := "" }}
+    {{- if eq .output_type "stream" }}
+      {{- $text = .text }}
+    {{- else if eq .output_type "error" }}
+      {{- $text = printf "%s: %s" .ename .evalue }}
+    {{- else }}
+      {{- with .data }}{{ with index . "text/plain" }}{{ $text = . }}{{ end }}{{ end }}
+    {{- end }}
+    {{- if reflect.IsSlice $text }}{{ $text = delimit $text "" }}{{ end }}
+    {{- with $text }}
+  <div class="nb-out-label">Output</div>
+  <pre class="nb-out"><code>{{ strings.TrimRight "\n" . }}</code></pre>
+    {{- end }}
+  {{- end }}
+</div>
+  {{- end }}
+{{- end }}
+</div>
+
+{{- /* Prev/next by the section's weight order (Hugo's own Next/Prev run the other way). */ -}}
+{{- $siblings := $page.CurrentSection.Pages.ByWeight -}}
+{{- if $page.IsSection }}{{ $siblings = slice }}{{ end -}}
+{{- $prev := false }}{{ $next := false }}{{ $found := false -}}
+{{- range $siblings }}
+  {{- if $found }}{{ if not $next }}{{ $next = . }}{{ end }}
+  {{- else if eq .RelPermalink $page.RelPermalink }}{{ $found = true }}
+  {{- else }}{{ $prev = . }}{{ end }}
+{{- end }}
+{{- if or $prev $next }}
+<nav class="nb-nav">
+  {{- with $prev }}<a class="nb-nav-prev" href="{{ .RelPermalink }}"><span>Previous topic</span>{{ .Title }}</a>{{ else }}<span></span>{{ end }}
+  {{- with $next }}<a class="nb-nav-next" href="{{ .RelPermalink }}"><span>Next topic</span>{{ .Title }}</a>{{ end }}
+</nav>
+{{- end }}

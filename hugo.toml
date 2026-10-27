@@ -32,6 +32,9 @@ pygmentsUseClasses = true
   hidemeta = false
   comments = false
   mainSections = ['posts']
+  # Used by the notebook shortcode to build Open in Colab links.
+  notebookRepo = 'BhargavSushant/blog'
+  notebookBranch = 'main'
 
   [params.homeInfoParams]
     Title = "Sushant Bhargav"

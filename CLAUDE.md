@@ -54,6 +54,61 @@ hugo --minify --gc             # what CI builds
 hugo new content posts/x.md    # new post
 ```
 
+## C Language section (notebooks)
+
+Lives at `/training/c-language/`. Each topic is a page bundle: a folder holding
+`index.md` and one `.ipynb`. The page renders the notebook itself and shows
+**Open in Colab** and **Download .ipynb** buttons.
+
+```
+content/training/c-language/
+  _index.md                       # index page intro; topics list below it automatically
+  install-c-compiler-windows.md   # topic 0, plain page (no notebook), weight 10
+  hello-world/                    # topic 1, weight 20
+    index.md                      # front matter + {{< notebook >}}
+    hello-world.ipynb
+layouts/_shortcodes/notebook.html # renders the notebook, buttons, prev/next links
+assets/css/extended/notebook.css  # styles for the above
+archetypes/c-topic/               # template used by `hugo new --kind c-topic`
+```
+
+**Add a topic**
+
+```console
+$ hugo new content --kind c-topic training/c-language/pointers
+```
+
+Then in the new folder:
+1. Edit `index.md`: set `title` (keep the `N.` number prefix), `summary`, and `weight`.
+   Weight sets the order: use steps of 10 (topic 2 = 30, topic 3 = 40) so a topic
+   can be slotted in between later.
+2. Rename `notebook.ipynb` if you like (the file name appears in the Colab URL) and
+   write the lesson in it. Any `.ipynb` in the folder is picked up.
+3. Set `draft: false` when it's ready. `hugo server -D` previews drafts.
+
+**Notebook format.** Colab runs Python, so C runs through two kinds of cell:
+- `%%writefile name.c` on the first line saves the cell as a file. On the site it
+  shows as a C code block labelled with the file name.
+- Lines starting with `!` are shell commands, e.g. `!gcc -Wall -o name name.c && ./name`.
+  On the site they show as a terminal block with `$` prompts.
+- A `# Title` line at the top of the first markdown cell is hidden on the site,
+  because the page title replaces it. Use `##` for section headings.
+
+**Showing outputs on the site.** The page shows whatever outputs are saved in the
+`.ipynb`. To fill them: Open in Colab (or VS Code with gcc), Runtime → Run all,
+File → Download .ipynb, and replace the file in the topic folder.
+
+**Edit a topic**: edit its `.ipynb` (VS Code opens it as a notebook) and commit.
+The page updates on the next deploy. Never paste notebook content into `index.md`.
+
+**Gotchas**
+- Colab links load the notebook from GitHub `main`
+  (`notebookRepo` / `notebookBranch` in `hugo.toml`). A new topic's Colab button
+  gives a 404 until the change is pushed to `main`. The repo must stay public.
+- Moving or renaming a topic folder changes its Colab URL and page URL.
+- On the Training page, PaperMod lists sections (like C Language) after regular
+  pages regardless of weight.
+
 ## Gotchas
 
 - Pages source must be **GitHub Actions**, not "Deploy from a branch".
