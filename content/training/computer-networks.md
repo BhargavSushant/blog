@@ -12,7 +12,7 @@ Each lab is a single HTML page with step-through simulations and exercises.
 ## Labs
 
 - [Unit 2: Data link layer](/training/computer-networks/unit2-data-link-lab.html): framing, flow control, error control, sliding-window ARQ
-- [Unit 3: MAC sublayer](/training/computer-networks/unit3-mac-lab.html): ALOHA, CSMA/CD, CSMA/CA, collision-free protocols
+- [Unit 3: MAC sublayer](/training/computer-networks/unit3-mac-lab.html): ALOHA, CSMA, CSMA/CD, CSMA/CA, FDMA/TDMA/CDMA, collision-free and limited-contention protocols, IEEE 802
 - [Unit 4: Network layer](/training/computer-networks/unit4-network-lab.html): routing, IP addressing, fragmentation, ICMP
 
 ## Notes
