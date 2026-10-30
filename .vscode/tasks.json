@@ -1,0 +1,44 @@
+{
+  // Run with Ctrl+Shift+P > "Tasks: Run Task".
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Blog: preview (drafts included)",
+      "type": "shell",
+      "command": "hugo server -D --navigateToChanged --openBrowser",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Blog: new note",
+      "type": "shell",
+      "command": "hugo new content notes/${input:slug} ; code content/notes/${input:slug}/index.md",
+      "problemMatcher": []
+    },
+    {
+      "label": "Blog: new course note",
+      "type": "shell",
+      "command": "hugo new content training/${input:course}/${input:slug} ; code content/training/${input:course}/${input:slug}/index.md",
+      "problemMatcher": []
+    },
+    {
+      "label": "Blog: new post",
+      "type": "shell",
+      "command": "hugo new content posts/${input:slug}.md ; code content/posts/${input:slug}.md",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "slug",
+      "type": "promptString",
+      "description": "Short name, hyphenated (becomes the URL), e.g. subnetting-cheatsheet"
+    },
+    {
+      "id": "course",
+      "type": "pickString",
+      "description": "Which course?",
+      "options": ["computer-networks", "ipsr", "business-data-analytics"]
+    }
+  ]
+}

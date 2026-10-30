@@ -16,7 +16,12 @@ Hugo blog deployed to GitHub Pages via GitHub Actions. Read automatically by Cla
 
 ```
 content/posts/       # published posts, one .md per post
+content/notes/       # shorter notes, one folder (page bundle) per note
+content/training/    # one folder per course; notes inside a course list on its page
 content/about.md     # about page, url: /about/
+content/search.md    # search page (PaperMod, uses the home JSON output)
+layouts/_markup/     # callouts, math, and diagram render hooks
+.vscode/             # snippets, image paste, and "Blog:" tasks
 static/CNAME         # custom domain, do not delete, Pages needs it
 hugo.toml            # site config
 .github/workflows/deploy.yml
@@ -52,7 +57,36 @@ Post pipeline:
 hugo server -D                 # local preview, drafts included
 hugo --minify --gc             # what CI builds
 hugo new content posts/x.md    # new post
+hugo new content notes/x       # new note (creates notes/x/index.md)
+hugo new content training/computer-networks/x   # new course note
 ```
+
+The same commands are VS Code tasks: Ctrl+Shift+P → "Tasks: Run Task" → "Blog: …".
+
+## Notes
+
+Notes are the low-bar counterpart to posts: shorter, less polished, `summary`
+optional. They don't appear on the home page (`mainSections` is posts only).
+
+- Each note is a folder with `index.md`. Images go in the same folder; pasting a
+  screenshot in VS Code saves it there and writes the link.
+- A course note lives in its course folder (`content/training/<course>/x/`) and is
+  listed on the course page automatically, under the hand-written lab links.
+- New notes start as `draft: true`. Set `draft: false` to publish.
+- `content/notes/note-cheatsheet/` is a permanent draft showing every feature below.
+
+Markdown features (snippet prefix in brackets, type it then press Tab):
+- Callouts: `> [!NOTE]`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION` [`note`, `tip`, …].
+  `> [!NOTE] Title` sets a custom title. `> [!NOTE]-` is collapsed until clicked
+  (good for answers) [`fold`].
+- Math: `$x^2$` inline, `$$ … $$` block [`math`], rendered at build time by KaTeX.
+  A literal dollar sign in prose must be written `\$`. A bad formula fails the build
+  with the file and line.
+- Diagrams: a ` ```mermaid ` code block [`mermaid`]. Mermaid loads only on pages
+  that have one, and redraws when the light/dark toggle changes.
+- "Updated <date>" shows under the title when git says the page changed more than a
+  day after `date`. If a commit touched a file without really changing it (e.g. a
+  history rewrite), pin it with `lastmod:` in front matter.
 
 ## C Language section (notebooks)
 
@@ -106,8 +140,9 @@ The page updates on the next deploy. Never paste notebook content into `index.md
   (`notebookRepo` / `notebookBranch` in `hugo.toml`). A new topic's Colab button
   gives a 404 until the change is pushed to `main`. The repo must stay public.
 - Moving or renaming a topic folder changes its Colab URL and page URL.
-- On the Training page, PaperMod lists sections (like C Language) after regular
-  pages regardless of weight.
+- On the Training page, PaperMod lists sections after regular pages regardless of
+  weight. Every course is a folder (section) now, so `weight` orders them; keep new
+  courses as folders with `_index.md`, not single `.md` files.
 
 ## Gotchas
 

@@ -1,5 +1,5 @@
 baseURL = 'https://sushantbhargav.com/'
-languageCode = 'en-in'
+locale = 'en-in'
 title = 'Sushant Bhargav'
 theme = 'PaperMod'
 
@@ -8,6 +8,11 @@ enableGitInfo = true
 buildDrafts = false
 buildFuture = false
 pygmentsUseClasses = true
+
+# "Updated" dates come from git. A lastmod in front matter wins, for when a commit
+# touched a file without really changing it.
+[frontmatter]
+  lastmod = ['lastmod', ':git', ':default']
 
 [pagination]
   pagerSize = 10
@@ -67,6 +72,11 @@ I write about hardening, automation, and why plausible-looking configuration sil
     url = '/posts/'
     weight = 10
   [[menu.main]]
+    identifier = 'notes'
+    name = 'Notes'
+    url = '/notes/'
+    weight = 15
+  [[menu.main]]
     identifier = 'about'
     name = 'About'
     url = '/about/'
@@ -81,6 +91,11 @@ I write about hardening, automation, and why plausible-looking configuration sil
     name = 'Tags'
     url = '/tags/'
     weight = 30
+  [[menu.main]]
+    identifier = 'search'
+    name = 'Search'
+    url = '/search/'
+    weight = 40
 
 [markup]
   [markup.highlight]
@@ -91,6 +106,12 @@ I write about hardening, automation, and why plausible-looking configuration sil
     style = 'github-dark'
   [markup.goldmark.renderer]
     unsafe = true
+  # Math: hands $...$, $$...$$, \(...\) and \[...\] to layouts/_markup/render-passthrough.html
+  [markup.goldmark.extensions.passthrough]
+    enable = true
+    [markup.goldmark.extensions.passthrough.delimiters]
+      block = [['\[', '\]'], ['$$', '$$']]
+      inline = [['\(', '\)'], ['$', '$']]
 
 [outputs]
   home = ['HTML', 'RSS', 'JSON']

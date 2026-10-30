@@ -1,6 +1,7 @@
 ---
 title: "The Linux Hardening Spec That Would Have Broken Every Server It Touched"
 date: 2026-08-20
+lastmod: 2026-08-20
 draft: false
 tags: ["linux", "hardening", "security", "cis", "sysadmin"]
 summary: "A plausible, well-structured, CIS-aligned hardening specification. Thirty-five defects. Eleven of them lock you out of the box."

@@ -1,0 +1,13 @@
+{
+  // Pasting or dropping an image into a note saves it next to the note's index.md.
+  "markdown.editor.filePaste.copyIntoWorkspace": "mediaFiles",
+  "markdown.editor.drop.copyIntoWorkspace": "mediaFiles",
+  "markdown.copyFiles.destination": {
+    "content/**/*.md": "${documentDirName}/"
+  },
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.quickSuggestions": { "other": "on", "comments": "off", "strings": "off" }
+  }
+}

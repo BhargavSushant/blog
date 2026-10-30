@@ -1,0 +1,33 @@
+/* Callouts from > [!NOTE] etc. (layouts/_markup/render-blockquote.html) */
+.callout {
+  --accent: #2563eb;
+  margin: 1.5em 0;
+  padding: 12px 16px;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: color-mix(in srgb, var(--accent) 8%, var(--theme));
+}
+.callout-note      { --accent: #2563eb; }
+.callout-tip       { --accent: #16a34a; }
+.callout-important { --accent: #7c3aed; }
+.callout-warning   { --accent: #d97706; }
+.callout-caution   { --accent: #dc2626; }
+
+.post-content .callout-title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--accent);
+}
+.callout-body > :first-child { margin-top: 6px; }
+.callout-body > :last-child  { margin-bottom: 0; }
+
+details.callout > summary { cursor: pointer; }
+details.callout:not([open]) .callout-title { margin-bottom: 0; }
+
+/* Mermaid: keep the source text from flashing as a code block before it renders */
+.post-content pre.mermaid {
+  background: none;
+  color: transparent;
+  text-align: center;
+}
+.post-content pre.mermaid[data-processed] { color: inherit; }

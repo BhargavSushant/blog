@@ -1,0 +1,33 @@
+{{- /*
+  Callouts, written GitHub-style in Markdown:
+
+    > [!NOTE]            NOTE, TIP, IMPORTANT, WARNING, CAUTION
+    > Text of the note.
+
+    > [!TIP] Custom title
+    > Text.
+
+    > [!WARNING]-        trailing "-" = collapsed, click to open
+    > [!WARNING]+        trailing "+" = collapsible, open by default
+
+  Plain blockquotes render as normal.
+*/ -}}
+{{- if eq .Type "alert" -}}
+  {{- $type := lower .AlertType -}}
+  {{- $label := .AlertTitle | default (title $type) -}}
+  {{- if .AlertSign -}}
+<details class="callout callout-{{ $type }}"{{ if eq .AlertSign "+" }} open{{ end }}>
+  <summary class="callout-title">{{ $label }}</summary>
+  <div class="callout-body">{{ .Text }}</div>
+</details>
+  {{- else -}}
+<div class="callout callout-{{ $type }}">
+  <p class="callout-title">{{ $label }}</p>
+  <div class="callout-body">{{ .Text }}</div>
+</div>
+  {{- end -}}
+{{- else -}}
+<blockquote>
+  {{ .Text }}
+</blockquote>
+{{- end -}}

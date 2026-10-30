@@ -1,0 +1,30 @@
+{{- /*
+  Diagrams: a ```mermaid code block becomes a rendered diagram.
+  The first diagram on a page also emits the script that loads Mermaid, so pages
+  without diagrams load nothing. (Not in extend_footer: PaperMod caches the footer.)
+*/ -}}
+<pre class="mermaid">{{ .Inner | htmlEscape | safeHTML }}</pre>
+{{- if not (.Page.Store.Get "mermaidLoaded") }}
+{{- .Page.Store.Set "mermaidLoaded" true }}
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs";
+  const draw = async () => {
+    const blocks = [...document.querySelectorAll("pre.mermaid")];
+    blocks.forEach((el) => {
+      el.dataset.src ??= el.textContent;
+      el.removeAttribute("data-processed");
+      el.textContent = el.dataset.src;
+    });
+    const dark = document.documentElement.dataset.theme === "dark";
+    mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default" });
+    await mermaid.run({ nodes: blocks });
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", draw);
+  else draw();
+  // Redraw when the theme toggle flips light/dark.
+  new MutationObserver(draw).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+</script>
+{{- end }}

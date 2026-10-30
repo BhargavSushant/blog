@@ -1,0 +1,58 @@
+{
+  // Type the prefix in a Markdown file and press Tab.
+  "Callout: note": {
+    "scope": "markdown",
+    "prefix": "note",
+    "body": ["> [!NOTE]", "> $0"]
+  },
+  "Callout: tip": {
+    "scope": "markdown",
+    "prefix": "tip",
+    "body": ["> [!TIP]", "> $0"]
+  },
+  "Callout: important": {
+    "scope": "markdown",
+    "prefix": "important",
+    "body": ["> [!IMPORTANT]", "> $0"]
+  },
+  "Callout: warning": {
+    "scope": "markdown",
+    "prefix": "warning",
+    "body": ["> [!WARNING]", "> $0"]
+  },
+  "Callout: caution": {
+    "scope": "markdown",
+    "prefix": "caution",
+    "body": ["> [!CAUTION]", "> $0"]
+  },
+  "Callout: collapsed (answer, spoiler)": {
+    "scope": "markdown",
+    "prefix": "fold",
+    "body": ["> [!${1|NOTE,TIP,IMPORTANT,WARNING,CAUTION|}]- ${2:Show answer}", "> $0"]
+  },
+  "Math block": {
+    "scope": "markdown",
+    "prefix": "math",
+    "body": ["$$", "$0", "$$"]
+  },
+  "Mermaid diagram": {
+    "scope": "markdown",
+    "prefix": "mermaid",
+    "body": ["```mermaid", "${1|flowchart LR,sequenceDiagram,stateDiagram-v2,classDiagram|}", "    $0", "```"]
+  },
+  "Code block": {
+    "scope": "markdown",
+    "prefix": "code",
+    "body": ["```${1|console,bash,c,python,yaml,json,text|}", "$0", "```"]
+  },
+  "Table": {
+    "scope": "markdown",
+    "prefix": "table",
+    "body": ["| ${1:Column} | ${2:Column} |", "|---|---|", "| $0 |  |"]
+  },
+  "Image": {
+    "scope": "markdown",
+    "prefix": "img",
+    "body": ["![${1:What the image shows}](${2:image.png})"]
+  }
+}

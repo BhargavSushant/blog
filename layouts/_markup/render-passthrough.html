@@ -1,0 +1,15 @@
+{{- /*
+  Math, rendered to HTML at build time with KaTeX (no JavaScript in the page).
+  Inline: $x^2$ or \(x^2\). Block: $$...$$ or \[...\].
+  A literal dollar sign in prose needs escaping: \$5.
+  Sets hasMath so extend_head.html loads the KaTeX stylesheet on this page only.
+*/ -}}
+{{- $opts := dict "output" "htmlAndMathml" "displayMode" (eq .Type "block") -}}
+{{- with try (transform.ToMath .Inner $opts) -}}
+  {{- with .Err -}}
+    {{- errorf "Math in %s could not be rendered: %s" $.Position . -}}
+  {{- else -}}
+    {{- .Value -}}
+    {{- $.Page.Store.Set "hasMath" true -}}
+  {{- end -}}
+{{- end -}}
