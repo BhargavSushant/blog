@@ -1,0 +1,710 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unit 2 &amp; 3 practice set</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:#1f2937;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.7}
+.wrap{max-width:820px;margin:0 auto;padding:24px 20px 60px}
+h1{font-size:28px;font-weight:600;margin:0 0 4px}
+h2{font-size:22px;font-weight:600;margin:44px 0 8px;padding-top:12px;border-top:1px solid #e5e7eb}
+h3{font-size:17px;font-weight:600;margin:26px 0 6px}
+p{margin:8px 0}
+.sub{color:#6b7280;margin:0 0 18px}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+nav a{font-size:14px;padding:4px 12px;border:1px solid #d1d5db;border-radius:16px;color:#1f2937;text-decoration:none}
+nav a:hover{background:#f3f4f6}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14.5px}
+th,td{border:1px solid #d1d5db;padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f3f4f6;font-weight:600}
+pre{background:#f3f4f6;border-radius:8px;padding:12px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.7;overflow-x:auto}
+code{background:#f3f4f6;border-radius:4px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px}
+.num{border:1px solid #e5e7eb;border-radius:12px;padding:6px 18px 12px;margin:16px 0}
+.num h3{margin-top:12px}
+.lab{font-weight:600}
+.ans{background:#E1F5EE;color:#04342C;border-radius:8px;padding:8px 12px;margin:10px 0 0}
+.tool{border:1px solid #d1d5db;border-radius:12px;padding:14px 16px;margin:16px 0;background:#fafafa}
+.tool h4{margin:0 0 8px;font-size:15px;font-weight:600}
+.tool label{display:block;font-size:13px;color:#6b7280;margin:6px 0 3px}
+.tool input[type=text],.tool input[type=number]{width:100%;max-width:340px;padding:7px 10px;border:1px solid #9ca3af;border-radius:8px;font-size:15px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.err{color:#A32D2D;font-size:13px;min-height:18px}
+.cells{display:flex;flex-wrap:wrap;gap:3px;margin:4px 0}
+.cell{width:24px;height:30px;display:flex;align-items:center;justify-content:center;border:1px solid #9ca3af;border-radius:4px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;background:#fff}
+.cell.trig{background:#E6F1FB;color:#0C447C}
+.cell.ins{background:#FAEEDA;color:#633806}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:10px 0}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px}
+.card .l{font-size:12.5px;color:#6b7280}
+.card .v{font-size:19px;font-weight:600;font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all}
+.card .s{font-size:12px;color:#9ca3af}
+svg.dg{width:100%;height:auto;display:block;margin:14px 0;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
+svg text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.th{font-size:14px;font-weight:500;fill:#1f2937}
+.ts{font-size:12px;fill:#4b5563}
+rect.rbox,circle.rbox{fill:#f3f4f6;stroke:#9ca3af;stroke-width:.7}
+.rgray{fill:#F1EFE8;stroke:#5F5E5A;stroke-width:.7}
+.rteal{fill:#E1F5EE;stroke:#0F6E56;stroke-width:.7}
+.rred{fill:#FCEBEB;stroke:#A32D2D;stroke-width:.7}
+.ramber{fill:#FAEEDA;stroke:#854F0B;stroke-width:.7}
+.rpurple{fill:#EEEDFE;stroke:#534AB7;stroke-width:.7}
+.rgreen{fill:#EAF3DE;stroke:#3B6D11;stroke-width:.7}
+.leader{stroke:#9ca3af;stroke-width:.8;stroke-dasharray:4 3}
+.arr{stroke:#4b5563;stroke-width:1.5;fill:none}
+.edge{stroke:#9ca3af;stroke-width:1}
+.qbar{position:sticky;top:0;background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 0;margin:10px 0;display:flex;flex-wrap:wrap;gap:10px;align-items:center;z-index:5}
+button{font-size:14px;padding:6px 14px;border:1px solid #9ca3af;border-radius:8px;background:#fff;cursor:pointer;color:#1f2937}
+button:hover{background:#f3f4f6}
+.q{border:1px solid #e5e7eb;border-radius:12px;padding:12px 16px;margin:14px 0}
+.q .qt{font-weight:500;margin:0 0 8px}
+.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;background:#fff;font-size:15px}
+.opt.good{background:#EAF3DE;border-color:#3B6D11;color:#173404}
+.opt.bad{background:#FCEBEB;border-color:#A32D2D;color:#501313}
+.opt.dim{opacity:.55}
+.exp{display:none;margin:8px 0 0;padding:8px 12px;border-radius:8px;background:#f3f4f6;font-size:14.5px}
+.q.done .exp{display:block}
+@media print{nav,.qbar,.tool{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Unit 2 &amp; 3 practice set</h1>
+<p class="sub">Computer Networks (CS20B501): Data Link Layer and MAC sublayer. Topics with worked answers, numericals, diagrams, practice tools and a 20-question quiz.</p>
+<nav>
+<a href="#t1">1 Framing</a><a href="#t2">2 CRC</a><a href="#t3">3 Sliding window</a><a href="#t4">4 ARP, RARP, GARP</a><a href="#t5">5 ALOHA</a><a href="#t6">6 Ethernet and BEB</a><a href="#t7">7 Bit Map</a><a href="#t8">8 Tree Walk</a><a href="#t9">9 IEEE 802</a><a href="#quiz">Quiz</a>
+</nav>
+
+<!-- TOPIC 1 -->
+<h2 id="t1">Topic 1: Framing and bit stuffing</h2>
+<p>The physical layer only sends a stream of 0s and 1s. It does not say where one message ends and the next begins. The Data Link Layer cuts the stream into small packets called <b>frames</b>. This lets the receiver find the start and end of each message, check each frame for errors, and ask for only the damaged frame again.</p>
+<table>
+<tr><th>Method</th><th>How it works</th><th>Problem with it</th></tr>
+<tr><td>Character count</td><td>The first field of the frame says how many characters it contains</td><td>If the count is damaged, the receiver loses track of where the next frame starts</td></tr>
+<tr><td>Flag bytes with byte stuffing</td><td>Every frame starts and ends with a FLAG byte. If the data contains FLAG, the sender puts an ESC byte before it. If the data contains ESC, it also gets an ESC before it</td><td>Works only with 8-bit characters</td></tr>
+<tr><td>Flag bits with bit stuffing</td><td>The flag is <code>01111110</code>. After every five consecutive 1s in the data, the sender adds a 0. The receiver removes any 0 that follows five 1s</td><td>A few extra bits, but works for any kind of data</td></tr>
+</table>
+<p>Why stuffing is needed: if the data contained <code>01111110</code> by chance, the receiver would think the frame had ended. Stuffing makes that pattern impossible inside the data.</p>
+
+<div class="num">
+<h3>Numerical 1.1</h3>
+<p><span class="lab">Problem:</span> A sender uses bit stuffing with flag <code>01111110</code>. The data to send is <code>01111101111110</code>. Write the stuffed bit stream.</p>
+<p><span class="lab">Given:</span> Data = 01111101111110 (14 bits). <span class="lab">Find:</span> the stuffed stream. <span class="lab">Rule:</span> after every five consecutive 1s, insert one 0.</p>
+<p><span class="lab">Solution:</span></p>
+<ol>
+<li>Read from the left: <code>0</code>, then <code>11111</code> (five 1s). Insert a 0 straight after them.</li>
+<li>Continue with the original <code>0</code>, then <code>11111</code> (five 1s again). Insert another 0.</li>
+<li>The remaining bits are <code>1</code> and <code>0</code>. No more insertions.</li>
+</ol>
+<div class="ans"><span class="lab">Answer:</span> <code>0111110011111010</code> (16 bits, 2 zeros inserted). Frame on the wire: <code>01111110</code> + <code>0111110011111010</code> + <code>01111110</code>. The receiver removes the 0 after every five 1s and gets the original data back.</div>
+</div>
+
+<div class="num">
+<h3>Numerical 1.2</h3>
+<p><span class="lab">Problem:</span> Apply bit stuffing to <code>0110111110111111001</code>.</p>
+<p><span class="lab">Solution:</span> Split it as <code>0110</code> + <code>11111</code> + <code>0</code> + <code>11111</code> + <code>1001</code>. Insert a 0 after the first <code>11111</code>. Insert another 0 after the second <code>11111</code>. The sixth 1 after it starts a new count.</p>
+<div class="ans"><span class="lab">Answer:</span> <code>011011111001111101001</code> (21 bits).</div>
+</div>
+
+<div class="num">
+<h3>Numerical 1.3</h3>
+<p><span class="lab">Problem:</span> Apply byte stuffing to the data sequence A, FLAG, B, ESC, C.</p>
+<p><span class="lab">Solution:</span> Put an ESC before FLAG and before ESC.</p>
+<div class="ans"><span class="lab">Answer:</span> A ESC FLAG B ESC ESC C. On the wire: FLAG, A, ESC, FLAG, B, ESC, ESC, C, FLAG.</div>
+</div>
+<p><b>Try yourself:</b> apply bit stuffing to <code>1111111111</code> (ten 1s). Answer: <code>111110111110</code>. Use the tool to check your own bits.</p>
+
+<div class="tool">
+<h4>Bit stuffing tool</h4>
+<label for="bs-in">Data bits</label>
+<input id="bs-in" type="text" value="01111101111110">
+<div class="err" id="bs-err"></div>
+<label>Original data (blue = the five 1s that trigger stuffing)</label>
+<div class="cells" id="bs-o"></div>
+<label>After bit stuffing (amber = inserted 0)</label>
+<div class="cells" id="bs-s"></div>
+<p id="bs-sum" style="font-size:14px"></p>
+<p id="bs-fr" style="font-size:13px;color:#6b7280;font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all"></p>
+</div>
+
+<!-- TOPIC 2 -->
+<h2 id="t2">Topic 2: Error detection using CRC</h2>
+<p>Noise on a link can flip bits. CRC (Cyclic Redundancy Check) lets the receiver notice this. The sender and receiver agree on a fixed bit pattern called the <b>generator</b>. The sender divides the data by the generator using a special division and attaches the remainder to the data. The receiver divides the whole frame by the same generator. A zero remainder means no error was detected.</p>
+<p><b>Steps for the sender</b></p>
+<ol>
+<li>Let the generator have k bits. Its degree is k - 1.</li>
+<li>Add k - 1 zeros to the end of the data.</li>
+<li>Divide by the generator using <b>modulo-2 division</b>, where subtraction is XOR (same bits give 0, different bits give 1). No borrowing or carrying.</li>
+<li>The remainder has k - 1 bits. Replace the added zeros by the remainder. This is the transmitted frame.</li>
+</ol>
+<p>CRC catches all single-bit errors and all burst errors no longer than the remainder length.</p>
+
+<div class="num">
+<h3>Numerical 2.1</h3>
+<p><span class="lab">Problem:</span> The data is <code>1101011011</code> and the generator is <code>10011</code>. Find the CRC remainder and the transmitted frame.</p>
+<p><span class="lab">Given:</span> Data = 1101011011, generator = 10011 (5 bits, degree 4). <span class="lab">Find:</span> remainder and transmitted frame.</p>
+<p><span class="lab">Solution:</span> The generator has 5 bits, so add 4 zeros: <code>11010110110000</code>. Wherever the leftmost remaining bit is 1, XOR the generator with the next 5 bits. Where it is 0, skip ahead.</p>
+<pre>Start               11010110110000
+XOR at position 0   (11010 XOR 10011 = 01001)  -&gt; 01001110110000
+XOR at position 1   (10011 XOR 10011 = 00000)  -&gt; 00000010110000
+XOR at position 6   (10110 XOR 10011 = 00101)  -&gt; 00000000101000
+XOR at position 8   (10100 XOR 10011 = 00111)  -&gt; 00000000001110</pre>
+<p>The last 4 bits are the remainder: <code>1110</code>.</p>
+<div class="ans"><span class="lab">Answer:</span> Remainder = <code>1110</code>. Transmitted frame = <code>1101011011</code> followed by <code>1110</code>, which is <code>11010110111110</code>.</div>
+</div>
+
+<div class="num">
+<h3>Numerical 2.2</h3>
+<p><span class="lab">Problem:</span> Data = <code>1010101</code>, generator = <code>1011</code>. Find the remainder and the frame.</p>
+<p><span class="lab">Solution:</span> The generator has 4 bits, so add 3 zeros: <code>1010101000</code>.</p>
+<pre>Start               1010101000
+XOR at position 0   (1010 XOR 1011 = 0001) -&gt; 0001101000
+XOR at position 3   (1101 XOR 1011 = 0110) -&gt; 0000110000
+XOR at position 4   (1100 XOR 1011 = 0111) -&gt; 0000011100
+XOR at position 5   (1110 XOR 1011 = 0101) -&gt; 0000001010
+XOR at position 6   (1010 XOR 1011 = 0001) -&gt; 0000000001</pre>
+<div class="ans"><span class="lab">Answer:</span> Remainder = <code>001</code>. Frame = <code>1010101001</code>.</div>
+</div>
+
+<div class="num">
+<h3>Numerical 2.3 (receiver check)</h3>
+<p><span class="lab">Problem:</span> The receiver gets <code>1010101001</code> and uses generator <code>1011</code>. Is the frame error-free?</p>
+<p><span class="lab">Solution:</span> Divide the received frame (without adding any zeros) by 1011. The remainder is <code>000</code>.</p>
+<div class="ans"><span class="lab">Answer:</span> The remainder is zero, so no error is detected.</div>
+</div>
+<p><b>Try yourself:</b> data <code>1101</code>, generator <code>1001</code>. Answer: remainder <code>100</code>, frame <code>1101100</code>.</p>
+
+<div class="tool">
+<h4>CRC calculator</h4>
+<label for="crc-d">Data bits</label>
+<input id="crc-d" type="text" value="1101011011">
+<label for="crc-g">Generator bits</label>
+<input id="crc-g" type="text" value="10011">
+<div class="err" id="crc-err"></div>
+<div class="cards" id="crc-res"></div>
+<label>Division steps (each line shows the whole number after one XOR)</label>
+<pre id="crc-steps"></pre>
+<p id="crc-chk" style="font-size:14px"></p>
+</div>
+
+<!-- TOPIC 3 -->
+<h2 id="t3">Topic 3: Sliding window protocols</h2>
+<p><b>Basic terms.</b> A <b>sequence number</b> is written on each frame so the receiver can tell frames apart (n bits give 2<sup>n</sup> numbers). An <b>ACK</b> is a short message from the receiver meaning "I received it". A <b>timeout</b> happens when no ACK arrives in time, so the sender assumes the frame was lost. The <b>window</b> is how many frames the sender may send without waiting for an ACK.</p>
+<table>
+<tr><th></th><th>Stop-and-Wait</th><th>Go-Back-N (GBN)</th><th>Selective Repeat (SR)</th></tr>
+<tr><td>Sender window</td><td>1</td><td>2<sup>n</sup> - 1</td><td>2<sup>n-1</sup></td></tr>
+<tr><td>Receiver window</td><td>1</td><td>1</td><td>2<sup>n-1</sup></td></tr>
+<tr><td>When a frame is lost</td><td>Resends that frame after timeout</td><td>Resends the lost frame and every frame after it</td><td>Resends only the lost frame</td></tr>
+<tr><td>Out-of-order frames</td><td>Not applicable</td><td>Receiver discards them</td><td>Receiver keeps them in a buffer</td></tr>
+<tr><td>Efficiency with no errors</td><td>1 / (1 + 2a)</td><td>N / (1 + 2a), max 1</td><td>N / (1 + 2a), max 1</td></tr>
+<tr><td>Complexity</td><td>Simplest</td><td>Medium</td><td>Highest (buffer and reordering)</td></tr>
+</table>
+<p>Here <b>a = Tp / Tt</b>. Tp is the propagation delay (time for a signal to cross the link) and Tt is the transmission time (time to push one frame onto the link). N is the window size.</p>
+<p>Why GBN window is at most 2<sup>n</sup> - 1: if it were 2<sup>n</sup> and every ACK got lost, the receiver would see frame 0 again and could not tell whether it is a new frame 0 or a repeat of the old one.</p>
+
+<div class="num">
+<h3>Numerical 3.1</h3>
+<p><span class="lab">Problem:</span> A Go-Back-N sender uses 3-bit sequence numbers. What is the largest sender window? The sender transmits frames 0 to 5 and frame 3 is lost. Which frames are retransmitted and why?</p>
+<p><span class="lab">Given:</span> n = 3, frames 0 to 5 sent, frame 3 lost. <span class="lab">Formula:</span> GBN window = 2<sup>n</sup> - 1.</p>
+<p><span class="lab">Solution:</span></p>
+<ol>
+<li>Window = 2<sup>3</sup> - 1 = 7.</li>
+<li>Frames 0, 1, 2 reach the receiver in order and are acknowledged.</li>
+<li>Frame 3 is lost. Frames 4 and 5 arrive, but the receiver is still waiting for frame 3. A GBN receiver accepts only the next expected frame, so 4 and 5 are discarded.</li>
+<li>The timer for frame 3 runs out. The sender goes back to 3 and sends 3, 4, 5 again.</li>
+</ol>
+<div class="ans"><span class="lab">Answer:</span> Maximum window = 7. Retransmitted frames = 3, 4 and 5, because the receiver discarded 4 and 5 and has no buffer for out-of-order frames.</div>
+</div>
+<svg class="dg" id="d-gbn" viewBox="0 0 680 300" role="img" aria-label="Go-Back-N when frame 3 is lost"></svg>
+
+<div class="num">
+<h3>Numerical 3.2</h3>
+<p><span class="lab">Problem:</span> A GBN sender uses 4-bit sequence numbers and sends frames 0 to 7. Frame 5 is lost. Find the maximum window and the retransmitted frames.</p>
+<p><span class="lab">Solution:</span> Window = 2<sup>4</sup> - 1 = 15. Frames 0 to 4 are accepted. Frames 6 and 7 arrive out of order and are discarded.</p>
+<div class="ans"><span class="lab">Answer:</span> Window = 15. Retransmitted: 5, 6, 7.</div>
+</div>
+
+<div class="num">
+<h3>Numerical 3.3</h3>
+<p><span class="lab">Problem:</span> In Selective Repeat with 3-bit sequence numbers, frames 0 to 5 are sent and frame 3 is lost. What is the sender window and which frames are retransmitted?</p>
+<p><span class="lab">Solution:</span> SR window = 2<sup>n-1</sup> = 2<sup>2</sup> = 4. The receiver has a buffer, so it stores frames 4 and 5 until frame 3 arrives. Only frame 3 is sent again.</p>
+<div class="ans"><span class="lab">Answer:</span> Window = 4. Retransmitted: only frame 3.</div>
+</div>
+
+<div class="num">
+<h3>Numerical 3.4 (efficiency)</h3>
+<p><span class="lab">Problem:</span> A link has a bandwidth of 1 Mbps. Each frame is 1000 bits. The one-way propagation delay is 20 ms. Find (a) the efficiency of Stop-and-Wait, (b) the efficiency of Go-Back-N with window 7, and (c) how many sequence-number bits GBN and SR need to reach 100% efficiency.</p>
+<p><span class="lab">Given:</span> Bandwidth = 1 Mbps = 1,000,000 bits/s. Frame = 1000 bits. Tp = 20 ms.</p>
+<p><span class="lab">Formula:</span> Tt = frame size / bandwidth. a = Tp / Tt. Stop-and-Wait efficiency = 1 / (1 + 2a). Window protocol efficiency = N / (1 + 2a), at most 1.</p>
+<p><span class="lab">Solution:</span></p>
+<ol>
+<li>Tt = 1000 / 1,000,000 = 0.001 s = 1 ms.</li>
+<li>a = 20 ms / 1 ms = 20.</li>
+<li>(a) Stop-and-Wait = 1 / (1 + 40) = 1/41 = 2.44%.</li>
+<li>(b) GBN, N = 7: 7/41 = 17.07%.</li>
+<li>(c) For 100% we need N of at least 41. GBN: 2<sup>n</sup> - 1 &ge; 41, so 2<sup>n</sup> &ge; 42, smallest n is 6 (window 63). SR: 2<sup>n-1</sup> &ge; 41, so 2<sup>n-1</sup> &ge; 64, n - 1 = 6, n = 7.</li>
+</ol>
+<div class="ans"><span class="lab">Answer:</span> (a) 2.44%. (b) 17.07%. (c) GBN needs 6 bits and SR needs 7 bits.</div>
+</div>
+
+<!-- TOPIC 4 -->
+<h2 id="t4">Topic 4: ARP, RARP and GARP</h2>
+<p>Two kinds of addresses are involved. The <b>IP address</b> (like 10.0.0.7) says which network and host a device is on. The <b>MAC address</b> (like BB:BB:BB:BB:BB:BB) is burned into the network card. Inside a LAN, frames are delivered using MAC addresses, so a host that knows only an IP address must first find the matching MAC address.</p>
+<table>
+<tr><th>Protocol</th><th>Full name</th><th>What it does</th><th>Where it is used</th></tr>
+<tr><td>ARP</td><td>Address Resolution Protocol</td><td>Finds the MAC address for a known IP address</td><td>Every Ethernet or Wi-Fi LAN before sending a frame</td></tr>
+<tr><td>RARP</td><td>Reverse ARP</td><td>Finds the IP address for a known MAC address</td><td>Old diskless workstations at start-up. Replaced by BOOTP and DHCP</td></tr>
+<tr><td>GARP</td><td>Gratuitous ARP</td><td>A host announces its own IP-to-MAC mapping without being asked</td><td>Detecting duplicate IPs, refreshing other hosts' caches after a card change, failover between backup routers</td></tr>
+</table>
+<p><b>How ARP works</b></p>
+<ol>
+<li>Host A wants to send to IP 10.0.0.7 on the same LAN. It checks its <b>ARP cache</b> (a small table of known IP-to-MAC pairs). If the answer is there, it uses it.</li>
+<li>If not, A <b>broadcasts</b> an ARP request to every host on the LAN: "Who has 10.0.0.7? Tell 10.0.0.5."</li>
+<li>Every host receives it, but only the owner of 10.0.0.7 answers. It sends an ARP reply directly (unicast) to A with its MAC address.</li>
+<li>A saves this pair in its cache and sends the data frame to that MAC address.</li>
+</ol>
+<p>If the destination is on a different network, A resolves the MAC address of its <b>default router</b> instead.</p>
+<svg class="dg" id="d-arp" viewBox="0 0 680 320" role="img" aria-label="ARP request and reply"></svg>
+
+<div class="num">
+<h3>Numerical 4.1 (short answer style)</h3>
+<p><span class="lab">Problem:</span> Explain how ARP lets a host in the Library send a frame to another host on the same LAN.</p>
+<div class="ans"><span class="lab">Answer:</span> The Library host knows only the destination IP address. It looks in its ARP cache. If the MAC address is missing, it broadcasts an ARP request asking "Who has this IP?". Every host receives the request, but only the host with that IP replies, sending its MAC address directly to the requester. The sender stores the pair in its ARP cache and sends the data frame addressed to that MAC address.</div>
+</div>
+
+<!-- TOPIC 5 -->
+<h2 id="t5">Topic 5: ALOHA (Pure and Slotted)</h2>
+<p>Many stations share one channel (for example, many sensors on one radio channel). If two transmit at the same time, their signals collide and both frames are lost. ALOHA is a simple set of rules for sharing.</p>
+<ul>
+<li><b>Pure ALOHA:</b> a station sends whenever it has data. If no acknowledgement comes, it waits a random time and tries again.</li>
+<li><b>Slotted ALOHA:</b> time is divided into equal slots, each as long as one frame (T). A station may start sending only at the beginning of a slot.</li>
+</ul>
+<p>The <b>vulnerable period</b> is the time window in which another station's transmission would collide with yours.</p>
+<table>
+<tr><th></th><th>Pure ALOHA</th><th>Slotted ALOHA</th></tr>
+<tr><td>When a station can send</td><td>Any time</td><td>Only at the start of a slot</td></tr>
+<tr><td>Vulnerable period</td><td>2T</td><td>T</td></tr>
+<tr><td>Throughput formula</td><td>S = G &middot; e<sup>-2G</sup></td><td>S = G &middot; e<sup>-G</sup></td></tr>
+<tr><td>Best throughput</td><td>18.4% (at G = 0.5)</td><td>36.8% (at G = 1)</td></tr>
+<tr><td>Collision chance</td><td>Higher, frames can overlap partly</td><td>Lower, frames overlap fully or not at all</td></tr>
+<tr><td>Needs clock synchronisation</td><td>No</td><td>Yes</td></tr>
+</table>
+<p>Here <b>G</b> is the average number of frame attempts (new plus repeats) per frame time, and <b>S</b> is the fraction of time the channel carries a successful frame. T is the time to send one frame.</p>
+<svg class="dg" id="d-aloha" viewBox="0 0 680 320" role="img" aria-label="Vulnerable period of Pure and Slotted ALOHA"></svg>
+
+<div class="num">
+<h3>Numerical 5.1</h3>
+<p><span class="lab">Problem:</span> Many low-power sensors share one wireless channel using ALOHA. The channel has a transmission rate of 1 Mbps and every frame is 1000 bits long. Calculate the maximum throughput (in frames per second) of the channel with Pure ALOHA and with Slotted ALOHA.</p>
+<p><span class="lab">Given:</span> Bandwidth = 1 Mbps = 1,000,000 bits per second. Frame size = 1000 bits.</p>
+<p><span class="lab">Find:</span> Maximum throughput for Pure and Slotted ALOHA in frames per second.</p>
+<p><span class="lab">Formula:</span> Frame time T = frame size / bandwidth. Channel capacity = 1 / T frames per second. Maximum throughput = (maximum efficiency) &times; capacity.</p>
+<p><span class="lab">Solution:</span></p>
+<ol>
+<li>T = 1000 / 1,000,000 = 0.001 s = 1 ms.</li>
+<li>The channel could carry at most 1 / 0.001 = 1000 frames per second if it were never idle and never had a collision.</li>
+<li>Pure ALOHA's best efficiency is 18.4%, so maximum throughput = 0.184 &times; 1000 = 184 frames per second.</li>
+<li>Slotted ALOHA's best efficiency is 36.8%, so maximum throughput = 0.368 &times; 1000 = 368 frames per second.</li>
+</ol>
+<div class="ans"><span class="lab">Answer:</span> Pure ALOHA = 184 frames per second. Slotted ALOHA = 368 frames per second. Slotted ALOHA gives double the throughput.</div>
+</div>
+
+<div class="num">
+<h3>Numerical 5.2</h3>
+<p><span class="lab">Problem:</span> The same channel (1 Mbps, 1000-bit frames) has all stations together generating 250 frames per second, counting new frames and retransmissions. Find the throughput of Pure and Slotted ALOHA.</p>
+<p><span class="lab">Given:</span> T = 1 ms. Attempts = 250 frames per second.</p>
+<p><span class="lab">Formula:</span> G = attempts per second &times; T. Pure: S = G &middot; e<sup>-2G</sup>. Slotted: S = G &middot; e<sup>-G</sup>. Successful frames per second = S / T.</p>
+<p><span class="lab">Solution:</span></p>
+<ol>
+<li>G = 250 &times; 0.001 = 0.25.</li>
+<li>Pure: S = 0.25 &times; e<sup>-0.5</sup> = 0.25 &times; 0.6065 = 0.1516. Frames per second = 0.1516 / 0.001 = 151.6.</li>
+<li>Slotted: S = 0.25 &times; e<sup>-0.25</sup> = 0.25 &times; 0.7788 = 0.1947. Frames per second = 194.7.</li>
+</ol>
+<div class="ans"><span class="lab">Answer:</span> Pure ALOHA is about 151.6 frames per second. Slotted ALOHA is about 194.7 frames per second.</div>
+</div>
+<p><b>Try yourself:</b> a channel has a rate of 2 Mbps and 1000-bit frames. Find the maximum throughput of Pure and Slotted ALOHA. Answer: T = 0.5 ms, capacity = 2000 frames per second, Pure about 368 and Slotted about 736 frames per second.</p>
+
+<div class="tool">
+<h4>ALOHA throughput calculator</h4>
+<label for="al-bw">Channel speed (Mbps)</label>
+<input id="al-bw" type="number" value="1" min="0" step="any">
+<label for="al-fs">Frame size (bits)</label>
+<input id="al-fs" type="number" value="1000" min="0" step="any">
+<label for="al-g">Offered load G = <span id="al-gv">0.50</span></label>
+<input id="al-g" type="range" min="0.05" max="3" step="0.05" value="0.5" style="width:100%;max-width:340px">
+<div class="err" id="al-err"></div>
+<div class="cards" id="al-out"></div>
+</div>
+
+<!-- TOPIC 6 -->
+<h2 id="t6">Topic 6: Ethernet CSMA/CD and Binary Exponential Back-off</h2>
+<p><b>CSMA/CD</b> (Carrier Sense Multiple Access with Collision Detection) is the rule set used on classic wired Ethernet, such as 20 computers on one shared segment.</p>
+<ol>
+<li><b>Listen first.</b> A station checks whether the cable is busy. If it is, it waits.</li>
+<li><b>Send.</b> If the cable is free, it starts sending.</li>
+<li><b>Keep listening while sending.</b> If it detects another signal (a collision), it stops at once and sends a short jam signal so everybody knows.</li>
+<li><b>Wait a random time, then retry.</b> The waiting time comes from Binary Exponential Back-off.</li>
+</ol>
+<p><b>Binary Exponential Back-off (BEB).</b> After the i-th collision, the station picks a random number K from 0 to 2<sup>i</sup> - 1 and waits K slot times before trying again. One slot time is 51.2 &micro;s on 10 Mbps Ethernet. Each extra collision doubles the range, so repeated collisions between the same stations quickly become unlikely. The range stops growing at 1024 numbers (0 to 1023) after the 10th collision, and the frame is dropped after 16 failed attempts.</p>
+<table>
+<tr><th>Collision number</th><th>Pick K from</th><th>Number of choices</th></tr>
+<tr><td>1</td><td>0 to 1</td><td>2</td></tr>
+<tr><td>2</td><td>0 to 3</td><td>4</td></tr>
+<tr><td>3</td><td>0 to 7</td><td>8</td></tr>
+<tr><td>4</td><td>0 to 15</td><td>16</td></tr>
+<tr><td>10 or more</td><td>0 to 1023</td><td>1024 (the limit)</td></tr>
+</table>
+
+<div class="num">
+<h3>Numerical 6.1</h3>
+<p><span class="lab">Problem:</span> A station on a CSMA/CD Ethernet has just had its 3rd collision. From how many slots does it choose its waiting time?</p>
+<p><span class="lab">Formula:</span> Choices after the i-th collision = 2<sup>i</sup>. <span class="lab">Solution:</span> 2<sup>3</sup> = 8, so K is chosen from 0, 1, 2, 3, 4, 5, 6, 7.</p>
+<div class="ans"><span class="lab">Answer:</span> 8 slots.</div>
+</div>
+
+<div class="num">
+<h3>Numerical 6.2</h3>
+<p><span class="lab">Problem:</span> Two stations have just had their 3rd collision. What is the probability that they collide again on the next attempt? What is the longest a station may wait? Take the slot time as 51.2 &micro;s.</p>
+<p><span class="lab">Solution:</span></p>
+<ol>
+<li>Both stations choose from 8 slots (0 to 7). There are 8 &times; 8 = 64 equally likely pairs, and 8 of them have both stations choosing the same slot.</li>
+<li>Probability of a collision = 8/64 = 1/8 = 12.5%.</li>
+<li>Longest wait = 7 slots &times; 51.2 &micro;s = 358.4 &micro;s.</li>
+</ol>
+<div class="ans"><span class="lab">Answer:</span> Probability = 1/8. Longest wait = 358.4 &micro;s.</div>
+</div>
+
+<div class="num">
+<h3>Numerical 6.3 (minimum frame size)</h3>
+<p><span class="lab">Problem:</span> A 10 Mbps Ethernet cable is 1 km long and signals travel at 200 m per microsecond. Find the minimum frame size so that a sender still hears a collision before it finishes sending.</p>
+<p><span class="lab">Given:</span> Length = 1000 m. Speed = 200 m/&micro;s. Bandwidth = 10 Mbps.</p>
+<p><span class="lab">Formula:</span> The frame must last at least as long as the round-trip time. Minimum frame size = bandwidth &times; round-trip time.</p>
+<p><span class="lab">Solution:</span></p>
+<ol>
+<li>One-way propagation time = 1000 / 200 = 5 &micro;s.</li>
+<li>Round-trip time = 2 &times; 5 = 10 &micro;s.</li>
+<li>Minimum frame size = 10,000,000 bits per second &times; 10 &times; 10<sup>-6</sup> s = 100 bits.</li>
+</ol>
+<div class="ans"><span class="lab">Answer:</span> 100 bits.</div>
+</div>
+
+<!-- TOPIC 7 -->
+<h2 id="t7">Topic 7: Basic Bit Map protocol</h2>
+<p>Bit Map is a <b>collision-free</b> protocol. Stations take turns, so there are no collisions.</p>
+<ol>
+<li>Time is split into rounds. Each round begins with a <b>contention period</b> of N slots, one slot per station, where N is the number of stations.</li>
+<li>In its own slot, station j puts a 1 if it has a frame to send, or stays silent (0) if not. Everybody hears all the bits.</li>
+<li>After the contention period, the stations with a 1 transmit their frames in order of station number, lowest first.</li>
+</ol>
+<p><b>Efficiency.</b> Let d be the frame length in bit times. At low load, efficiency = d / (d + N), because the whole contention period is overhead for a single frame. At high load (every station has a frame), efficiency = d / (d + 1), because the N-bit contention period is shared among N frames, so each frame carries about 1 bit of overhead.</p>
+
+<div class="num">
+<h3>Numerical 7.1</h3>
+<p><span class="lab">Problem:</span> 8 stations numbered 0 to 7 use the Basic Bit Map protocol. Stations 1, 4 and 6 have frames to send. Show the contention period bits and the order of transmission.</p>
+<p><span class="lab">Solution:</span> There are 8 contention slots, one per station. Stations 1, 4 and 6 put 1 in their own slots. All other slots stay 0. After the contention period, the stations transmit in increasing station number.</p>
+<div class="ans"><span class="lab">Answer:</span> Contention bits = <code>01001010</code>. Order of transmission = station 1, then station 4, then station 6.</div>
+</div>
+<svg class="dg" id="d-bm" viewBox="0 0 680 190" role="img" aria-label="Basic Bit Map round"></svg>
+
+<div class="num">
+<h3>Numerical 7.2</h3>
+<p><span class="lab">Problem:</span> 10 stations numbered 0 to 9 use Basic Bit Map. Stations 2, 5 and 9 are ready. Write the contention bits and the transmission order.</p>
+<div class="ans"><span class="lab">Answer:</span> Bits = <code>0010010001</code>. Order = 2, 5, 9.</div>
+</div>
+
+<div class="num">
+<h3>Numerical 7.3 (efficiency)</h3>
+<p><span class="lab">Problem:</span> A Bit Map network has N = 8 stations and each frame is d = 16 bit times long. Find the efficiency at low load and at high load.</p>
+<p><span class="lab">Formula:</span> Low load = d / (d + N). High load = d / (d + 1).</p>
+<p><span class="lab">Solution:</span> Low load = 16 / (16 + 8) = 16/24 = 0.667. High load = 16 / (16 + 1) = 16/17 = 0.941.</p>
+<div class="ans"><span class="lab">Answer:</span> Low load = 66.7%. High load = 94.1%.</div>
+</div>
+<p><b>Try yourself:</b> 8 stations (0 to 7), stations 0, 3 and 7 are ready. Answer: bits <code>10010001</code>, order 0, 3, 7.</p>
+
+<!-- TOPIC 8 -->
+<h2 id="t8">Topic 8: Adaptive Tree Walk and limited-contention protocols</h2>
+<ul>
+<li><b>Contention</b> (ALOHA, CSMA): stations just try. Quick at low load, but collisions pile up at high load.</li>
+<li><b>Collision-free</b> (Bit Map, Token passing): stations take turns. No collisions, but the reservation overhead wastes time when few stations have data.</li>
+<li><b>Limited contention</b> (Adaptive Tree Walk): behaves like contention when load is light and like collision-free when load is heavy. It gets the good side of both.</li>
+</ul>
+<p><b>Adaptive Tree Walk.</b> Imagine the stations as the leaves of a binary tree.</p>
+<ol>
+<li>In slot 0, every station may transmit. If exactly one does, it succeeds. If none do, the slot is idle.</li>
+<li>If two or more transmit, there is a collision. In slot 1 only the stations under the <b>left</b> child node may transmit.</li>
+<li>If that slot collides again, go one level deeper to the left. If it succeeds or is idle, move to the right sibling next.</li>
+<li>Keep going down the tree until every group has been resolved.</li>
+</ol>
+<p><b>Why limited contention is preferred.</b> Pure contention wastes the channel in collisions when many stations are active. Pure collision-free methods waste time on reservation when few stations are active. Limited contention keeps the contention group small when the load is high, so collisions are few, and lets many stations try at once when the load is low, so delay is short.</p>
+
+<div class="num">
+<h3>Numerical 8.1</h3>
+<p><span class="lab">Problem:</span> Eight stations A to H are the leaves of a binary tree. Stations B, E and F have frames to send. Show how the Adaptive Tree Walk resolves this, slot by slot.</p>
+<table>
+<tr><th>Slot</th><th>Group probed</th><th>Who transmits</th><th>Result</th></tr>
+<tr><td>0</td><td>Node 1 (all stations)</td><td>B, E, F</td><td>Collision</td></tr>
+<tr><td>1</td><td>Node 2 (A, B, C, D)</td><td>B</td><td>Success, B sends</td></tr>
+<tr><td>2</td><td>Node 3 (E, F, G, H)</td><td>E, F</td><td>Collision</td></tr>
+<tr><td>3</td><td>Node 6 (E, F)</td><td>E, F</td><td>Collision</td></tr>
+<tr><td>4</td><td>E alone</td><td>E</td><td>Success, E sends</td></tr>
+<tr><td>5</td><td>F alone</td><td>F</td><td>Success, F sends</td></tr>
+<tr><td>6</td><td>Node 7 (G, H)</td><td>none</td><td>Idle</td></tr>
+</table>
+<div class="ans"><span class="lab">Answer:</span> It takes 7 slots to deliver 3 frames. Nodes 4 and 5 were never probed, because node 2 resolved on its first try.</div>
+</div>
+<p>In the diagram, the number in each circle is the slot in which that group was probed.</p>
+<svg class="dg" id="d-tree" viewBox="0 0 680 330" role="img" aria-label="Adaptive Tree Walk with B, E and F ready"></svg>
+
+<!-- TOPIC 9 -->
+<h2 id="t9">Topic 9: IEEE 802.3 and 802.11</h2>
+<table>
+<tr><th></th><th>IEEE 802.3 (Ethernet)</th><th>IEEE 802.11 (Wi-Fi)</th></tr>
+<tr><td>Medium</td><td>Wired cable</td><td>Radio waves</td></tr>
+<tr><td>Access method</td><td>CSMA/CD</td><td>CSMA/CA</td></tr>
+<tr><td>How it handles collisions</td><td><b>Detects</b> a collision while sending, stops, sends a jam signal, and backs off</td><td><b>Avoids</b> collisions. The station waits a random back-off time before sending, the receiver sends an ACK, and optional RTS/CTS messages reserve the channel</td></tr>
+<tr><td>Why that choice</td><td>A wired station can listen while it talks</td><td>A radio station usually cannot listen while it transmits, and some stations cannot hear each other (hidden terminal problem)</td></tr>
+</table>
+<p>IEEE 802.15.4 is the low-power standard often used for sensor networks.</p>
+<div class="num">
+<h3>Numerical 9.1 (short answer style)</h3>
+<p><span class="lab">Problem:</span> Name the IEEE 802 standard for a laboratory Ethernet and for hostel Wi-Fi, and state one difference in how they handle collisions.</p>
+<div class="ans"><span class="lab">Answer:</span> The lab Ethernet uses IEEE 802.3 and the hostel Wi-Fi uses IEEE 802.11. Ethernet detects a collision while it is transmitting and then stops and retries (CSMA/CD). Wi-Fi cannot detect collisions while transmitting, so it tries to avoid them with random back-off and acknowledgements (CSMA/CA).</div>
+</div>
+
+<h2>Formula sheet</h2>
+<table>
+<tr><th>Item</th><th>Value</th></tr>
+<tr><td>Bit stuffing</td><td>Insert 0 after five consecutive 1s. Flag = 01111110</td></tr>
+<tr><td>CRC</td><td>Append (generator bits - 1) zeros, modulo-2 divide, frame = data + remainder</td></tr>
+<tr><td>GBN sender window</td><td>2<sup>n</sup> - 1</td></tr>
+<tr><td>SR sender window</td><td>2<sup>n-1</sup></td></tr>
+<tr><td>Stop-and-Wait efficiency</td><td>1 / (1 + 2a), where a = Tp / Tt</td></tr>
+<tr><td>Window protocol efficiency</td><td>N / (1 + 2a), at most 1</td></tr>
+<tr><td>Frame time</td><td>T = frame bits / bandwidth</td></tr>
+<tr><td>Pure ALOHA</td><td>S = G&middot;e<sup>-2G</sup>, maximum 18.4% at G = 0.5, vulnerable period 2T</td></tr>
+<tr><td>Slotted ALOHA</td><td>S = G&middot;e<sup>-G</sup>, maximum 36.8% at G = 1, vulnerable period T</td></tr>
+<tr><td>Max throughput in frames per second</td><td>(efficiency) &times; (1 / T)</td></tr>
+<tr><td>BEB</td><td>After the i-th collision choose from 2<sup>i</sup> slots</td></tr>
+<tr><td>Minimum Ethernet frame</td><td>Bandwidth &times; round-trip time</td></tr>
+<tr><td>Bit Map efficiency</td><td>Low load d / (d + N), high load d / (d + 1)</td></tr>
+</table>
+
+<!-- QUIZ -->
+<h2 id="quiz">Practice quiz: 20 questions</h2>
+<p>Click an answer to see whether it is right and why. Options are shuffled each time you reset.</p>
+<div class="qbar">
+<span id="score" style="font-weight:600">Score: 0 / 20</span>
+<span id="prog" style="color:#6b7280;font-size:14px">Answered: 0</span>
+<button id="showall">Show all answers</button>
+<button id="reset">Reset quiz</button>
+</div>
+<div id="qs"></div>
+
+</div>
+
+<script>
+var DEFS='<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#4b5563" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>';
+function R(x,y,w,h,c,t,tc,rx){return '<rect class="'+c+'" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+(rx||4)+'"/>'+(t?'<text class="'+(tc||'th')+'" x="'+(x+w/2)+'" y="'+(y+h/2)+'" text-anchor="middle" dominant-baseline="central">'+t+'</text>':'');}
+function T(x,y,t,c,a){return '<text class="'+(c||'ts')+'" x="'+x+'" y="'+y+'"'+(a?' text-anchor="'+a+'"':'')+'>'+t+'</text>';}
+function A(x1,y1,x2,y2){return '<line class="arr" x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" marker-end="url(#ah)"/>';}
+function LD(x1,y1,x2,y2){return '<line class="leader" x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'"/>';}
+
+(function(){
+var s=DEFS,i;
+s+=T(40,34,'Round 1: sender sends frames 0 to 5','th');
+for(i=0;i<6;i++){s+=R(40+i*70,44,56,36,'rgray','F'+i);}
+s+=T(40,116,'What the receiver does','th');
+var rc=['rteal','rteal','rteal','rred','rgray','rgray'],rt=['F0 ok','F1 ok','F2 ok','F3 lost','F4 drop','F5 drop'];
+for(i=0;i<6;i++){s+=R(40+i*70,126,56,36,rc[i],rt[i],'ts');}
+s+=T(40,196,'Round 2: timer for F3 expires, sender goes back','th');
+for(i=3;i<6;i++){s+=R(40+i*70,206,56,36,'ramber','F'+i);}
+s+=T(40,280,'Result: F3, F4 and F5 are sent again, even though F4 and F5 arrived safely the first time.','ts');
+document.getElementById('d-gbn').innerHTML=s;
+})();
+
+(function(){
+var s=DEFS;
+s+=R(50,24,140,48,'rteal','',null,8)+T(120,41,'Host A','th','middle')+T(120,58,'IP 10.0.0.5','ts','middle');
+s+=R(270,24,140,48,'rpurple','',null,8)+T(340,41,'Host B','th','middle')+T(340,58,'IP 10.0.0.7','ts','middle');
+s+=R(490,24,140,48,'rgray','',null,8)+T(560,41,'Host C','th','middle')+T(560,58,'IP 10.0.0.9','ts','middle');
+s+=LD(120,72,120,300)+LD(340,72,340,300)+LD(560,72,560,300);
+s+=T(130,112,'1. Who has 10.0.0.7?')+A(122,120,336,120);
+s+=T(350,142,'Broadcast also reaches C, which ignores it')+A(122,150,556,150);
+s+=T(130,192,'2. 10.0.0.7 is at MAC BB:BB')+A(338,200,124,200);
+s+=T(130,252,'3. Data frame to MAC BB:BB')+A(122,260,336,260);
+document.getElementById('d-arp').innerHTML=s;
+})();
+
+(function(){
+var s='';
+s+=T(40,30,'Pure ALOHA: vulnerable period is 2T','th');
+s+=R(280,44,120,34,'rteal','Our frame (T)');
+s+=R(160,92,240,26,'rred','A frame starting here collides: 2T','ts');
+s+=T(160,140,'t0 - T','ts','middle')+T(280,140,'t0','ts','middle')+T(400,140,'t0 + T','ts','middle');
+s+=T(40,185,'Slotted ALOHA: vulnerable period is T','th');
+s+=R(160,198,120,34,'rbox','Earlier slot','ts');
+s+=R(280,198,120,34,'rteal','Our frame (T)');
+s+=R(400,198,120,34,'rbox','Later slot','ts');
+s+=R(280,246,120,26,'rred','Same slot only: T','ts');
+s+=T(340,296,'Frames can start only at a slot boundary, so partial overlap cannot happen.','ts','middle');
+document.getElementById('d-aloha').innerHTML=s;
+})();
+
+(function(){
+var s='',bits='01001010',i;
+s+=T(40,26,'Contention period (8 slots)','th')+T(380,26,'Transmission period','th');
+for(i=0;i<8;i++){
+s+=T(60+i*40,56,String(i),'ts','middle');
+s+=R(40+i*40,66,40,36,bits[i]==='1'?'ramber':'rbox',bits[i],'th',0);
+}
+s+=R(380,66,70,36,'rteal','S1 frame')+R(470,66,70,36,'rteal','S4 frame')+R(560,66,70,36,'rteal','S6 frame');
+s+=T(40,140,'Numbers above the cells are station numbers. Stations 1, 4 and 6 write a 1 in their own slot.','ts');
+s+=T(40,162,'After the contention period they send in station order: 1, then 4, then 6.','ts');
+document.getElementById('d-bm').innerHTML=s;
+})();
+
+(function(){
+var s='',i;
+var E=[[350,56,190,84],[350,56,510,84],[190,116,110,144],[190,116,270,144],[510,116,430,144],[510,116,590,144],[110,176,70,210],[110,176,150,210],[270,176,230,210],[270,176,310,210],[430,176,390,210],[430,176,470,210],[590,176,550,210],[590,176,630,210]];
+for(i=0;i<E.length;i++){s+='<line class="edge" x1="'+E[i][0]+'" y1="'+E[i][1]+'" x2="'+E[i][2]+'" y2="'+E[i][3]+'"/>';}
+function N(cx,cy,c,t){return '<circle class="'+c+'" cx="'+cx+'" cy="'+cy+'" r="16"/>'+(t!==''?'<text class="th" x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central">'+t+'</text>':'');}
+s+=N(350,40,'rred','0')+N(190,100,'rgreen','1')+N(510,100,'rred','2')+N(110,160,'rbox','')+N(270,160,'rbox','')+N(430,160,'rred','3')+N(590,160,'rgray','6');
+var L='ABCDEFGH',ready={B:1,E:1,F:1};
+for(i=0;i<8;i++){var c=L[i];s+=R(48+i*80,210,44,30,ready[c]?'ramber':'rbox',c,ready[c]?'th':'ts');}
+s+=T(150,258,'sends in slot 1','ts','middle')+T(390,258,'sends in slot 4','ts','middle')+T(470,278,'sends in slot 5','ts','middle');
+s+=R(40,302,14,14,'rred')+T(62,313,'Collision')+R(150,302,14,14,'rgreen')+T(172,313,'Success')+R(260,302,14,14,'rgray')+T(282,313,'Idle')+R(350,302,14,14,'ramber')+T(372,313,'Station has a frame');
+document.getElementById('d-tree').innerHTML=s;
+})();
+
+function cell(b,k){return '<span class="cell'+(k?' '+k:'')+'">'+b+'</span>';}
+function bsUpdate(){
+var v=document.getElementById('bs-in').value.trim(),err=document.getElementById('bs-err');
+if(!/^[01]+$/.test(v)){err.textContent='Enter only 0s and 1s';return;}
+err.textContent='';
+var out=[],count=0,trig={},ins=0,i,k;
+for(i=0;i<v.length;i++){
+var b=v[i];out.push({b:b,ins:false});
+count=(b==='1')?count+1:0;
+if(count===5){for(k=i-4;k<=i;k++){trig[k]=true;}out.push({b:'0',ins:true});ins++;count=0;}
+}
+var o='',s='',st='';
+for(i=0;i<v.length;i++){o+=cell(v[i],trig[i]?'trig':'');}
+out.forEach(function(x){s+=cell(x.b,x.ins?'ins':'');st+=x.b;});
+document.getElementById('bs-o').innerHTML=o;
+document.getElementById('bs-s').innerHTML=s;
+document.getElementById('bs-sum').textContent=v.length+' bits became '+out.length+' bits ('+ins+' zero'+(ins===1?'':'s')+' inserted).';
+document.getElementById('bs-fr').textContent='Frame on wire: 01111110 '+st+' 01111110';
+}
+document.getElementById('bs-in').addEventListener('input',bsUpdate);
+bsUpdate();
+
+function mod(bits,g){
+var a=bits.split(''),i,j;
+for(i=0;i<=a.length-g.length;i++){if(a[i]==='1'){for(j=0;j<g.length;j++){a[i+j]=(a[i+j]===g[j])?'0':'1';}}}
+return a.slice(a.length-g.length+1).join('');
+}
+function card(l,v,s){return '<div class="card"><div class="l">'+l+'</div><div class="v">'+v+'</div>'+(s?'<div class="s">'+s+'</div>':'')+'</div>';}
+function crcUpdate(){
+var d=document.getElementById('crc-d').value.trim(),g=document.getElementById('crc-g').value.trim(),err=document.getElementById('crc-err');
+if(!/^[01]+$/.test(d)){err.textContent='Data must contain only 0s and 1s';return;}
+if(!/^1[01]+$/.test(g)){err.textContent='Generator must start with 1 and have at least 2 bits';return;}
+err.textContent='';
+var r=g.length-1,a=(d+new Array(r+1).join('0')).split(''),lines=['Start     '+a.join('')],n=0,i,j;
+for(i=0;i<d.length;i++){
+if(a[i]==='1'){n++;for(j=0;j<g.length;j++){a[i+j]=(a[i+j]===g[j])?'0':'1';}lines.push('Step '+n+'    '+a.join('')+'   (XOR at position '+i+')');}
+}
+var rem=a.slice(d.length).join(''),frame=d+rem;
+document.getElementById('crc-res').innerHTML=card('Zeros appended',r)+card('CRC remainder',rem)+card('Transmitted frame',frame);
+document.getElementById('crc-steps').textContent=lines.join('\n');
+document.getElementById('crc-chk').textContent='Receiver check: dividing the frame by the generator leaves '+mod(frame,g)+' (all zeros means no error detected).';
+}
+document.getElementById('crc-d').addEventListener('input',crcUpdate);
+document.getElementById('crc-g').addEventListener('input',crcUpdate);
+crcUpdate();
+
+function alUpdate(){
+var bw=parseFloat(document.getElementById('al-bw').value),fs=parseFloat(document.getElementById('al-fs').value),G=parseFloat(document.getElementById('al-g').value);
+document.getElementById('al-gv').textContent=G.toFixed(2);
+var err=document.getElementById('al-err');
+if(!(bw>0)||!(fs>0)){err.textContent='Enter a speed and a frame size greater than zero';return;}
+err.textContent='';
+var Tt=fs/(bw*1e6),cap=1/Tt,sp=G*Math.exp(-2*G),ss=G*Math.exp(-G);
+document.getElementById('al-out').innerHTML=
+card('Frame time T',(Tt*1000).toFixed(3)+' ms','frame size / speed')+
+card('Channel capacity',Math.round(cap)+' frames/s','1 / T')+
+card('Pure ALOHA maximum',Math.round(cap/(2*Math.E))+' frames/s','18.4% of capacity')+
+card('Slotted ALOHA maximum',Math.round(cap/Math.E)+' frames/s','36.8% of capacity')+
+card('Pure at chosen G',(sp*cap).toFixed(1)+' frames/s','S = '+(sp*100).toFixed(1)+'%')+
+card('Slotted at chosen G',(ss*cap).toFixed(1)+' frames/s','S = '+(ss*100).toFixed(1)+'%');
+}
+['al-bw','al-fs','al-g'].forEach(function(id){document.getElementById(id).addEventListener('input',alUpdate);});
+alUpdate();
+
+var Q=[
+{q:"Which framing method fails if one header field is corrupted, because the receiver can no longer find where the next frame starts?",o:["Flag bytes with byte stuffing","Character count","Flag bits with bit stuffing","All of them equally"],a:1,e:"The count field tells the receiver where the frame ends. If it is damaged, the receiver loses track of every frame boundary after it."},
+{q:"Bit stuffing (insert a 0 after five consecutive 1s) is applied to the data 0111110. What is the output?",o:["0111110","01111100","011111010","00111110"],a:1,e:"The data is 0, then five 1s, then 0. A 0 is inserted after the five 1s: 0 11111 0 0 = 01111100."},
+{q:"Bit stuffing is applied to 1111111 (seven 1s). What is the output?",o:["1111111","11111011","11111101","111110111"],a:1,e:"After the first five 1s a 0 is inserted, then the remaining two 1s follow: 11111 0 11 = 11111011."},
+{q:"A CRC generator is 10011. How many zeros are appended to the data before the division?",o:["3","4","5","10"],a:1,e:"The generator has 5 bits, so its degree is 4. You append 4 zeros, the same as the remainder length."},
+{q:"Data = 1101 and generator = 1001. What is the CRC remainder?",o:["001","100","110","011"],a:1,e:"Append 000 to get 1101000. 1101 XOR 1001 = 0100, then the next windows give 001, 010 and 100. The remainder is 100."},
+{q:"In Adaptive Tree Walk, slot 0 allows all stations and a collision occurs. Which stations may transmit in slot 1?",o:["All stations again","Only the stations under the left child of the root","Only the station with the highest number","Only the stations under the right child of the root"],a:1,e:"The walk goes down the tree to the left subtree first, then the right subtree, repeating on each collision."},
+{q:"A Go-Back-N sender uses 3-bit sequence numbers. What is the largest sender window?",o:["3","4","7","8"],a:2,e:"GBN window = 2^n - 1 = 2^3 - 1 = 7."},
+{q:"A Selective Repeat sender uses 4-bit sequence numbers. What is the largest sender window?",o:["4","7","8","15"],a:2,e:"SR window = 2^(n-1) = 2^3 = 8."},
+{q:"A GBN sender transmits frames 0 to 7 and frame 2 is lost. How many frames are retransmitted?",o:["1","5","6","8"],a:2,e:"The receiver discards frames 3 to 7 because it is waiting for frame 2. The sender resends 2, 3, 4, 5, 6, 7, which is 6 frames."},
+{q:"Stop-and-Wait has Tt = 1 ms and Tp = 4 ms. What is its efficiency?",o:["12.5%","11.1%","20%","25%"],a:1,e:"a = Tp / Tt = 4. Efficiency = 1 / (1 + 2a) = 1/9 = 11.1%."},
+{q:"What is Gratuitous ARP (GARP) mainly used for?",o:["Finding an IP address from a MAC address","Announcing or updating a host's own IP-to-MAC mapping and detecting duplicate IPs","Encrypting ARP messages","Routing packets between networks"],a:1,e:"A host sends an ARP message about its own IP without being asked, so neighbours refresh their caches and duplicate addresses are noticed."},
+{q:"Which medium access method does IEEE 802.11 Wi-Fi use?",o:["CSMA/CD","CSMA/CA","Token passing","Pure ALOHA"],a:1,e:"Wi-Fi stations cannot reliably listen while sending, so they avoid collisions (CSMA/CA) instead of detecting them."},
+{q:"Which statement about ARP is correct?",o:["The request is unicast and the reply is broadcast","The request is broadcast and the reply is unicast","Both are broadcast","Both are unicast"],a:1,e:"The request goes to everyone on the LAN. Only the owner of the IP replies, directly to the requester."},
+{q:"What is the vulnerable period of Pure ALOHA if the frame time is T?",o:["T","2T","T/2","4T"],a:1,e:"A frame can collide with others that start up to T before it or up to T after it, so the window is 2T."},
+{q:"What is the maximum throughput (efficiency) of Slotted ALOHA?",o:["18.4%","36.8%","50%","100%"],a:1,e:"S = G * e^(-G) is largest at G = 1, which gives 1/e = 36.8%."},
+{q:"A channel runs at 2 Mbps with 1000-bit frames. What is the maximum throughput of Slotted ALOHA?",o:["368 frames/s","736 frames/s","184 frames/s","1000 frames/s"],a:1,e:"T = 1000 / 2,000,000 = 0.5 ms, so capacity = 2000 frames/s. 0.368 x 2000 = about 736."},
+{q:"A channel runs at 1 Mbps with 500-bit frames. What is the maximum throughput of Pure ALOHA?",o:["184 frames/s","368 frames/s","736 frames/s","500 frames/s"],a:1,e:"T = 500 / 1,000,000 = 0.5 ms, so capacity = 2000 frames/s. 0.184 x 2000 = about 368."},
+{q:"After the 4th collision on Ethernet, a station chooses its waiting time from how many slots?",o:["4","8","16","32"],a:2,e:"After the i-th collision the choice is from 2^i slots. 2^4 = 16 (slots 0 to 15)."},
+{q:"8 stations (0 to 7) use Basic Bit Map and stations 0, 2 and 5 are ready. What are the contention bits?",o:["10100100","00100101","10010100","10100010"],a:0,e:"Put 1 in positions 0, 2 and 5 and 0 elsewhere: 1 0 1 0 0 1 0 0."},
+{q:"A 10 Mbps Ethernet has a round-trip time of 20 microseconds. What is the minimum frame size?",o:["100 bits","200 bits","400 bits","2000 bits"],a:1,e:"Minimum frame size = bandwidth x round-trip time = 10,000,000 x 20 x 10^-6 = 200 bits."}
+];
+var score=0,answered=0;
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function renderQuiz(){
+score=0;answered=0;
+var h='';
+Q.forEach(function(q,qi){
+var idx=shuffle([0,1,2,3]);
+q.order=idx;
+h+='<div class="q" id="q'+qi+'"><p class="qt">Q'+(qi+1)+'. '+q.q+'</p>';
+idx.forEach(function(oi){h+='<button class="opt" data-q="'+qi+'" data-o="'+oi+'">'+q.o[oi]+'</button>';});
+h+='<div class="exp"><b>Why:</b> '+q.e+'</div></div>';
+});
+document.getElementById('qs').innerHTML=h;
+upd();
+}
+function upd(){
+document.getElementById('score').textContent='Score: '+score+' / '+Q.length;
+document.getElementById('prog').textContent='Answered: '+answered;
+}
+function reveal(qi,oi){
+var box=document.getElementById('q'+qi);
+if(box.className.indexOf('done')>-1){return;}
+box.className='q done';
+var btns=box.querySelectorAll('.opt');
+for(var i=0;i<btns.length;i++){
+var o=parseInt(btns[i].getAttribute('data-o'),10);
+if(o===Q[qi].a){btns[i].className='opt good';}
+else if(o===oi){btns[i].className='opt bad';}
+else{btns[i].className='opt dim';}
+}
+if(oi>=0){answered++;if(oi===Q[qi].a){score++;}}
+upd();
+}
+document.getElementById('qs').addEventListener('click',function(e){
+var t=e.target;
+if(t.className.indexOf('opt')>-1&&t.getAttribute('data-q')!==null){
+reveal(parseInt(t.getAttribute('data-q'),10),parseInt(t.getAttribute('data-o'),10));
+}
+});
+document.getElementById('showall').addEventListener('click',function(){for(var i=0;i<Q.length;i++){reveal(i,-1);}});
+document.getElementById('reset').addEventListener('click',function(){renderQuiz();window.scrollTo(0,document.getElementById('quiz').offsetTop);});
+renderQuiz();
+</script>
+</body>
+</html>
