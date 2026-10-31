@@ -16,7 +16,9 @@ Hugo blog deployed to GitHub Pages via GitHub Actions. Read automatically by Cla
 
 ```
 content/posts/       # published posts, one .md per post
-content/notes/       # shorter notes, one folder (page bundle) per note
+content/notes/       # shorter notes, one .md per note, pasted images in images/
+content/.obsidian/   # Obsidian vault settings (content/ is the vault)
+content/_templates/  # Obsidian note templates, ignored by Hugo
 content/training/    # one folder per course; notes inside a course list on its page
 content/about.md     # about page, url: /about/
 content/search.md    # search page (PaperMod, uses the home JSON output)
@@ -57,8 +59,8 @@ Post pipeline:
 hugo server -D                 # local preview, drafts included
 hugo --minify --gc             # what CI builds
 hugo new content posts/x.md    # new post
-hugo new content notes/x       # new note (creates notes/x/index.md)
-hugo new content training/computer-networks/x   # new course note
+hugo new content notes/x.md    # new note
+hugo new content training/computer-networks/x.md   # new course note
 ```
 
 The same commands are VS Code tasks: Ctrl+Shift+P → "Tasks: Run Task" → "Blog: …".
@@ -68,17 +70,42 @@ The same commands are VS Code tasks: Ctrl+Shift+P → "Tasks: Run Task" → "Blo
 Notes are the low-bar counterpart to posts: shorter, less polished, `summary`
 optional. They don't appear on the home page (`mainSections` is posts only).
 
-- Each note is a folder with `index.md`. Images go in the same folder; pasting a
-  screenshot in VS Code saves it there and writes the link.
-- A course note lives in its course folder (`content/training/<course>/x/`) and is
-  listed on the course page automatically, under the hand-written lab links.
+- Each note is one `.md` file. The file name becomes the URL, spaces allowed
+  (`Subnetting Cheatsheet.md` → `/notes/subnetting-cheatsheet/`).
+- Images go in an `images/` folder beside the note. Pasting in Obsidian or VS Code
+  saves them there. `layouts/_markup/render-image.html` resolves them through the
+  section's resources, and warns at build time if an image is missing.
+- Images in `images/` are published even if the note using them is still a draft.
+- A course note lives in its course folder (`content/training/<course>/x.md`) and
+  is listed on the course page automatically, under the hand-written lab links.
+- Links between pages are plain Markdown links to the `.md` file, relative to the
+  current file (`[x](../posts/y.md#heading)`). `render-link.html` turns them into
+  page URLs and warns on a link to a page that doesn't exist.
 - New notes start as `draft: true`. Set `draft: false` to publish.
-- `content/notes/note-cheatsheet/` is a permanent draft showing every feature below.
+- `content/notes/Writing Guide.md` is a permanent draft: every workflow step and
+  formatting feature as "you type / you get", rendered by the site itself. Keep it
+  in sync when a feature changes.
+
+### Obsidian
+
+`content/` is an Obsidian vault (Obsidian → Open folder as vault → `content`).
+The shared settings in `content/.obsidian/` make Obsidian write what Hugo reads:
+Markdown links, not `[[wiki links]]`; relative paths; pasted images into `./images`.
+Per-user files (workspace layout, cache) are gitignored.
+
+- Note templates are in `content/_templates/` (Note, Course note, Post). Alt+T
+  inserts one. Hugo skips that folder via `ignoreFiles` in `hugo.toml`.
+- Dates in templates carry the UTC offset. A date without one is read as UTC, so a
+  note dated "today" can count as future-dated, and `buildFuture = false` hides it.
+- Not supported on the site: `%% comments %%` (use `<!-- -->`), inline `#tags`
+  (use the tags property), `![[embeds]]`.
 
 Markdown features (snippet prefix in brackets, type it then press Tab):
-- Callouts: `> [!NOTE]`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION` [`note`, `tip`, …].
+- Callouts: `> [!NOTE]`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION` [`note`, `tip`, …],
+  plus Obsidian's types (`info`, `todo`, `question`, `example`, `quote`, `danger`, …).
   `> [!NOTE] Title` sets a custom title. `> [!NOTE]-` is collapsed until clicked
   (good for answers) [`fold`].
+- `==highlight==` renders as highlighted text.
 - Math: `$x^2$` inline, `$$ … $$` block [`math`], rendered at build time by KaTeX.
   A literal dollar sign in prose must be written `\$`. A bad formula fails the build
   with the file and line.

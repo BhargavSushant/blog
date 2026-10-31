@@ -1,0 +1,40 @@
+{{- /*
+  PaperMod's image hook, extended so images can sit beside a single-file note,
+  which is how Obsidian saves pasted images:
+
+    content/notes/my-note.md
+    content/notes/images/Pasted image 2026....png   ->  ![](images/Pasted%20image%202026....png)
+
+  Lookup order: the page's own bundle, then the folder the page file is in (its
+  section's resources), then assets/. Anything else is left as written.
+*/ -}}
+{{- $u := urls.Parse .Destination -}}
+{{- $src := $u.String -}}
+{{- if not $u.IsAbs -}}
+  {{- $path := strings.TrimPrefix "./" $u.Path -}}
+  {{- $res := .PageInner.Resources.Get $path -}}
+  {{- if and (not $res) .PageInner.File (not .PageInner.BundleType) -}}
+    {{- with .PageInner.Parent }}{{ $res = .Resources.Get $path }}{{ end -}}
+  {{- end -}}
+  {{- with or $res (resources.Get $path) -}}
+    {{- $src = .RelPermalink -}}
+    {{- with $u.RawQuery -}}
+      {{- $src = printf "%s?%s" $src . -}}
+    {{- end -}}
+    {{- with $u.Fragment -}}
+      {{- $src = printf "%s#%s" $src . -}}
+    {{- end -}}
+  {{- else -}}
+    {{- if not (hasPrefix $path "/") -}}
+      {{- warnf "Image %q not found (%s)" $path .Position -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $attributes := merge .Attributes (dict "alt" .Text "src" $src "title" (.Title | transform.HTMLEscape) "loading" "lazy") -}}
+<img
+  {{- range $k, $v := $attributes -}}
+    {{- if $v -}}
+      {{- printf " %s=%q" $k $v | safeHTMLAttr -}}
+    {{- end -}}
+  {{- end -}}>
+{{- /**/ -}}

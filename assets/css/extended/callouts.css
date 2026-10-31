@@ -31,3 +31,24 @@ details.callout:not([open]) .callout-title { margin-bottom: 0; }
   text-align: center;
 }
 .post-content pre.mermaid[data-processed] { color: inherit; }
+
+/* Obsidian's extra callout types, and their aliases */
+.callout-info                                           { --accent: #0891b2; }
+.callout-todo                                           { --accent: #2563eb; }
+.callout-abstract, .callout-summary, .callout-tldr      { --accent: #0d9488; }
+.callout-success, .callout-check, .callout-done         { --accent: #16a34a; }
+.callout-question, .callout-help, .callout-faq          { --accent: #ca8a04; }
+.callout-attention                                      { --accent: #d97706; }
+.callout-failure, .callout-fail, .callout-missing,
+.callout-danger, .callout-error, .callout-bug           { --accent: #dc2626; }
+.callout-example                                        { --accent: #7c3aed; }
+.callout-quote, .callout-cite                           { --accent: #6b7280; }
+.callout-hint                                           { --accent: #16a34a; }
+
+/* ==highlight== */
+.post-content mark {
+  background: color-mix(in srgb, #facc15 45%, transparent);
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}

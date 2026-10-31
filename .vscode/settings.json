@@ -1,9 +1,9 @@
 {
-  // Pasting or dropping an image into a note saves it next to the note's index.md.
+  // Pasting or dropping an image saves it in an images/ folder next to the note (same as Obsidian).
   "markdown.editor.filePaste.copyIntoWorkspace": "mediaFiles",
   "markdown.editor.drop.copyIntoWorkspace": "mediaFiles",
   "markdown.copyFiles.destination": {
-    "content/**/*.md": "${documentDirName}/"
+    "content/**/*.md": "${documentDirName}/images/"
   },
   "[markdown]": {
     "editor.wordWrap": "on",

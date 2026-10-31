@@ -1,0 +1,25 @@
+{{- /*
+  Links between notes, as Obsidian writes them: [Other note](Other%20note.md),
+  [Post](../posts/some-post.md#a-heading). A relative link to a .md file is turned
+  into that page's URL. A link to a page that doesn't exist warns at build time.
+  All other links render as normal.
+*/ -}}
+{{- $u := urls.Parse .Destination -}}
+{{- $href := .Destination -}}
+{{- if and (not $u.IsAbs) (strings.HasSuffix $u.Path ".md") -}}
+  {{- $target := "" -}}
+  {{- if hasPrefix $u.Path "/" -}}
+    {{- $target = $u.Path -}}
+  {{- else if .PageInner.File -}}
+    {{- $dir := replace .PageInner.File.Dir "\\" "/" -}}
+    {{- $target = path.Join "/" $dir $u.Path -}}
+  {{- end -}}
+  {{- with and $target (site.GetPage $target) -}}
+    {{- $href = .RelPermalink -}}
+    {{- with $u.Fragment }}{{ $href = printf "%s#%s" $href . }}{{ end -}}
+  {{- else -}}
+    {{- warnf "Link to %q: no such page (%s)" $u.Path .Position -}}
+  {{- end -}}
+{{- end -}}
+<a href="{{ $href }}"{{ with .Title }} title="{{ . }}"{{ end }}>{{ .Text }}</a>
+{{- /**/ -}}

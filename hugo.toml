@@ -8,6 +8,8 @@ enableGitInfo = true
 buildDrafts = false
 buildFuture = false
 pygmentsUseClasses = true
+# Obsidian's note templates live in content/_templates; they are not pages.
+ignoreFiles = ['[\\/]_templates[\\/]']
 
 # "Updated" dates come from git. A lastmod in front matter wins, for when a commit
 # touched a file without really changing it.
@@ -107,6 +109,9 @@ I write about hardening, automation, and why plausible-looking configuration sil
   [markup.goldmark.renderer]
     unsafe = true
   # Math: hands $...$, $$...$$, \(...\) and \[...\] to layouts/_markup/render-passthrough.html
+  # ==text== highlights, as in Obsidian
+  [markup.goldmark.extensions.extras.mark]
+    enable = true
   [markup.goldmark.extensions.passthrough]
     enable = true
     [markup.goldmark.extensions.passthrough.delimiters]

@@ -12,13 +12,13 @@
     {
       "label": "Blog: new note",
       "type": "shell",
-      "command": "hugo new content notes/${input:slug} ; code content/notes/${input:slug}/index.md",
+      "command": "hugo new content notes/${input:slug}.md ; code content/notes/${input:slug}.md",
       "problemMatcher": []
     },
     {
       "label": "Blog: new course note",
       "type": "shell",
-      "command": "hugo new content training/${input:course}/${input:slug} ; code content/training/${input:course}/${input:slug}/index.md",
+      "command": "hugo new content training/${input:course}/${input:slug}.md ; code content/training/${input:course}/${input:slug}.md",
       "problemMatcher": []
     },
     {

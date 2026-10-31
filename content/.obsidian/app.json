@@ -1,0 +1,11 @@
+{
+  "useMarkdownLinks": true,
+  "newLinkFormat": "relative",
+  "attachmentFolderPath": "./images",
+  "newFileLocation": "current",
+  "alwaysUpdateLinks": true,
+  "propertiesInDocument": "visible",
+  "trashOption": "system",
+  "showLineNumber": false,
+  "readableLineLength": true
+}

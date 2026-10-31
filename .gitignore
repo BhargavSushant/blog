@@ -2,3 +2,8 @@
 /resources/
 .hugo_build.lock
 /_to_delete/
+# Obsidian: per-user window layout and cache (the rest of content/.obsidian is shared settings)
+content/.obsidian/workspace*.json
+content/.obsidian/cache
+content/.obsidian/graph.json
+content/.trash/
