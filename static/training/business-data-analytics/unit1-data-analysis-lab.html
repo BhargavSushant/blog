@@ -128,8 +128,22 @@ code{overflow-wrap:anywhere}
 .grid3>*,.grid2>*,.flow>*{min-width:0}
 .grid2 select,.grid2 input{max-width:100%;width:100%}
 </style>
+<style id="nvbar-css">
+.nvbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0;padding:8px 14px;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--surface,#f6f8fb);color:var(--fg,#1b2430);border-bottom:1px solid var(--line,#d7dee8);zoom:1}
+.nvbar a{color:inherit;text-decoration:none}
+.nvbar a:hover,.nvbar a:focus-visible{text-decoration:underline}
+.nvbar .nvhome{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border:1px solid var(--line,#aab);border-radius:6px;font-weight:600;white-space:nowrap}
+.nvbar .nvhome:hover{background:var(--fg,#1b2430);color:var(--bg,#fff);text-decoration:none}
+.nvbar ol{display:flex;flex-wrap:wrap;align-items:center;gap:6px;list-style:none;margin:0;padding:0;min-width:0}
+.nvbar li{display:flex;align-items:center;gap:6px;min-width:0}
+.nvbar li+li:before{content:"\203A";opacity:.55}
+.nvbar li[aria-current]{opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46ch}
+@media print{.nvbar{display:none}}
+</style>
 </head>
 <body>
+<nav class="nvbar" aria-label="Site navigation"><a class="nvhome" href="/">&#8962; Home</a><ol><li><a href="/training/">Training</a></li><li><a href="/training/business-data-analytics/">Business Analytics</a></li><li aria-current="page">Data Analysis Lab - Unit I</li></ol></nav>
+
 <div class="app">
   <nav class="nav" aria-label="Lessons">
     <h2 class="brand">Data Analysis Lab<small>Unit I, Introduction to Data Analysis<br>Business Analytics lab series</small></h2>
