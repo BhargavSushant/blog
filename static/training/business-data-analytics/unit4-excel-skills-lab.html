@@ -100,7 +100,8 @@ td.ix{background:var(--bad-soft)} td.iy{background:var(--warn-soft)} td.iz{backg
 .kpi b{font-size:22px;display:block;font-variant-numeric:tabular-nums}
 .nextrow{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
 svg.chart{width:100%;height:auto;display:block;max-height:420px}
-svg.chart text{fill:var(--fg);font:12px var(--body)}
+svg.chart{font-size:calc(12px*var(--zoom))}
+svg.chart text{fill:var(--fg);font-family:var(--body);font-size:1em}
 svg.chart .ax{stroke:var(--muted);stroke-width:1}
 svg.chart .gr{stroke:var(--grid);stroke-width:1}
 svg.chart .lbl{fill:var(--muted)}
@@ -113,6 +114,19 @@ svg.chart .lbl{fill:var(--muted)}
 @media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.live{grid-column:1/-1;position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
 @media (max-width:760px){.app{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav ol{display:flex;overflow:auto;gap:4px}.nav li{flex:none}.nav .t{display:none}main{padding:18px 16px 60px}.grid2,.grid3,.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
 
+.dt.wrap td,.dt.wrap th{white-space:normal}
+.card.task{border-left:5px solid var(--good)}
+.numt{margin:4px 0 10px}.numt .tw{margin-top:8px}
+a.g{color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted)} a.g:hover{border-bottom-style:solid}
+.gl.hl{outline:3px solid var(--pri)}
+.qq+.qq{border-top:1px solid var(--line2);margin-top:8px}
+.opt:disabled{cursor:default}
+#prog{margin-top:6px;font-size:12.5px;line-height:1.5}
+select{max-width:100%}
+code{overflow-wrap:anywhere}
+.code{overflow-x:auto;max-width:100%}
+.grid3>*,.grid2>*,.flow>*{min-width:0}
+.grid2 select,.grid2 input{max-width:100%;width:100%}
 </style>
 </head>
 <body>
@@ -120,7 +134,7 @@ svg.chart .lbl{fill:var(--muted)}
   <nav class="nav" aria-label="Lessons">
     <h2 class="brand">Excel Skills Lab<small>Unit IV, Excel Shortcuts and Advanced Functions<br>BBA Sem I, Business Management Tools I</small></h2>
     <ol id="navlist"></ol>
-    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
+    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><div id="prog" class="small"></div><button id="resetP" type="button">Reset my score</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
   </nav>
   <main id="stage" tabindex="-1"></main>
   <aside class="live" aria-label="Live data"><h3>Live data: Sunrise Retail</h3><div id="livebox"></div></aside>
@@ -130,7 +144,7 @@ svg.chart .lbl{fill:var(--muted)}
 /* ===== helpers ===== */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-US"):v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
+const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-IN"):v.toLocaleString("en-IN",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
 const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
 const sum=a=>a.reduce((x,y)=>x+y,0);
 const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
@@ -148,39 +162,46 @@ function table(rows,cols,opts={}){
     return `<td class="${cls.trim()}">${v===""||v==null?'<span class="muted">(blank)</span>':esc(typeof v==="number"?fmt(v,c[2]!=null?c[2]:(Number.isInteger(v)?0:2)):v)}</td>`}).join("")+"</tr>").join("");
   return `<div class="tw${opts.small?' sm':''}"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
-const QUIZ={};
-function quiz(id,q,opts,ans,why){QUIZ[id]={ans,why};
-  return `<div class="card"><h3>Quick check</h3><p style="margin:0 0 6px"><b>${q}</b></p>`+opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" style="margin-top:6px"></div></div>`;}
-function regQuiz(id,ans,why){QUIZ[id]={ans,why}}
+const IN=n=>Number(n).toLocaleString("en-IN",{maximumFractionDigits:0});
+const num=v=>Number(v).toLocaleString("en-IN",{maximumFractionDigits:2});
+const RS=v=>"Rs "+IN(v);
 function seg(id,items,cls=""){return `<div class="seg ${cls}" id="${id}" role="group">`+items.map((x,i)=>`<button type="button" data-v="${x[0]}" aria-pressed="${i===0}">${x[1]}</button>`).join("")+`</div>`}
 function bindSeg(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)});return ()=>$$("[aria-pressed=true]",g)[0].dataset.v}
-const IN=n=>n.toLocaleString("en-US",{maximumFractionDigits:0});
 
-/* ===== SVG charts (colours come from CSS variables, so both themes work) ===== */
+/* ===== SVG charts: colours from CSS variables; text size follows the Text size control ===== */
 const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
-const nice=(max)=>{const e=Math.pow(10,Math.floor(Math.log10(max||1))),f=max/e;const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*e};
-function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(lo+st*i);return out}
-const short=v=>Math.abs(v)>=100000?(v/100000).toFixed(1).replace(/\.0$/,"")+"L":Math.abs(v)>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":(Math.round(v*100)/100)+"";
-function chartBar(items,o={}){ // items:[{label,value,color}]
-  const W=o.w||640,H=o.h||320,m={l:56,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...items.map(i=>i.value))*1.08),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+const lakh=v=>v===0?"0":String(+(v/100000).toFixed(2))+"L";
+const fa=hi=>hi>=100000?lakh:num;                     /* one unit per axis: lakh or plain */
+const short=v=>Math.abs(v)>=100000?lakh(v):num(v);
+function niceStep(raw){const e=Math.pow(10,Math.floor(Math.log10(raw||1))),f=raw/e;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e}
+function axisFor(maxv){const step=niceStep((maxv||1)/5),n=Math.max(1,Math.ceil(maxv/step-1e-9));return {hi:step*n,n}}
+function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(+(lo+st*i).toFixed(6));return out}
+function tk(lo,hi,intOnly){let st=niceStep((hi-lo)/5||1);if(intOnly)st=Math.max(1,Math.round(st));const out=[];for(let v=Math.ceil(lo/st-1e-9)*st;v<=hi+1e-9;v+=st)out.push(+v.toFixed(6));return out}
+const TB=(h,rows,note)=>` data-tbl="${esc(JSON.stringify({h,rows,note:note||""}))}"`;
+const TS="font-weight:700;font-size:1.17em";
+function chartBar(items,o={}){
+  const W=o.w||640,H=o.h||320,m={l:58,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mn=o.min!=null?o.min:0,vmax=Math.max(...items.map(i=>i.value));
+  let mx,n=5;if(o.max){mx=o.max}else{const a=axisFor(vmax*1.04);mx=a.hi;n=a.n}
+  const fm=fa(mx),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length,step=(items.length>14&&!o.rotate)?Math.ceil(items.length/10):1;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}"${TB([o.cat||"Item",o.vlabel||"Value"],items.map(i=>[i.label,i.value]))}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  ticks(mn,mx,n).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fm(t)}</text>`);
   items.forEach((it,i)=>{const x=m.l+i*bw+bw*.15,w=bw*.7,y=sy(Math.max(it.value,mn));
     s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,sy(mn)-y)}" fill="${it.color||o.color||"var(--c1)"}" rx="2"><title>${esc(it.label)}: ${fmt(it.value)}</title></rect>`;
-    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:11px">${short(it.value)}</text>`;
-    const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`});
+    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:.92em">${fm(it.value)}</text>`;
+    if(i%step===0){const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`}});
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
   if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
   return s+"</svg>";}
-function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
-  const W=o.w||640,H=o.h||320,m={l:56,r:o.legendRight?110:16,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...all)*1.08);
-  const sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+function chartLine(series,labels,o={}){
+  const W=o.w||640,H=o.h||320,m={l:58,r:o.legendRight?110:26,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0;
+  let mx,n=5;if(o.max){mx=o.max}else{const a=axisFor(Math.max(...all)*1.08);mx=a.hi;n=a.n}
+  const fm=fa(mx),sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}"${TB([o.cat||"Period"].concat(series.map(x=>x.name)),labels.map((l,i)=>[l].concat(series.map(x=>x.vals[i]==null?"":Math.round(x.vals[i]*100)/100))))}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  ticks(mn,mx,n).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fm(t)}</text>`);
   const step=Math.ceil(labels.length/(o.maxLabels||12));labels.forEach((l,i)=>{if(i%step===0)s+=`<text class="lbl" x="${sx(i)}" y="${H-m.b+16}" text-anchor="middle">${esc(l)}</text>`});
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
   series.forEach((se,k)=>{const c=se.color||PAL[k%6];let d="";se.vals.forEach((v,i)=>{if(v!=null)d+=(d?"L":"M")+sx(i).toFixed(1)+" "+sy(v).toFixed(1)});
@@ -189,62 +210,102 @@ function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
     if(o.dots!==false&&!se.dash)se.vals.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${sx(i)}" cy="${sy(v)}" r="3.5" fill="${c}"><title>${esc(labels[i])}: ${fmt(v)}</title></circle>`});
     if(o.legendRight)s+=`<text x="${W-m.r+8}" y="${m.t+14+k*16}" style="fill:${c};font-weight:600">${esc(se.name)}</text>`;
     else if(series.length>1)s+=`<text x="${m.l+8+k*150}" y="${H-6}" style="fill:${c};font-weight:600">&#9632; ${esc(se.name)}</text>`});
-  (o.marks||[]).forEach(mk=>{s+=`<text x="${sx(mk.i)}" y="${sy(mk.v)-10}" text-anchor="middle" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
+  (o.marks||[]).forEach(mk=>{const x=sx(mk.i),up=sy(mk.v)-10>m.t+12,anc=x<m.l+70?"start":x>W-m.r-70?"end":"middle",dx=anc==="start"?-4:anc==="end"?4:0;
+    s+=`<text x="${x+dx}" y="${up?sy(mk.v)-10:sy(mk.v)+30}" text-anchor="${anc}" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
   return s+"</svg>";}
-function chartScatter(pts,o={}){ // pts:[{x,y,r,color,label}]
-  const W=o.w||640,H=o.h||340,m={l:60,r:16,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||nice(Math.max(...ys)*1.05);
-  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(y0,y1).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
-  ticks(x0,x1).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${short(t)}</text>`);
+function chartScatter(pts,o={}){
+  const W=o.w||640,H=o.h||340,m={l:62,r:18,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||axisFor(Math.max(...ys)*1.05).hi;
+  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih,fy=fa(y1),fx=fa(x1);
+  const lab=pts.some(p=>p.label),rows=(lab?pts:pts.slice(0,25)).map(p=>lab?[p.label,Math.round(p.x*100)/100,Math.round(p.y*100)/100]:[Math.round(p.x*100)/100,Math.round(p.y*100)/100]);
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}"${TB(lab?["Label",o.xlabel||"x",o.ylabel||"y"]:[o.xlabel||"x",o.ylabel||"y"],rows,lab?"":"First 25 of "+pts.length+" points (some jitter added to discrete values). Download the CSV for every row.")}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  tk(y0,y1,o.yint).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fy(t)}</text>`);
+  tk(x0,x1,o.xint).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${fx(t)}</text>`);
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(y0)}" y2="${sy(y0)}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${sy(y0)}"/>`;
   if(o.xlabel)s+=`<text class="lbl" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${esc(o.xlabel)}</text>`;
   if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
   if(o.fit){const f=o.fit;s+=`<line x1="${sx(x0)}" y1="${sy(f.m*x0+f.b)}" x2="${sx(x1)}" y2="${sy(f.m*x1+f.b)}" stroke="var(--sec)" stroke-width="2.5" stroke-dasharray="7 4"/>`}
   pts.forEach(p=>{s+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="${p.r||4}" fill="${p.color||"var(--c1)"}" fill-opacity="${o.alpha||.65}" stroke="${p.color||"var(--c1)"}"><title>${esc(p.label||"")} (${fmt(p.x)}, ${fmt(p.y)})</title></circle>`;
-    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:11px">${esc(p.label)}</text>`});
+    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:.92em">${esc(p.label)}</text>`});
   return s+"</svg>";}
-function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart">`;
+function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart"${TB(["Item","Value","Share"],items.map(i=>[i.label,Math.round(i.value),(100*i.value/tot).toFixed(1)+"%"]))}>`;
   items.forEach((it,k)=>{const ang=it.value/tot*2*Math.PI,x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(a+ang),y2=cy+R*Math.sin(a+ang);
     s+=`<path d="M${cx} ${cy}L${x1} ${y1}A${R} ${R} 0 ${ang>Math.PI?1:0} 1 ${x2} ${y2}Z" fill="${it.color||PAL[k%6]}" stroke="var(--surface)" stroke-width="2"><title>${esc(it.label)}: ${(100*it.value/tot).toFixed(1)}%</title></path>`;a+=ang;
     s+=`<text x="250" y="${40+k*22}" style="fill:${it.color||PAL[k%6]};font-weight:700">&#9632; <tspan style="fill:var(--fg);font-weight:400">${esc(it.label)} ${(100*it.value/tot).toFixed(1)}%</tspan></text>`});
   return s+"</svg>";}
-function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:short(lo+i*w),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:num(Math.round(lo+i*w)),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+
+/* "Show the numbers" toggle: every chart carries its data, so screen readers and students can read the values */
+let NTID=0;
+function tableHtml(d){const cell=v=>typeof v==="number"?`<td class="num">${num(v)}</td>`:`<td>${esc(v)}</td>`;
+  return `<div class="tw sm"><table class="dt"><thead><tr>${d.h.map(x=>`<th>${esc(x)}</th>`).join("")}</tr></thead><tbody>${d.rows.map(r=>"<tr>"+r.map(cell).join("")+"</tr>").join("")}</tbody></table></div>`+(d.note?`<p class="small muted">${esc(d.note)}</p>`:"")}
+function addNumToggles(root){$$("svg.chart[data-tbl]",root).forEach(s=>{if(s.dataset.nt)return;s.dataset.nt="1";let d;try{d=JSON.parse(s.getAttribute("data-tbl"))}catch(e){return}
+  const id="nt"+(++NTID),w=document.createElement("div");w.className="numt";w.innerHTML=`<button type="button" class="btn sm" aria-expanded="false" aria-controls="${id}">Show the numbers</button><div id="${id}" hidden>${tableHtml(d)}</div>`;
+  s.insertAdjacentElement("afterend",w);const b=$("button",w),box=$("div",w);b.onclick=()=>{const open=box.hidden;box.hidden=!open;b.setAttribute("aria-expanded",String(open));b.textContent=open?"Hide the numbers":"Show the numbers"}})}
+
+/* ===== quiz set per lesson, score kept in localStorage ===== */
+const QZ={},QBY={};let QS={};
+try{QS=JSON.parse(localStorage.getItem("u4_q")||"{}")}catch(e){}
+const saveQ=()=>{try{localStorage.setItem("u4_q",JSON.stringify(QS))}catch(e){}};
+function shufQ(opts,ans,seed){const idx=opts.map((_,i)=>i);let h=(Math.imul(seed+1,2654435761)>>>0)^0x9e3779b9;const rnd=()=>{h^=h<<13;h>>>=0;h^=h>>>17;h^=h<<5;h>>>=0;return h/4294967296};for(let k=0;k<8;k++)rnd();for(let i=idx.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]]}return {opts:idx.map(i=>opts[i]),ans:idx.indexOf(ans)}}
+function defQ(n,list){QBY[n]=list.map((x,i)=>{const id="u4l"+n+"q"+(i+1);const sh=shufQ(x[1],x[2],n*97+i*31+7);QZ[id]={n,q:x[0],opts:sh.opts,ans:sh.ans,why:x[3]};return id})}
+function quizSet(n){return `<div class="card"><h3>Quick check: ${QBY[n].length} questions</h3>`+QBY[n].map((id,k)=>{const z=QZ[id];return `<div class="qq"><p style="margin:12px 0 6px"><b>${k+1}. ${z.q}</b></p>`+z.opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" aria-live="polite" style="margin-top:6px"></div></div>`}).join("")+`</div>`}
+const lessonDone=n=>QBY[n]&&QBY[n].every(id=>QS[id]&&QS[id].c);
+function showQ(id){const s=QS[id],z=QZ[id];if(!s||!s.c)return;$$(`[data-q="${id}"]`).forEach(b=>{b.disabled=true;if(+b.dataset.i===z.ans)b.classList.add("ok")});$("#why-"+id).textContent="Correct. "+z.why}
+function answerQ(b){const id=b.dataset.q,z=QZ[id],s=QS[id]||(QS[id]={t:0,c:false,f:false});if(s.c)return;s.t++;const ok=+b.dataset.i===z.ans;
+  $$(`[data-q="${id}"]`).forEach(x=>x.classList.remove("no"));
+  if(ok){s.c=true;s.f=s.t===1;showQ(id)}else{b.classList.add("no");$("#why-"+id).textContent="Not quite. Read the lesson again and try another answer."}
+  saveQ();drawNav();updateProg()}
+function updateProg(){const ids=Object.keys(QZ),tot=ids.length,c=ids.filter(i=>QS[i]&&QS[i].c).length,f=ids.filter(i=>QS[i]&&QS[i].f).length,nl=Object.keys(QBY).length,ld=Object.keys(QBY).filter(n=>lessonDone(+n)).length,box=$("#prog");
+  if(box)box.innerHTML=`<b>Your score</b><br>Questions correct: ${c} of ${tot}<br>Correct on first try: ${f}<br>Lessons complete: ${ld} of ${nl}<div class="bar" style="margin-top:6px"><i style="width:${tot?100*c/tot:0}%"></i></div>`;
+  const sm=$("#unitsum");if(sm)sm.innerHTML=Object.keys(QBY).map(n=>{const a=QBY[n],k=a.filter(i=>QS[i]&&QS[i].c).length,ft=a.filter(i=>QS[i]&&QS[i].f).length;return `<tr><td>${n}. ${L[n-1].nav}</td><td class="num">${k} of ${a.length}</td><td class="num">${ft}</td></tr>`}).join("")+`<tr><td><b>Unit total</b></td><td class="num"><b>${c} of ${tot}</b></td><td class="num"><b>${f}</b></td></tr>`}
+
+/* ===== glossary links ===== */
+const GLBACK={i:null};
+function g(k,label){const a=GL.find(x=>x[0]===k)||GL.find(x=>x[0]===ALIAS[k]);const key=a?a[0]:k;return `<a class="g" href="#gl-${key}" data-gl="${key}">${label||a[1]}</a>`}
+function openGloss(k){GLBACK.i=cur;go(L.length-1);const el=$("#gl-"+k);if(el){el.scrollIntoView({block:"center"});el.classList.add("hl")}}
 
 /* ===== lesson framework ===== */
 const L=[];
 function lesson(o){L.push(o)}
-let cur=0, done=new Set();
-const UKEY="dalab_"+(document.title||"x");
-try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e){}
+let cur=0;
 function go(i){
   cur=Math.max(0,Math.min(L.length-1,i));
-  const l=L[cur],st=$("#stage");
-  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
-    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
-  $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
+  const l=L[cur],st=$("#stage"),nl=L.filter(x=>!x.ref).length;
+  st.innerHTML=`<div class="crumb">${l.ref?"Reference":"Lesson "+(cur+1)+" of "+nl}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button>${l.ref&&GLBACK.i!=null?`<button class="btn" type="button" id="backB">Back to lesson ${GLBACK.i+1}</button>`:""}<button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
+  $("#prevB").onclick=()=>go(cur-1);$("#nextB").onclick=()=>go(cur+1);const bb=$("#backB");if(bb)bb.onclick=()=>go(GLBACK.i);
   l.mount&&l.mount(st);
-  $$("[data-q]",st).forEach(b=>b.onclick=()=>{
-    const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
-    $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
-    b.classList.add(ok?"ok":"no");
-    $("#why-"+id,st).textContent=(ok?"Correct. ":"Not quite. ")+k.why;
-    if(ok){done.add(cur);try{localStorage.setItem(UKEY,JSON.stringify([...done]))}catch(e){}drawNav()}
-  });
-  drawNav(); window.scrollTo(0,0); st.focus({preventScroll:true});
+  if(!l.ref)QBY[cur+1].forEach(showQ);
+  addNumToggles(st);fitChartText(st);drawNav();updateProg();
+  window.scrollTo(0,0);st.focus({preventScroll:true});
 }
 function drawNav(){
-  $("#navlist").innerHTML=L.map((l,i)=>`<li class="${done.has(i)?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${done.has(i)?"&#10003;":i+1}</span><span class="t">${l.nav}</span></button></li>`).join("");
+  $("#navlist").innerHTML=L.map((l,i)=>{const dn=!l.ref&&lessonDone(i+1);return `<li class="${dn?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${dn?"&#10003;":l.ref?"G":i+1}</span><span class="t">${l.nav}</span></button></li>`}).join("");
   $$("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
 }
+window.addEventListener("DOMContentLoaded",()=>{
+  $("#stage").addEventListener("click",e=>{const q=e.target.closest("[data-q]");if(q&&!q.disabled){answerQ(q);return}
+    const a=e.target.closest("[data-gl]");if(a){e.preventDefault();openGloss(a.dataset.gl)}});
+  new MutationObserver(()=>{addNumToggles($("#stage"));fitChartText($("#stage"))}).observe($("#stage"),{childList:true,subtree:true});
+  const rp=$("#resetP");if(rp)rp.onclick=()=>{if(confirm("Clear your quiz progress on this device?")){QS={};saveQ();if(!L[cur].ref)go(cur);else{drawNav();updateProg()}}};
+});
+
+/* chart text grows with the Text size control: size it in screen pixels, not in chart units */
+function fitChartText(root){const z=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--zoom"))||1;
+  $$("svg.chart",root||document).forEach(s=>{try{const k=s.getScreenCTM();if(k&&k.a>0)s.style.fontSize=(14*z/k.a).toFixed(2)+"px"}catch(e){}})}
+window.addEventListener("resize",()=>fitChartText(document));
+
+function wrapTables(root){$$("table",root).forEach(t=>{if(t.closest(".tw"))return;let a=t.parentElement,ok=false;while(a&&a.id!=="stage"){const o=getComputedStyle(a).overflowX;if(o==="auto"||o==="scroll"){ok=true;break}a=a.parentElement}if(ok)return;const w=document.createElement("div");w.className="tw";t.parentNode.insertBefore(w,t);w.appendChild(t)})}
+(function(){const st=document.getElementById("stage");if(!st)return;let busy=false;new MutationObserver(()=>{if(busy)return;busy=true;try{wrapTables(st)}finally{busy=false}}).observe(st,{childList:true,subtree:true})})();
+
 /* theme + text size (for projectors) */
 (function(){
   const R=document.documentElement;let theme=null,zi=0;const Z=[1,1.15,1.3];
   try{theme=localStorage.getItem("dalab_theme")}catch(e){}
   if(!theme)theme=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
-  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);
+  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);typeof fitChartText==="function"&&fitChartText(document);
     const b=$("#themeBtn"),z=$("#zoomBtn");if(b)b.innerHTML=theme==="dark"?"&#9728; Switch to LIGHT mode":"&#9790; Switch to DARK mode";if(z)z.textContent="Text size: "+Math.round(Z[zi]*100)+"%";}
   window.addEventListener("DOMContentLoaded",()=>{
     $("#themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("dalab_theme",theme)}catch(e){}apply()};
@@ -264,10 +325,16 @@ const monthly=(rows=SALES)=>{const g=sumBy(rows,r=>r.month);return MONTHS.map(m=
 const REGIONS=["Central","East","North","South","West"],CATS=["Accessories","Electronics","Home","Stationery"];
 const sample=(arr,n)=>{const a=arr.slice();for(let i=0;i<n;i++){const j=i+Math.floor(Math.random()*(a.length-i));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,n)};
 
+function csvDownload(){const H=["OrderID","OrderDate","Region","Product","Salesperson","Units","MRP","DiscountPct","CustomerID","Rating","PaymentMode","Category","NetSales","City","Segment","Month","CostPrice","Profit"];
+  const q=v=>{if(v==null)return "";const t=String(v);return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t};
+  const rows=[H.join(",")].concat(SALES.map(r=>KEYS.map(k=>q(r[k])).join(",")));
+  const blob=new Blob(["\ufeff"+rows.join("\r\n")],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="sunrise-retail-sales.csv";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function renderLive(){
   const tot=sum(SALES.map(r=>r.net));
-  $("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">The Sunrise Retail data (1 Apr 2025 to 31 Mar 2026), already cleaned. Same numbers as your Notion pages.</p><div class="grid2"><div class="kpi"><span class="small muted">Orders</span><b>${SALES.length}</b></div><div class="kpi"><span class="small muted">Net sales</span><b>${fmt(tot)}</b></div></div><div style="height:8px"></div>`+
-  table(SALES.slice(0,14),[["order","Order"],["region","Region"],["product","Product"],["units","Units"],["net","Net sales"]],{small:true})+`<p class="small muted">First 14 of ${SALES.length} rows. Net Sales = Units x MRP x (1 - Discount/100).</p>`;
+  $("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">The Sunrise Retail data (1 Apr 2025 to 31 Mar 2026), already cleaned. Every lesson in this unit uses these ${SALES.length} orders.</p><button class="btn pri sm" type="button" id="csvB">Download the data (CSV)</button><div style="height:8px"></div><div class="grid2"><div class="kpi"><span class="small muted">Orders</span><b>${SALES.length}</b></div><div class="kpi"><span class="small muted">Net sales (Rs)</span><b>${IN(tot)}</b></div></div><div style="height:8px"></div>`+
+  table(SALES.slice(0,14),[["order","Order"],["region","Region"],["product","Product"],["units","Units"],["cost","Cost price (Rs)"],["net","Net sales (Rs)"]],{small:true})+`<p class="small muted">First 14 of ${SALES.length} rows. Net sales = Units x MRP x (1 - Discount / 100). Profit margin = (Net sales - Units x Cost price) / Net sales.</p>`;
+  $("#csvB").onclick=csvDownload;
 }
 
 /* ===== Unit IV: Excel skills (a working mini spreadsheet in the browser) ===== */
@@ -373,12 +440,77 @@ const near=(a,b,e=.01)=>typeof a==="number"&&Math.abs(a-b)<e;
 const SUMIFR=REGIONS.map(g=>[g,sum(SALES.filter(x=>x.region===g).map(x=>x.net))]);
 function withTasks(r,ts){TASKS=ts;subs.push(sheetTouch);sheetTouch()}
 
+function regQuiz(){}
+const task=items=>`<div class="card task"><h3>Your task</h3><ol class="small">${items.map(x=>`<li>${x}</li>`).join("")}</ol></div>`;
+const GL=[
+["cell","Cell and range","A cell is one box on the sheet, named by its column letter and row number, such as M2. A range is a block of cells, such as M2:M989."],
+["workbook","Workbook and worksheet","A workbook is the whole Excel file. A worksheet is one tab inside it."],
+["namebox","Name Box and formula bar","The Name Box, at the left above the grid, shows the selected cell and lets you jump to a cell or range. The formula bar shows what is actually stored in the cell."],
+["formula","Formula","An entry that begins with = and calculates a value, for example =SUM(M2:M989)."],
+["function","Function","A ready-made calculation with a name and inputs in brackets, such as SUM(M2:M989)."],
+["relative","Relative reference","A reference such as M2 that changes when the formula is copied or filled down."],
+["absolute","Absolute reference","A reference such as $M$2 that does not change when copied. Press F4 to add the dollar signs."],
+["mixed","Mixed reference","A reference such as $M2 or M$2 in which only the column or only the row is fixed."],
+["fillhandle","Fill handle and fill down","The small square at the bottom right of a selected cell. Dragging it, or pressing Ctrl+D, copies the formula or pattern to the cells below."],
+["sumifs","SUMIFS","A function that adds the values in one range for the rows that meet one or more conditions, for example the net sales of the Central region."],
+["pivot","Pivot table","A table that summarises many rows by dragging fields into Rows, Columns, Values and Filters."],
+["field","Field","A column of the data, such as Region or NetSales, used as a heading or a value in a pivot table."],
+["aggregate","Sum, count and average","Three ways to summarise values in a pivot table: add them, count the rows, or take the mean."],
+["sortdef","Sort","To reorder rows by the values of one or more columns. Sorting should always move whole rows together."],
+["filterdef","Filter","To hide the rows that do not meet a condition. The hidden rows are not deleted."],
+["subtotal","SUBTOTAL","A function that summarises only the rows that are visible after a filter. SUBTOTAL(109, range) adds the visible values."],
+["shortcut","Keyboard shortcut","A key combination, such as Ctrl+Shift+L, that performs a command without the mouse."],
+["pastevalues","Paste values","A paste option that keeps the numbers but not the formulas behind them."],
+["ifdef","IF function","A logical function that returns one result when a condition is true and another when it is false: IF(condition, if_true, if_false)."],
+["iferror","IFERROR","A function that returns a value you choose when a formula would show an error, such as #DIV/0!."],
+["textfn","Text functions","Functions that work on words: LEFT, MID, PROPER, TRIM and the & operator that joins text."],
+["infofn","Information functions","Functions that report on a cell, such as ISNUMBER, or that count entries, such as COUNT (numbers only) and COUNTA (all non-blank cells)."]
+];
+const ALIAS={};
+
+defQ(1,[
+["What does the Name Box do?",["It names the workbook","It shows the selected cell and lets you jump to a cell or range","It formats numbers","It shows the formula result"],1,"Type a reference such as M2:M989 in the Name Box and press Enter to select that range."],
+["Which of these is a range?",["M2","M2:M989","$M$2","=M2"],1,"A range is a block of cells, written with a colon between its first and last cell."],
+["A cell shows 1,500 but the formula bar shows 1500.4. What is stored in the cell?",["1,500","1500.4","Either, it depends on the printer","The text 1,500"],1,"Formatting changes how a value looks, not what it is. The formula bar shows the stored value."],
+["Which entry is a formula?",["Total","=SUM(M2:M989)","SUM(M2:M989)","M2:M989"],1,"Every formula starts with an equals sign. Without it the cell holds text."]]);
+defQ(2,[
+["You fill =SUMIFS(M2:M989,C2:C989,W2) down 4 rows. What does row 6 contain?",["The same formula as row 2","=SUMIFS(M6:M993,C6:C993,W6)","=SUMIFS($M$2:$M$989,$C$2:$C$989,W6)","An error"],1,"All three references are relative, so each one moves down 4 rows. The ranges slide away from the data."],
+["Which reference stays fixed when you copy it to any other cell?",["M2","$M$2","M$2","$M2"],1,"Dollar signs in front of both the column and the row fix the reference."],
+["You need the share of each region in the total: region sales divided by the total of X2:X6. How do you write the total part?",["SUM(X2:X6)","SUM($X$2:$X$6)","SUM(X$2:X6)","SUM(X2:$X$6)"],1,"The total range must stay on X2:X6 in every row, so it needs dollar signs on both ends."],
+["Which key adds or changes the dollar signs while you edit a reference?",["F2","F4","F5","F9"],1,"F4 cycles through $M$2, M$2, $M2 and M2."]]);
+defQ(3,[
+["In a pivot table, where does the number you want to add up go?",["Rows","Columns","Values","Filters"],2,"Values holds the field that is calculated. Rows and Columns only supply headings."],
+["You drag Region to Rows and Net sales to Values, set to Count. What do you get?",["The total sales of each region","The number of orders in each region","The average order of each region","The highest sale in each region"],1,"Count counts the rows. Sum would add the amounts."],
+["A pivot table shows a grand total of 752,219.75 for net sales. What is true of the same data with a filter Segment = Retail?",["The grand total stays the same","The grand total falls, since only Retail orders are included","The grand total rises","The pivot table breaks"],1,"A filter limits the rows used, so the totals shrink to those rows."],
+["You change the source data after building a pivot table. What must you do to see the change?",["Nothing, it updates by itself","Refresh the pivot table","Build a new workbook","Retype the headings"],1,"A pivot table keeps a summary until it is refreshed. Use Data, Refresh All."]]);
+defQ(4,[
+["Which shortcut turns the filter buttons on or off?",["Ctrl+Shift+L","Ctrl+F","Alt+=","Ctrl+T"],0,"Ctrl+Shift+L toggles AutoFilter on the header row."],
+["Which shortcut jumps to the last row of a block of data?",["Ctrl+Home","Ctrl+Down","Ctrl+Z","F4"],1,"Ctrl with an arrow key jumps to the edge of the data in that direction."],
+["Which shortcut inserts the AutoSum formula?",["Alt+=","Ctrl+;","Ctrl+D","F2"],0,"Alt+= writes =SUM() for the nearby range."],
+["Why practise shortcuts on a task you already know?",["They change the answer","They save time and reduce errors on routine work","They are needed for formulas to run","They are required for pivot tables"],1,"The result is the same. The gain is speed and fewer slips from the mouse."]]);
+defQ(5,[
+["You sort only column M (NetSales) and leave the other columns. What happens?",["Nothing","Net sales no longer match their orders","Excel fixes it automatically","The other columns are deleted"],1,"Each row's values must move together. Sorting one column alone scrambles the rows."],
+["After you filter Region = West, what happens to the other rows?",["They are deleted","They are hidden and still in the sheet","They move to a new sheet","They turn to zero"],1,"A filter only hides rows. Clear the filter and they come back."],
+["You filter to the West region. Which formula totals only the visible net sales?",["=SUM(M2:M989)","=SUBTOTAL(109,M2:M989)","=COUNT(M2:M989)","=AVERAGE(M2:M989)"],1,"SUM includes hidden rows. SUBTOTAL with 109 adds only the visible ones."],
+["You want the largest orders first, and the oldest order first inside each equal amount. Which sort is this?",["A single-level sort","A multi-level sort: Net sales high to low, then Date","A filter","A pivot table"],1,"A multi-level sort orders by one column and uses the next column to break ties."]]);
+defQ(6,[
+["Which formula counts only cells that hold numbers?",["=COUNTA(M2:M989)","=COUNT(M2:M989)","=SUM(M2:M989)","=LEN(M2:M989)"],1,"COUNT counts numeric cells only. COUNTA counts every non-blank cell, including text."],
+["Which function gives the second largest order?",["=LARGE(M2:M989,2)","=MAX(M2:M989,2)","=SMALL(M2:M989,2)","=RANK(M2:M989)"],0,"LARGE(range, k) returns the k-th largest value."],
+["A formula =A2/B2 shows #DIV/0! when B2 is zero. How do you show 0 instead?",["=IFERROR(A2/B2,0)","=IF(A2/B2,0)","=ISNUMBER(A2/B2)","=TRIM(A2/B2)"],0,"IFERROR returns your chosen value whenever the formula would give an error."],
+["What does =IF(M2>=1500,\"Large\",\"Normal\") return for an order of 1,200?",["Large","Normal","1,200","An error"],1,"The condition is false, so IF returns the second result."]]);
+
+
 lesson({nav:"Interface, data entry, formatting",title:"Excel basics: interface, data entry, workbooks, formatting",syl:"Introduction to MS Excel, Navigating Excel Interface, Mastering Data Entry and Manipulation, Workbook and Spreadsheet Management, Formatting for Clarity and Readability",
-html:()=>`<p class="lead">This page contains a <b>working spreadsheet</b> loaded with the Sunrise data: columns A to P (same layout as your Notion pages), and the Products table at X1:AA13. Type formulas in it just as in Excel or Google Sheets. Nothing is saved to any file.</p>
+html:()=>`<p class="lead">This page contains a <b>working spreadsheet</b> loaded with the Sunrise data: columns A to P (the same layout as the practice workbook), and the Products table at X1:AA13. Type formulas in it just as in Excel or Google Sheets. Nothing is saved to any file.</p>
 <div class="grid2"><div class="card"><h3>Parts of the screen</h3><p class="small"><b>Cell</b> = one box (M2). <b>Range</b> = a block (M2:M989). <b>Worksheet</b> = one tab; <b>workbook</b> = the whole file. <b>Name Box</b> (left) shows or jumps to a cell. <b>Formula bar</b> (right) shows what is truly inside the cell. <b>Status bar</b> (bottom) shows Sum, Average, Count of the selection.</p></div>
-<div class="card"><h3>Data entry and formatting</h3><p class="small">Text aligns left, numbers right. Drag the fill handle to continue 1, 2, 3 or Jan, Feb. Format cells for readability (currency, % and 2 decimals, bold header, frozen header row). Formatting changes how a value looks, <b>never what it is</b>. Practise these in Excel or Sheets with your Notion steps; this page practises formulas.</p></div></div>
+<div class="card"><h3>Data entry and formatting</h3><p class="small">Text aligns left, numbers right. Drag the fill handle to continue 1, 2, 3 or Jan, Feb. Format cells for readability (currency, % and 2 decimals, bold header, frozen header row). Formatting changes how a value looks, <b>never what it is</b>. Practise these in Excel or Sheets; this page practises formulas.</p></div></div>
 <div class="card try"><h3>Try it: three tasks</h3><div id="tkw"></div>${"" }<div id="shl"></div></div>
-${quiz("u4q1","What does the Name Box do?",["Names the workbook","Shows the selected cell and lets you jump to any cell or range","Formats numbers"],1,"Type an address like M2:M989 and press Enter to jump there and select it.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">An Excel file is a ${g("workbook","workbook")}. Each tab inside it is a worksheet. A worksheet is a grid of ${g("cell","cells")}. Each cell has an address made of its column letter and row number, so M2 is column M, row 2. A block of cells is a range, written with a colon: M2:M989 means every cell from M2 down to M989.</p><p class="small">Three parts of the screen matter most. The ${g("namebox","Name Box")} shows the selected cell and lets you jump to any cell or range by typing its address. The formula bar shows what is really stored in the cell. The status bar at the bottom shows the sum, average and count of the cells you have selected, without any formula.</p><p class="small">Text is aligned to the left of a cell and numbers to the right. If a number is aligned to the left, it was probably typed as text and calculations will skip it. A ${g("formula")} always begins with =, for example =SUM(M2:M989). Without the equals sign Excel stores the typing as text.</p></div>
+<div class="card"><h3>What the practice sheet shows</h3><p class="small">The sheet below holds the 988 Sunrise orders in columns A to P. Select M2:M989 in the Name Box and the status bar shows a sum of 752,219.75. Typing =SUM(M2:M989) in a cell gives the same number. The two routes agree, and the difference is that the formula stays in the sheet and updates when the data changes. Formatting a cell as currency or with two decimals changes only how the number looks. The stored value in the formula bar stays the same.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Start every formula with =.</li><li>Keep one record per row and one field per column, with a single header row.</li><li>Check the formula bar when a cell looks wrong, because the display may hide the stored value.</li><li>Use formatting to make the sheet readable. Do not type symbols such as Rs into the numbers.</li></ul></div>
+${task(["In the practice sheet, use the Name Box to select M2:M989 and write the Sum shown in the status bar.","Type =AVERAGE(M2:M989) in cell S2. Write the result with two decimals.","In your own Excel or Sheets file, type the number 1500 in a cell and format it as currency. Look at the formula bar and write what it shows."])}
+${quizSet(1)}`,
 mount(r){$("#shl",r).innerHTML=sheetHTML();mountSheet(r);
   const ts=[["Click the <b>Name Box</b>, type <code>M2:M989</code>, press Enter. The status bar shows Sum <b>752,219.75</b>.",()=>lastStat&&lastStat.rng==="M2:M989"&&near(lastStat.sum,752219.75)],
    ["In cell <b>S1</b> type <code>=SUM(M2:M989)</code> and press Enter.",()=>near(val("S1"),752219.75)],
@@ -393,7 +525,12 @@ html:()=>`<p class="lead">Every formula starts with <code>=</code>. The most com
 <div class="row"><input type="text" id="rf" value="=SUMIFS($M$2:$M$989,$C$2:$C$989,W2)" style="width:100%;max-width:420px;font-family:var(--mono)"></div>
 <div class="row">Fill down by <input type="range" id="rk" min="1" max="4" value="1"> <b id="rkv">1</b> row(s)</div><div id="rfo"></div></div>
 <div class="card try"><h3>Do it in the sheet</h3><p class="small muted">Type the five regions in W2:W6 (or press the button), then build the formulas below and fill down to row 6.</p><div class="row"><button class="btn sm" id="regs" type="button">Fill W2:W6 with the regions</button></div><div id="tkw"></div><div id="shl"></div></div>
-${quiz("u4q2","You fill =SUMIFS(M2:M989,C2:C989,W2) down 4 rows. What does row 6 look like?",["Unchanged","=SUMIFS(M6:M993,C6:C993,W6)","=SUMIFS($M$2:$M$989,$C$2:$C$989,W6)"],1,"Without dollar signs both ranges slide down, so you sum the wrong rows (and run past the data).")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">A reference tells a formula where to look. There are three kinds. A ${g("relative","relative reference")}, such as M2, changes when the formula is copied: copy it one row down and it becomes M3. An ${g("absolute","absolute reference")}, such as $M$2, never changes, because the dollar signs fix both the column and the row. A ${g("mixed","mixed reference")}, such as $M2 or M$2, fixes only the column or only the row. Press F4 while editing to cycle through these forms.</p><p class="small">The ${g("fillhandle","fill handle")} is the small square at the bottom right of a selected cell. Dragging it, or pressing Ctrl+D, copies the formula to the cells below, adjusting the relative parts. ${g("sumifs","SUMIFS")} adds the values of one range for the rows that meet a condition, for example the net sales where the region is Central.</p></div>
+<div class="card"><h3>What the trainer shows</h3><p class="small">The reference trainer shows the same formula in row 2 and in the rows below it, after a fill down. The parts without a dollar sign slide down with the formula. The parts with a dollar sign stay where they are. In the SUMIFS example, the data ranges must be absolute because every row must look at the same 988 orders. The region name W2 must be relative, because each row has its own region.</p><p class="small">The last task breaks the formula on purpose: the total range X2:X6 without dollar signs moves down in each row, and row 6 divides the value by itself and gives 1. This is the most common error when students copy formulas. Learn to spot it: a column of shares that does not add up to 100 percent is a warning.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Fix the data range with $ signs when the same range is used in every row.</li><li>Leave the lookup value relative when it changes from row to row.</li><li>After you fill down, check the last row: its formula should still point to real data.</li><li>Check totals: the shares of a whole must add up to 1.</li></ul></div>
+${task(["Fill W2:W6 with the regions and build the SUMIFS formula in X2. Fill down to row 6 and write the value for Central.","Build the share in Y2 with absolute references to the total. Write the share of East with 3 decimals.","Break it on purpose as in the last task. Write what row 6 shows and why."])}
+${quizSet(2)}`,
 mount(r){function t(){const k=+$("#rk",r).value;$("#rkv",r).textContent=k;const f=$("#rf",r).value;$("#rfo",r).innerHTML=`<div class="code">Row 2:  ${esc(f)}\nRow ${2+k}:  ${esc(shiftF(f,k,0))}</div><p class="small">${shiftF(f,k,0)===f?'<span class="tag g">Locked</span> nothing slid.':"Parts without a $ slid down."}</p>`}
   $("#rf",r).oninput=t;$("#rk",r).oninput=t;t();
   $("#shl",r).innerHTML=sheetHTML();mountSheet(r,1);$("#fdn",r).value=6;$("#nb",r).value="X2";
@@ -412,8 +549,13 @@ html:()=>`<p class="lead">A <b>pivot table</b> summarises thousands of rows by d
 <div class="row">Rows <select id="pr"></select> Columns <select id="pc"></select> Values <select id="pv"></select> as <select id="pa"><option value="sum">Sum</option><option value="count">Count</option><option value="avg">Average</option></select></div>
 <div class="row">Filter <select id="pf"><option value="">(none)</option></select> = <select id="pfv"></select> <label class="chk"><input type="checkbox" id="ppc"> Show as % of grand total</label></div>
 <div id="po"></div><div class="callout k small" id="pn"></div></div>
-<div class="card"><h3>Try these (check against your Notion answer key)</h3><p class="small">1. Rows = Region, Columns = Category, Values = Net sales (sum): Central/Accessories <b>59,263.05</b>, grand total <b>752,219.75</b>.<br>2. Rows = Salesperson, Values = Orders: Vikas Joshi <b>107</b>, Aman Verma <b>90</b>.<br>3. Filter Segment = Retail, rows Region: Central <b>74,844.30</b>.<br>In Google Sheets: Insert, Pivot table. In Excel: Insert, PivotTable.</p></div>
-${quiz("u4q3","In a pivot table, where does the number you want to add up go?",["Rows","Columns","Values"],2,"Rows and Columns are headings; Values hold the calculation (sum, count, average).")}`,
+<div class="card"><h3>Try these (check against the answers given)</h3><p class="small">1. Rows = Region, Columns = Category, Values = Net sales (sum): Central/Accessories <b>59,263.05</b>, grand total <b>752,219.75</b>.<br>2. Rows = Salesperson, Values = Orders: Vikas Joshi <b>107</b>, Aman Verma <b>90</b>.<br>3. Filter Segment = Retail, rows Region: Central <b>74,844.30</b>.<br>In Google Sheets: Insert, Pivot table. In Excel: Insert, PivotTable.</p></div>
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">A ${g("pivot","pivot table")} summarises many rows into a small table. You do not write formulas. You drag ${g("field","fields")} (the columns of the data) into four areas. Rows and Columns supply the headings. Values holds the field to calculate, such as net sales. Filters limits which rows are used.</p><p class="small">For Values you choose how to ${g("aggregate","summarise")}: sum adds the numbers, count counts the rows, and average takes the mean. Sum of net sales answers "how much?", and count of orders answers "how many?". Both give different tables from the same data, so choose the one that matches the question.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">With Region in Rows, Category in Columns and Net sales summed in Values, the table shows 20 region and category totals and the grand total of 752,219.75. Each cell is what a SUMIFS formula would give for one region and one category, so the pivot builds the whole grid in one step. Change the filter to Retail only and every total becomes smaller, since fewer rows are included. Change Values to Count and the numbers become order counts.</p><p class="small">Check the pivot against a formula at least once. If a pivot cell and a SUMIFS cell disagree, the usual reasons are a filter you forgot, a blank or misspelled value in the source column, or a pivot that was not refreshed after the data changed.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Start from clean data with one header row and no blank rows.</li><li>Decide the question first, then choose Rows, Columns and Values.</li><li>Choose sum or count to suit the question.</li><li>Refresh the pivot table after you change the source data.</li></ul></div>
+${task(["Build the pivot with Region in Rows, Category in Columns and Net sales summed. Write the figure for Central and Accessories.","Change Values to Orders (count). Write which region has the most orders.","Add the filter Segment = Retail. Write the total for Central and say why it is smaller than before."])}
+${quizSet(3)}`,
 mount(r){const opt=(o,none)=>(none?'<option value="">(none)</option>':"")+Object.entries(o).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
   $("#pr",r).innerHTML=opt(PF);$("#pc",r).innerHTML=opt(PF,true);$("#pv",r).innerHTML=opt(PV);$("#pf",r).innerHTML=opt(PF,true);$("#pc",r).value="cat";
   function fv(){const f=$("#pf",r).value;$("#pfv",r).innerHTML=f?[...new Set(SALES.map(x=>x[f]))].sort().map(x=>`<option>${x}</option>`).join(""):""}
@@ -437,7 +579,12 @@ html:()=>`<p class="lead">Shortcuts keep your hands on the keyboard, which is mu
 <div class="row"><button class="btn pri" id="sgo" type="button">Start drill</button><span id="stime" class="small"></span></div><div id="sq" class="callout i" style="font-size:18px">Press Start.</div><div id="ssc" class="small"></div></div>
 <div class="card"><h3>Cheat sheet</h3><div class="row"><input type="text" id="sfind" placeholder="Search an action..." style="min-width:240px"></div><div id="stab"></div></div>
 <div class="card"><h3>Business task: the weekly sales check (keyboard only)</h3><p class="small">1. Ctrl+Down in M2 to reach the last order. 2. Ctrl+Home, then Ctrl+Shift+Down to select NetSales (status bar: <b>752,219.75</b>). 3. Ctrl+Shift+L, filter Region = West. 4. <code>=SUBTOTAL(109,M2:M989)</code> gives <b>152,940.85</b>; <code>=SUBTOTAL(103,A2:A989)</code> gives <b>191</b> orders. 5. Ctrl+; to stamp the date. Time yourself with the mouse first, then keyboard only.</p></div>
-${quiz("u4q4","Which shortcut turns the filter dropdowns on or off?",["Ctrl+Shift+L","Ctrl+F","Alt+="],0,"Ctrl+Shift+L toggles filters. Ctrl+F is Find; Alt+= is AutoSum.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">A ${g("shortcut","keyboard shortcut")} is a key combination that runs a command without the mouse. Ctrl+Down jumps to the last row of a block of data, Ctrl+Shift+L turns the filter buttons on or off, F2 edits the active cell, and Alt+= inserts AutoSum. These work the same, or almost the same, in Google Sheets.</p><p class="small">${g("pastevalues","Paste values")} keeps the numbers of a result and drops the formulas behind them. It is used when you want to freeze a result, or send numbers to someone who should not see the formulas. In Excel 365 the key is Ctrl+Shift+V, in older versions Ctrl+Alt+V and then V.</p></div>
+<div class="card"><h3>What the drill shows</h3><p class="small">The drill gives an action and you press the keys. It measures speed, but the main benefit is accuracy. A shortcut that selects "to the end of the data" is less error-prone than dragging the mouse down 988 rows. In the weekly sales check, the whole job is done on the keyboard: reach the last order, select the net sales column, filter to the West region, read the subtotal of 152,940.85 and the 191 orders, and stamp the date.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Learn five shortcuts at a time and use them on real tasks.</li><li>Use Ctrl+Shift+Down to select to the edge of the data, not the mouse.</li><li>Use SUBTOTAL, not SUM, when you want only the visible rows after a filter.</li><li>Press Ctrl+Z at once when a result looks wrong.</li></ul></div>
+${task(["Time yourself doing the weekly sales check with the mouse. Then repeat it with the keyboard only. Write both times.","Write the shortcuts for: turning filters on, selecting a whole column, and showing formulas.","Choose three shortcuts from the cheat sheet and write one business task for each."])}
+${quizSet(4)}`,
 mount(r){function tab(q){const all=SC.map(s=>[s[0],s[1]]).concat(SCX);$("#stab",r).innerHTML=table(all.filter(a=>!q||(a[0]+a[1]).toLowerCase().includes(q.toLowerCase())).map(a=>({a:a[0],k:a[1]})),[["a","Action"],["k","Keys"]],{small:true})}
   tab("");$("#sfind",r).oninput=e=>tab(e.target.value);
   let qs=[],i=0,score=0,t0=0,on=false;
@@ -458,7 +605,12 @@ html:()=>`<p class="lead"><b>Sorting</b> reorders rows. Always sort the <b>whole
 <div class="row">Sort by <select id="s1"></select> <select id="d1"><option value="1">A to Z / low to high</option><option value="-1" selected>Z to A / high to low</option></select> then by <select id="s2"><option value="">(none)</option></select></div>
 <div id="fo2"></div><div id="ft"></div></div>
 <div class="card"><h3>Check your skills</h3><p class="small">Net sales &gt;= 1500: <b>144</b> orders. Product contains "Lamp": <b>74</b> orders (113,028.30). Month = 2026-03: <b>114</b> orders (101,721.60). Top order sorted by Net sales: <b>ORD1262, 5,592.00</b>.<br>Spreadsheet: Data, Sort range or Data, Create a filter. Formula version: <code>=FILTER(A2:O989, C2:C989="North", M2:M989&gt;=1500)</code> and <code>=SUBTOTAL(109, M2:M989)</code> to total the visible rows.</p></div>
-${quiz("u4q5","You sort only column M (NetSales) and leave the other columns. What happens?",["Nothing","Net sales no longer match their orders","Excel fixes it automatically"],1,"Each net sales value is separated from its own order row. Always sort the full table.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">To ${g("sortdef","sort")} is to reorder rows by the values in a column. To ${g("filterdef","filter")} is to hide the rows that do not meet a condition. A filter hides rows and does not delete them. When you clear it, every row returns.</p><p class="small">Always sort the whole table. If you sort only one column, its values move but the other columns stay in place, and every row is then wrong. A multi-level sort orders by a first column and breaks ties with a second, for example Region from A to Z and, inside each region, Net sales from high to low.</p><p class="small">After a filter, a normal SUM still adds the hidden rows. The ${g("subtotal","SUBTOTAL")} function with the number 109 adds only the visible rows. With the number 103 it counts only the visible rows.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Choose a filter and a sort and the table reacts. For the West region the table shows 191 rows and a SUBTOTAL of 152,940.85. The average order for these rows is 800.74, which differs from the all-orders average of 761.36. A filter is therefore a way to ask a smaller question: how do the West orders behave? The check at the bottom gives four answers that you can reproduce, such as 144 orders with net sales of at least 1,500.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Select any cell inside the table before you sort, so that Excel takes the whole table.</li><li>Keep the header row. Excel uses it to name the columns.</li><li>Use SUBTOTAL for totals of filtered data.</li><li>Clear the filters before you start a new question.</li></ul></div>
+${task(["Filter Region = West and write the number of rows and the SUBTOTAL.","Filter Net sales at least 1500 and write the number of orders. It should be 144.","Sort the full list by Net sales from high to low and write the order number at the top."])}
+${quizSet(5)}`,
 mount(r){const o=Object.entries(FC).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");$("#fc",r).innerHTML=o;$("#s1",r).innerHTML=o;$("#s2",r).innerHTML='<option value="">(none)</option>'+o;$("#s1",r).value="net";
   function d(){const c=$("#fc",r).value,op=$("#fo",r).value,vv=$("#fvv",r).value,numc=["net","units","disc"].includes(c);let rows=SALES.filter(x=>{const a=x[c];if(op==="=")return String(a).toLowerCase()===vv.toLowerCase();if(op==="c")return String(a).toLowerCase().includes(vv.toLowerCase());if(op===">=")return +a>=+vv;return +a<=+vv});
     const k1=$("#s1",r).value,k2=$("#s2",r).value,dir=+$("#d1",r).value,cmp=(a,b)=>a<b?-1:a>b?1:0;rows=rows.slice().sort((x,y)=>cmp(x[k1],y[k1])*dir||(k2?cmp(x[k2],y[k2])*dir:0));
@@ -476,8 +628,14 @@ lesson({hero:true,nav:"Functions lab",title:"Math, text, information and logical
 html:()=>`<p class="lead">A function is a ready-made calculation: <code>NAME(inputs)</code>. Four families: <b>Math and stats</b> (SUMIFS, AVERAGEIFS, LARGE, PERCENTILE), <b>Text</b> (LEFT, MID, PROPER, TRIM, &amp;), <b>Information</b> (ISNUMBER, COUNT vs COUNTA), <b>Logical</b> (IF, IFS, AND, OR, IFERROR).</p>
 <div class="card try"><h3>Function cards: run each against the real data</h3><div id="fcards"></div></div>
 <div class="card try"><h3>Your own formula</h3><div class="row"><input type="text" id="fx" style="flex:1;min-width:260px;font-family:var(--mono)" value="=SUMIFS(M2:M989,C2:C989,&quot;West&quot;,L2:L989,&quot;Electronics&quot;)"><button class="btn pri" id="fxb" type="button">Evaluate</button></div><div id="fxo" class="callout i">Expected for the default: 62,137.20 (West Electronics).</div></div>
-<div class="card try"><h3>Build the logic columns (Notion lecture 6)</h3><p class="small muted">Write each formula in row 2 of the column, then Fill down to row 989.</p><div id="tkw"></div><div id="shl"></div></div>
-${quiz("u4q6","What does =IF(AND(C2=\"North\",M2>=1500),\"North big\",\"-\") do?",["Marks orders that are in the North AND at least 1500","Marks North OR big orders","Sums North orders"],0,"AND needs both conditions true. Use OR if either is enough.")}`,
+<div class="card try"><h3>Build the logic columns</h3><p class="small muted">Write each formula in row 2 of the column, then Fill down to row 989.</p><div id="tkw"></div><div id="shl"></div></div>
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">A ${g("function")} is a ready-made calculation written as NAME(inputs). Four families are used in this lesson. Math and statistics functions, such as LARGE, PERCENTILE, MODE and AVERAGEIFS, summarise numbers. ${g("textfn","Text functions")}, such as LEFT, MID, PROPER and TRIM, change words. ${g("infofn","Information functions")}, such as ISNUMBER, COUNT and COUNTA, report what a cell holds. Logical functions, such as ${g("ifdef","IF")}, IFS, AND and OR, choose a result by a condition.</p><p class="small">COUNT counts only cells with numbers. COUNTA counts every cell that is not blank, including text. The difference is a quick way to find text hiding in a number column. ${g("iferror","IFERROR")} replaces an error, such as #DIV/0!, with a value you choose.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Each card runs a real formula on the 988 orders and shows the answer. LARGE(M2:M989,2) gives the second highest order. PERCENTILE(M2:M989,0.9) gives the order value below which 90 percent of orders fall. MODE(F2:F989) gives the most common number of units. AVERAGEIFS gives the mean for one region. Read each formula aloud in words before you run it. If you cannot say what it should return, you cannot check the answer.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Write the formula in words first: "average of net sales where region is North".</li><li>Check ranges: each range in one formula must have the same size.</li><li>Wrap division in IFERROR when the divisor can be zero.</li><li>Test a formula on one row you can check by hand before you fill it down.</li></ul></div>
+${task(["Run the four math and stats cards. Write the four answers.","Run the logical cards and write what =IF(M2>=1500,\"Large\",\"Normal\") returns for the first order.","Write a formula that counts the orders with Net sales above 2000. Check it against a filter."
+])}
+${quizSet(6)}`,
 mount(r){let h="",grp="";FLAB.forEach((f,i)=>{if(f[0]!==grp){grp=f[0];h+=`<h3 style="margin-top:12px">${grp}</h3>`}h+=`<div class="row" style="margin:4px 0"><code style="min-width:280px">${esc(f[1])}</code><span class="small" style="flex:1">${f[2]}</span><button class="btn sm" data-f="${i}" type="button">Run</button><b id="fr${i}" style="min-width:90px"></b></div>`});
   $("#fcards",r).innerHTML=h;$$("[data-f]",r).forEach(b=>b.onclick=()=>{const f=FLAB[+b.dataset.f],v=evalExpr(f[1]),el=$("#fr"+b.dataset.f,r);el.textContent=show(v);el.style.color=f[3]==null?"var(--fg)":near(v,f[3],.02)?"var(--good)":"var(--bad)"});
   $("#fxb",r).onclick=()=>{const v=evalExpr($("#fx",r).value);$("#fxo",r).innerHTML="Result: <b>"+esc(show(v))+"</b>"};
@@ -487,6 +645,12 @@ mount(r){let h="",grp="";FLAB.forEach((f,i)=>{if(f[0]!==grp){grp=f[0];h+=`<h3 st
    ["<b>R2</b>: <code>=IFS(M2&gt;=1500,\"High\",M2&gt;=500,\"Medium\",TRUE,\"Low\")</code> filled down gives <b>502</b> Low, <b>342</b> Medium.",()=>cnt("R","Low")===502&&cnt("R","Medium")===342],
    ["<b>T2</b>: <code>=IF(OR(C2=\"North\",M2&gt;=1500),0.05,0.02)*M2</code> filled down. Then in <b>U1</b> type <code>=SUM(T2:T989)</code>: expect <b>27,364.35</b>.",()=>near(val("U1"),27364.35,.05)]];
   $("#tkw",r).innerHTML=tasksHTML(ts);withTasks(r,ts);}
+});
+
+
+lesson({ref:true,nav:"Glossary",title:"Glossary of terms",syl:"Reference: terms used in this unit",
+html:()=>`<p class="lead">Every term below appears in the lessons. In a lesson, a dotted underline marks a term that is defined here.</p><div class="card"><h3>Your progress in this unit</h3><div class="tw sm"><table class="dt"><thead><tr><th>Lesson</th><th>Correct</th><th>First try</th></tr></thead><tbody id="unitsum"></tbody></table></div></div>`+GL.slice().sort((a,b)=>a[1].localeCompare(b[1])).map(x=>`<div class="card gl" id="gl-${x[0]}"><h3>${x[1]}</h3><p class="small" style="margin:0">${x[2]}</p></div>`).join(""),
+mount(r){}
 });
 
 renderLive();go(0);

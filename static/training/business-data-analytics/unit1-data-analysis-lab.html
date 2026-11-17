@@ -100,7 +100,8 @@ td.ix{background:var(--bad-soft)} td.iy{background:var(--warn-soft)} td.iz{backg
 .kpi b{font-size:22px;display:block;font-variant-numeric:tabular-nums}
 .nextrow{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
 svg.chart{width:100%;height:auto;display:block;max-height:420px}
-svg.chart text{fill:var(--fg);font:12px var(--body)}
+svg.chart{font-size:calc(12px*var(--zoom))}
+svg.chart text{fill:var(--fg);font-family:var(--body);font-size:1em}
 svg.chart .ax{stroke:var(--muted);stroke-width:1}
 svg.chart .gr{stroke:var(--grid);stroke-width:1}
 svg.chart .lbl{fill:var(--muted)}
@@ -113,6 +114,19 @@ svg.chart .lbl{fill:var(--muted)}
 @media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.live{grid-column:1/-1;position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
 @media (max-width:760px){.app{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav ol{display:flex;overflow:auto;gap:4px}.nav li{flex:none}.nav .t{display:none}main{padding:18px 16px 60px}.grid2,.grid3,.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
 
+.dt.wrap td,.dt.wrap th{white-space:normal}
+.card.task{border-left:5px solid var(--good)}
+.numt{margin:4px 0 10px}.numt .tw{margin-top:8px}
+a.g{color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted)} a.g:hover{border-bottom-style:solid}
+.gl.hl{outline:3px solid var(--pri)}
+.qq+.qq{border-top:1px solid var(--line2);margin-top:8px}
+.opt:disabled{cursor:default}
+#prog{margin-top:6px;font-size:12.5px;line-height:1.5}
+select{max-width:100%}
+code{overflow-wrap:anywhere}
+.code{overflow-x:auto;max-width:100%}
+.grid3>*,.grid2>*,.flow>*{min-width:0}
+.grid2 select,.grid2 input{max-width:100%;width:100%}
 </style>
 </head>
 <body>
@@ -120,7 +134,7 @@ svg.chart .lbl{fill:var(--muted)}
   <nav class="nav" aria-label="Lessons">
     <h2 class="brand">Data Analysis Lab<small>Unit I, Introduction to Data Analysis<br>BBA Sem I, Business Management Tools I</small></h2>
     <ol id="navlist"></ol>
-    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
+    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><div id="prog" class="small"></div><button id="resetP" type="button">Reset my score</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
   </nav>
   <main id="stage" tabindex="-1"></main>
   <aside class="live" aria-label="Live data"><h3>Live data: the class survey</h3><div id="livebox"></div></aside>
@@ -130,7 +144,7 @@ svg.chart .lbl{fill:var(--muted)}
 /* ===== helpers ===== */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-US"):v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
+const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-IN"):v.toLocaleString("en-IN",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
 const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
 const sum=a=>a.reduce((x,y)=>x+y,0);
 const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
@@ -148,39 +162,46 @@ function table(rows,cols,opts={}){
     return `<td class="${cls.trim()}">${v===""||v==null?'<span class="muted">(blank)</span>':esc(typeof v==="number"?fmt(v,c[2]!=null?c[2]:(Number.isInteger(v)?0:2)):v)}</td>`}).join("")+"</tr>").join("");
   return `<div class="tw${opts.small?' sm':''}"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
-const QUIZ={};
-function quiz(id,q,opts,ans,why){QUIZ[id]={ans,why};
-  return `<div class="card"><h3>Quick check</h3><p style="margin:0 0 6px"><b>${q}</b></p>`+opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" style="margin-top:6px"></div></div>`;}
-function regQuiz(id,ans,why){QUIZ[id]={ans,why}}
+const IN=n=>Number(n).toLocaleString("en-IN",{maximumFractionDigits:0});
+const num=v=>Number(v).toLocaleString("en-IN",{maximumFractionDigits:2});
+const RS=v=>"Rs "+IN(v);
 function seg(id,items,cls=""){return `<div class="seg ${cls}" id="${id}" role="group">`+items.map((x,i)=>`<button type="button" data-v="${x[0]}" aria-pressed="${i===0}">${x[1]}</button>`).join("")+`</div>`}
 function bindSeg(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)});return ()=>$$("[aria-pressed=true]",g)[0].dataset.v}
-const IN=n=>n.toLocaleString("en-US",{maximumFractionDigits:0});
 
-/* ===== SVG charts (colours come from CSS variables, so both themes work) ===== */
+/* ===== SVG charts: colours from CSS variables; text size follows the Text size control ===== */
 const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
-const nice=(max)=>{const e=Math.pow(10,Math.floor(Math.log10(max||1))),f=max/e;const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*e};
-function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(lo+st*i);return out}
-const short=v=>Math.abs(v)>=100000?(v/100000).toFixed(1).replace(/\.0$/,"")+"L":Math.abs(v)>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":(Math.round(v*100)/100)+"";
-function chartBar(items,o={}){ // items:[{label,value,color}]
-  const W=o.w||640,H=o.h||320,m={l:56,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...items.map(i=>i.value))*1.08),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+const lakh=v=>v===0?"0":String(+(v/100000).toFixed(2))+"L";
+const fa=hi=>hi>=100000?lakh:num;                     /* one unit per axis: lakh or plain */
+const short=v=>Math.abs(v)>=100000?lakh(v):num(v);
+function niceStep(raw){const e=Math.pow(10,Math.floor(Math.log10(raw||1))),f=raw/e;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e}
+function axisFor(maxv){const step=niceStep((maxv||1)/5),n=Math.max(1,Math.ceil(maxv/step-1e-9));return {hi:step*n,n}}
+function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(+(lo+st*i).toFixed(6));return out}
+function tk(lo,hi,intOnly){let st=niceStep((hi-lo)/5||1);if(intOnly)st=Math.max(1,Math.round(st));const out=[];for(let v=Math.ceil(lo/st-1e-9)*st;v<=hi+1e-9;v+=st)out.push(+v.toFixed(6));return out}
+const TB=(h,rows,note)=>` data-tbl="${esc(JSON.stringify({h,rows,note:note||""}))}"`;
+const TS="font-weight:700;font-size:1.17em";
+function chartBar(items,o={}){
+  const W=o.w||640,H=o.h||320,m={l:58,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mn=o.min!=null?o.min:0,vmax=Math.max(...items.map(i=>i.value));
+  let mx,n=5;if(o.max){mx=o.max}else{const a=axisFor(vmax*1.04);mx=a.hi;n=a.n}
+  const fm=fa(mx),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length,step=(items.length>14&&!o.rotate)?Math.ceil(items.length/10):1;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}"${TB([o.cat||"Item",o.vlabel||"Value"],items.map(i=>[i.label,i.value]))}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  ticks(mn,mx,n).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fm(t)}</text>`);
   items.forEach((it,i)=>{const x=m.l+i*bw+bw*.15,w=bw*.7,y=sy(Math.max(it.value,mn));
     s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,sy(mn)-y)}" fill="${it.color||o.color||"var(--c1)"}" rx="2"><title>${esc(it.label)}: ${fmt(it.value)}</title></rect>`;
-    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:11px">${short(it.value)}</text>`;
-    const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`});
+    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:.92em">${fm(it.value)}</text>`;
+    if(i%step===0){const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`}});
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
   if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
   return s+"</svg>";}
-function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
-  const W=o.w||640,H=o.h||320,m={l:56,r:o.legendRight?110:16,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...all)*1.08);
-  const sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+function chartLine(series,labels,o={}){
+  const W=o.w||640,H=o.h||320,m={l:58,r:o.legendRight?110:26,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0;
+  let mx,n=5;if(o.max){mx=o.max}else{const a=axisFor(Math.max(...all)*1.08);mx=a.hi;n=a.n}
+  const fm=fa(mx),sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}"${TB([o.cat||"Period"].concat(series.map(x=>x.name)),labels.map((l,i)=>[l].concat(series.map(x=>x.vals[i]==null?"":Math.round(x.vals[i]*100)/100))))}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  ticks(mn,mx,n).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fm(t)}</text>`);
   const step=Math.ceil(labels.length/(o.maxLabels||12));labels.forEach((l,i)=>{if(i%step===0)s+=`<text class="lbl" x="${sx(i)}" y="${H-m.b+16}" text-anchor="middle">${esc(l)}</text>`});
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
   series.forEach((se,k)=>{const c=se.color||PAL[k%6];let d="";se.vals.forEach((v,i)=>{if(v!=null)d+=(d?"L":"M")+sx(i).toFixed(1)+" "+sy(v).toFixed(1)});
@@ -189,62 +210,102 @@ function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
     if(o.dots!==false&&!se.dash)se.vals.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${sx(i)}" cy="${sy(v)}" r="3.5" fill="${c}"><title>${esc(labels[i])}: ${fmt(v)}</title></circle>`});
     if(o.legendRight)s+=`<text x="${W-m.r+8}" y="${m.t+14+k*16}" style="fill:${c};font-weight:600">${esc(se.name)}</text>`;
     else if(series.length>1)s+=`<text x="${m.l+8+k*150}" y="${H-6}" style="fill:${c};font-weight:600">&#9632; ${esc(se.name)}</text>`});
-  (o.marks||[]).forEach(mk=>{s+=`<text x="${sx(mk.i)}" y="${sy(mk.v)-10}" text-anchor="middle" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
+  (o.marks||[]).forEach(mk=>{const x=sx(mk.i),up=sy(mk.v)-10>m.t+12,anc=x<m.l+70?"start":x>W-m.r-70?"end":"middle",dx=anc==="start"?-4:anc==="end"?4:0;
+    s+=`<text x="${x+dx}" y="${up?sy(mk.v)-10:sy(mk.v)+30}" text-anchor="${anc}" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
   return s+"</svg>";}
-function chartScatter(pts,o={}){ // pts:[{x,y,r,color,label}]
-  const W=o.w||640,H=o.h||340,m={l:60,r:16,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||nice(Math.max(...ys)*1.05);
-  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(y0,y1).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
-  ticks(x0,x1).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${short(t)}</text>`);
+function chartScatter(pts,o={}){
+  const W=o.w||640,H=o.h||340,m={l:62,r:18,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||axisFor(Math.max(...ys)*1.05).hi;
+  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih,fy=fa(y1),fx=fa(x1);
+  const lab=pts.some(p=>p.label),rows=(lab?pts:pts.slice(0,25)).map(p=>lab?[p.label,Math.round(p.x*100)/100,Math.round(p.y*100)/100]:[Math.round(p.x*100)/100,Math.round(p.y*100)/100]);
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}"${TB(lab?["Label",o.xlabel||"x",o.ylabel||"y"]:[o.xlabel||"x",o.ylabel||"y"],rows,lab?"":"First 25 of "+pts.length+" points (some jitter added to discrete values). Download the CSV for every row.")}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  tk(y0,y1,o.yint).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fy(t)}</text>`);
+  tk(x0,x1,o.xint).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${fx(t)}</text>`);
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(y0)}" y2="${sy(y0)}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${sy(y0)}"/>`;
   if(o.xlabel)s+=`<text class="lbl" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${esc(o.xlabel)}</text>`;
   if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
   if(o.fit){const f=o.fit;s+=`<line x1="${sx(x0)}" y1="${sy(f.m*x0+f.b)}" x2="${sx(x1)}" y2="${sy(f.m*x1+f.b)}" stroke="var(--sec)" stroke-width="2.5" stroke-dasharray="7 4"/>`}
   pts.forEach(p=>{s+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="${p.r||4}" fill="${p.color||"var(--c1)"}" fill-opacity="${o.alpha||.65}" stroke="${p.color||"var(--c1)"}"><title>${esc(p.label||"")} (${fmt(p.x)}, ${fmt(p.y)})</title></circle>`;
-    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:11px">${esc(p.label)}</text>`});
+    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:.92em">${esc(p.label)}</text>`});
   return s+"</svg>";}
-function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart">`;
+function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart"${TB(["Item","Value","Share"],items.map(i=>[i.label,Math.round(i.value),(100*i.value/tot).toFixed(1)+"%"]))}>`;
   items.forEach((it,k)=>{const ang=it.value/tot*2*Math.PI,x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(a+ang),y2=cy+R*Math.sin(a+ang);
     s+=`<path d="M${cx} ${cy}L${x1} ${y1}A${R} ${R} 0 ${ang>Math.PI?1:0} 1 ${x2} ${y2}Z" fill="${it.color||PAL[k%6]}" stroke="var(--surface)" stroke-width="2"><title>${esc(it.label)}: ${(100*it.value/tot).toFixed(1)}%</title></path>`;a+=ang;
     s+=`<text x="250" y="${40+k*22}" style="fill:${it.color||PAL[k%6]};font-weight:700">&#9632; <tspan style="fill:var(--fg);font-weight:400">${esc(it.label)} ${(100*it.value/tot).toFixed(1)}%</tspan></text>`});
   return s+"</svg>";}
-function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:short(lo+i*w),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:num(Math.round(lo+i*w)),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+
+/* "Show the numbers" toggle: every chart carries its data, so screen readers and students can read the values */
+let NTID=0;
+function tableHtml(d){const cell=v=>typeof v==="number"?`<td class="num">${num(v)}</td>`:`<td>${esc(v)}</td>`;
+  return `<div class="tw sm"><table class="dt"><thead><tr>${d.h.map(x=>`<th>${esc(x)}</th>`).join("")}</tr></thead><tbody>${d.rows.map(r=>"<tr>"+r.map(cell).join("")+"</tr>").join("")}</tbody></table></div>`+(d.note?`<p class="small muted">${esc(d.note)}</p>`:"")}
+function addNumToggles(root){$$("svg.chart[data-tbl]",root).forEach(s=>{if(s.dataset.nt)return;s.dataset.nt="1";let d;try{d=JSON.parse(s.getAttribute("data-tbl"))}catch(e){return}
+  const id="nt"+(++NTID),w=document.createElement("div");w.className="numt";w.innerHTML=`<button type="button" class="btn sm" aria-expanded="false" aria-controls="${id}">Show the numbers</button><div id="${id}" hidden>${tableHtml(d)}</div>`;
+  s.insertAdjacentElement("afterend",w);const b=$("button",w),box=$("div",w);b.onclick=()=>{const open=box.hidden;box.hidden=!open;b.setAttribute("aria-expanded",String(open));b.textContent=open?"Hide the numbers":"Show the numbers"}})}
+
+/* ===== quiz set per lesson, score kept in localStorage ===== */
+const QZ={},QBY={};let QS={};
+try{QS=JSON.parse(localStorage.getItem("u1_q")||"{}")}catch(e){}
+const saveQ=()=>{try{localStorage.setItem("u1_q",JSON.stringify(QS))}catch(e){}};
+function shufQ(opts,ans,seed){const idx=opts.map((_,i)=>i);let h=(Math.imul(seed+1,2654435761)>>>0)^0x9e3779b9;const rnd=()=>{h^=h<<13;h>>>=0;h^=h>>>17;h^=h<<5;h>>>=0;return h/4294967296};for(let k=0;k<8;k++)rnd();for(let i=idx.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]]}return {opts:idx.map(i=>opts[i]),ans:idx.indexOf(ans)}}
+function defQ(n,list){QBY[n]=list.map((x,i)=>{const id="u1l"+n+"q"+(i+1);const sh=shufQ(x[1],x[2],n*97+i*31+7);QZ[id]={n,q:x[0],opts:sh.opts,ans:sh.ans,why:x[3]};return id})}
+function quizSet(n){return `<div class="card"><h3>Quick check: ${QBY[n].length} questions</h3>`+QBY[n].map((id,k)=>{const z=QZ[id];return `<div class="qq"><p style="margin:12px 0 6px"><b>${k+1}. ${z.q}</b></p>`+z.opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" aria-live="polite" style="margin-top:6px"></div></div>`}).join("")+`</div>`}
+const lessonDone=n=>QBY[n]&&QBY[n].every(id=>QS[id]&&QS[id].c);
+function showQ(id){const s=QS[id],z=QZ[id];if(!s||!s.c)return;$$(`[data-q="${id}"]`).forEach(b=>{b.disabled=true;if(+b.dataset.i===z.ans)b.classList.add("ok")});$("#why-"+id).textContent="Correct. "+z.why}
+function answerQ(b){const id=b.dataset.q,z=QZ[id],s=QS[id]||(QS[id]={t:0,c:false,f:false});if(s.c)return;s.t++;const ok=+b.dataset.i===z.ans;
+  $$(`[data-q="${id}"]`).forEach(x=>x.classList.remove("no"));
+  if(ok){s.c=true;s.f=s.t===1;showQ(id)}else{b.classList.add("no");$("#why-"+id).textContent="Not quite. Read the lesson again and try another answer."}
+  saveQ();drawNav();updateProg()}
+function updateProg(){const ids=Object.keys(QZ),tot=ids.length,c=ids.filter(i=>QS[i]&&QS[i].c).length,f=ids.filter(i=>QS[i]&&QS[i].f).length,nl=Object.keys(QBY).length,ld=Object.keys(QBY).filter(n=>lessonDone(+n)).length,box=$("#prog");
+  if(box)box.innerHTML=`<b>Your score</b><br>Questions correct: ${c} of ${tot}<br>Correct on first try: ${f}<br>Lessons complete: ${ld} of ${nl}<div class="bar" style="margin-top:6px"><i style="width:${tot?100*c/tot:0}%"></i></div>`;
+  const sm=$("#unitsum");if(sm)sm.innerHTML=Object.keys(QBY).map(n=>{const a=QBY[n],k=a.filter(i=>QS[i]&&QS[i].c).length,ft=a.filter(i=>QS[i]&&QS[i].f).length;return `<tr><td>${n}. ${L[n-1].nav}</td><td class="num">${k} of ${a.length}</td><td class="num">${ft}</td></tr>`}).join("")+`<tr><td><b>Unit total</b></td><td class="num"><b>${c} of ${tot}</b></td><td class="num"><b>${f}</b></td></tr>`}
+
+/* ===== glossary links ===== */
+const GLBACK={i:null};
+function g(k,label){const a=GL.find(x=>x[0]===k)||GL.find(x=>x[0]===ALIAS[k]);const key=a?a[0]:k;return `<a class="g" href="#gl-${key}" data-gl="${key}">${label||a[1]}</a>`}
+function openGloss(k){GLBACK.i=cur;go(L.length-1);const el=$("#gl-"+k);if(el){el.scrollIntoView({block:"center"});el.classList.add("hl")}}
 
 /* ===== lesson framework ===== */
 const L=[];
 function lesson(o){L.push(o)}
-let cur=0, done=new Set();
-const UKEY="dalab_"+(document.title||"x");
-try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e){}
+let cur=0;
 function go(i){
   cur=Math.max(0,Math.min(L.length-1,i));
-  const l=L[cur],st=$("#stage");
-  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
-    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
-  $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
+  const l=L[cur],st=$("#stage"),nl=L.filter(x=>!x.ref).length;
+  st.innerHTML=`<div class="crumb">${l.ref?"Reference":"Lesson "+(cur+1)+" of "+nl}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button>${l.ref&&GLBACK.i!=null?`<button class="btn" type="button" id="backB">Back to lesson ${GLBACK.i+1}</button>`:""}<button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
+  $("#prevB").onclick=()=>go(cur-1);$("#nextB").onclick=()=>go(cur+1);const bb=$("#backB");if(bb)bb.onclick=()=>go(GLBACK.i);
   l.mount&&l.mount(st);
-  $$("[data-q]",st).forEach(b=>b.onclick=()=>{
-    const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
-    $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
-    b.classList.add(ok?"ok":"no");
-    $("#why-"+id,st).textContent=(ok?"Correct. ":"Not quite. ")+k.why;
-    if(ok){done.add(cur);try{localStorage.setItem(UKEY,JSON.stringify([...done]))}catch(e){}drawNav()}
-  });
-  drawNav(); window.scrollTo(0,0); st.focus({preventScroll:true});
+  if(!l.ref)QBY[cur+1].forEach(showQ);
+  addNumToggles(st);fitChartText(st);drawNav();updateProg();
+  window.scrollTo(0,0);st.focus({preventScroll:true});
 }
 function drawNav(){
-  $("#navlist").innerHTML=L.map((l,i)=>`<li class="${done.has(i)?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${done.has(i)?"&#10003;":i+1}</span><span class="t">${l.nav}</span></button></li>`).join("");
+  $("#navlist").innerHTML=L.map((l,i)=>{const dn=!l.ref&&lessonDone(i+1);return `<li class="${dn?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${dn?"&#10003;":l.ref?"G":i+1}</span><span class="t">${l.nav}</span></button></li>`}).join("");
   $$("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
 }
+window.addEventListener("DOMContentLoaded",()=>{
+  $("#stage").addEventListener("click",e=>{const q=e.target.closest("[data-q]");if(q&&!q.disabled){answerQ(q);return}
+    const a=e.target.closest("[data-gl]");if(a){e.preventDefault();openGloss(a.dataset.gl)}});
+  new MutationObserver(()=>{addNumToggles($("#stage"));fitChartText($("#stage"))}).observe($("#stage"),{childList:true,subtree:true});
+  const rp=$("#resetP");if(rp)rp.onclick=()=>{if(confirm("Clear your quiz progress on this device?")){QS={};saveQ();if(!L[cur].ref)go(cur);else{drawNav();updateProg()}}};
+});
+
+/* chart text grows with the Text size control: size it in screen pixels, not in chart units */
+function fitChartText(root){const z=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--zoom"))||1;
+  $$("svg.chart",root||document).forEach(s=>{try{const k=s.getScreenCTM();if(k&&k.a>0)s.style.fontSize=(14*z/k.a).toFixed(2)+"px"}catch(e){}})}
+window.addEventListener("resize",()=>fitChartText(document));
+
+function wrapTables(root){$$("table",root).forEach(t=>{if(t.closest(".tw"))return;let a=t.parentElement,ok=false;while(a&&a.id!=="stage"){const o=getComputedStyle(a).overflowX;if(o==="auto"||o==="scroll"){ok=true;break}a=a.parentElement}if(ok)return;const w=document.createElement("div");w.className="tw";t.parentNode.insertBefore(w,t);w.appendChild(t)})}
+(function(){const st=document.getElementById("stage");if(!st)return;let busy=false;new MutationObserver(()=>{if(busy)return;busy=true;try{wrapTables(st)}finally{busy=false}}).observe(st,{childList:true,subtree:true})})();
+
 /* theme + text size (for projectors) */
 (function(){
   const R=document.documentElement;let theme=null,zi=0;const Z=[1,1.15,1.3];
   try{theme=localStorage.getItem("dalab_theme")}catch(e){}
   if(!theme)theme=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
-  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);
+  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);typeof fitChartText==="function"&&fitChartText(document);
     const b=$("#themeBtn"),z=$("#zoomBtn");if(b)b.innerHTML=theme==="dark"?"&#9728; Switch to LIGHT mode":"&#9790; Switch to DARK mode";if(z)z.textContent="Text size: "+Math.round(Z[zi]*100)+"%";}
   window.addEventListener("DOMContentLoaded",()=>{
     $("#themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("dalab_theme",theme)}catch(e){}apply()};
@@ -278,6 +339,104 @@ function renderLive(){
 }
 /* ---------- 1. Understanding data and types ---------- */
 const TYPEQ=[["Age in years","Quantitative"],["City","Qualitative"],["Pocket money (Rs)","Quantitative"],["Favourite app","Qualitative"],["Study hours per day","Quantitative"],["Satisfaction rating (Poor to Excellent)","Qualitative"],["Number of siblings","Quantitative"],["Hair colour","Qualitative"]];
+function regQuiz(){}
+const task=items=>`<div class="card task"><h3>Your task</h3><ol class="small">${items.map(x=>`<li>${x}</li>`).join("")}</ol></div>`;
+const GL=[
+["data","Data","Recorded facts: numbers, words, dates, answers. Data becomes information after it is organised and read."],
+["information","Information","What you learn from data after it is organised and interpreted."],
+["quantitative","Quantitative data","Data that is a number on which adding or averaging makes sense, such as age or pocket money."],
+["qualitative","Qualitative data","Data in the form of labels or categories, such as city or favourite app. You can count them but not add them."],
+["discrete","Discrete data","Quantitative data that is counted, such as the number of siblings (0, 1, 2)."],
+["continuous","Continuous data","Quantitative data that is measured and can take any value in a range, such as study hours (2.5)."],
+["scale","Measurement scale","The kind of information a variable carries: nominal, ordinal, interval or ratio. The scale decides which calculations are meaningful."],
+["nominal","Nominal scale","Names only, with no order: gender, city, app."],
+["ordinal","Ordinal scale","Names with an order, but the gaps between them are not known: Poor, Fair, Good."],
+["interval","Interval scale","Equal gaps but no true zero, such as temperature in Celsius or the calendar year."],
+["ratio","Ratio scale","Equal gaps and a true zero, so 'twice as much' is meaningful: rupees, hours, age."],
+["quality","Data quality","How well data suits its use. Six checks: complete, accurate, consistent, valid, unique and timely."],
+["validation","Data validation","Rules set in the sheet at entry time, such as a drop-down list or a number limit, that stop wrong values being typed."],
+["primary","Primary data","Data that you collect first-hand for your own question."],
+["secondary","Secondary data","Data that someone else collected, or that was collected for another purpose, which you reuse."],
+["survey","Survey","A method in which many people answer the same questions."],
+["interview","Interview","A one-to-one conversation used to find reasons and detail."],
+["observation","Observation","Watching behaviour without asking questions."],
+["experiment","Experiment","A method in which one thing is changed and the effect is measured."],
+["consent","Informed consent","A person agrees to give data after being told the purpose."],
+["anonymise","Anonymise","To remove or change details so that a person cannot be identified from the data."],
+["mean","Mean, median and mode","The mean is the sum divided by the count. The median is the middle value when sorted. The mode is the most frequent value."],
+["sd","Standard deviation","A measure of how far values typically lie from the mean."],
+["quartile","Quartile","Q1 is the value below which 25 percent of the data lies, and Q3 the value below which 75 percent lies."],
+["skew","Skewed data","Data with a long tail on one side. In right-skewed data a few large values pull the mean above the median."],
+["cleaning","Data cleaning","Fixing the problems found in an audit: spacing and case, duplicates, wrong types, impossible values, missing values and date formats."],
+["duplicate","Duplicate","A row that repeats another row exactly."],
+["missing","Missing value","A cell that has no value where one is expected."],
+["transform","Transforming data","Making a new column from existing columns, such as net sales from units, price and discount."],
+["reshape","Reshaping data","Changing the shape of a table without changing its facts, for example from wide to long."],
+["wide","Wide and long format","Wide: one row per person, one column per measure. Long: one row per person per measure. Pivot tables and most charts need long format."],
+["join","Join","Combining two tables by a shared key column."],
+["key","Key column","A column, such as a customer ID, that appears in both tables and links their rows."],
+["inner","Inner and left join","An inner join keeps only the rows with a key in both tables. A left join keeps every row of the left table and fills the missing matches with blanks."],
+["lookup","VLOOKUP and XLOOKUP","Spreadsheet functions that find a key in another table and return a value from the same row. They act like a left join, one column at a time."]
+];
+const ALIAS={};
+
+defQ(1,[
+["Which of these is quantitative?",["The customer's city","The bill amount in Rs","Favourite colour","Gender"],1,"A bill amount is a number on which adding and averaging make sense."],
+["A student's roll number is 7. How should you classify it?",["Quantitative, because it is a number","Qualitative, because it is a label","Continuous","Discrete"],1,"Adding or averaging roll numbers has no meaning, so it behaves as a label."],
+["The number of siblings (0, 1, 2) is",["Continuous quantitative","Discrete quantitative","Qualitative","Not data"],1,"It is counted in whole numbers, so it is discrete."],
+["16 survey rows are shown, and you write 'Instagram is the favourite app of 6 out of 16'. What have you produced?",["Raw data","Information","A primary key","A sample frame"],1,"You organised and read the data, so the statement is information."]]);
+defQ(2,[
+["Why is the average of 'Satisfaction 1 to 5' risky?",["It is a ratio scale","The gap between 1 and 2 may not equal the gap between 4 and 5","Averages need text","The numbers are too small"],1,"The scale is ordinal, so the gaps are not known to be equal. The median or the counts are safer."],
+["Which statement is correct for temperature in Celsius?",["It is a ratio scale, so 40 degrees is twice as hot as 20","It is an interval scale, since zero is not a true zero","It is nominal","It is ordinal"],1,"Celsius has equal gaps but no true zero, so ratios such as 'twice as hot' are not meaningful."],
+["Which column is on a ratio scale?",["City","Pocket money in Rs","Satisfaction rating","Class rank"],1,"Rupees have equal gaps and a true zero, so 6000 is twice 3000."],
+["Which calculation is allowed for nominal data such as City?",["Mean","Median","Mode and counts","Standard deviation"],2,"Nominal data has no order or distance, so only counts and the mode are meaningful."]]);
+defQ(3,[
+["Which is the cheapest way to get good data?",["Fix it after collection","Validate it when it is typed in","Ignore bad rows","Delete the column"],1,"Prevention at entry costs less than finding and repairing errors later."],
+["An age of 190 in a survey breaks which check?",["Unique","Valid","Timely","Consistent"],1,"The value is outside the allowed range, so it is not valid."],
+["'bhopal', 'BHOPAL' and 'Bhopal' appear in one column. Which check fails?",["Complete","Consistent","Unique","Timely"],1,"The same value is written in different ways, so it is not consistent."],
+["The same student appears twice with identical rows. Which check fails?",["Valid","Unique","Accurate only","Timely"],1,"Duplicates break the uniqueness check."]]);
+defQ(4,[
+["You hand out a questionnaire to your own class. The answers are",["Secondary data","Primary data","Census data","Estimated data"],1,"You collected the answers first-hand for your own question."],
+["Which is a disadvantage of primary data?",["You cannot know how it was collected","It takes time and money to collect","It is never relevant","It cannot be cleaned"],1,"Collecting data yourself costs time and money, and the samples are often small."],
+["Which is an advantage of primary data?",["It fits your exact question","It is free","It is already clean","It needs no consent"],0,"You decide the questions and the people, so the data fits the question."],
+["You add a new row in the survey form. What happens in the other lessons?",["Nothing","They use the new row, since all lessons read the same table","The file is deleted","Only lesson 4 changes"],1,"All lessons read the same live table."]]);
+defQ(5,[
+["A company's own sales register, used by its analyst to study its customers, is",["Primary data for the company, and secondary data for an outside researcher who buys it","Always secondary","Always primary","Not data"],0,"Primary and secondary describe your position relative to the data, not the numbers."],
+["Before you trust a secondary dataset, which question should you ask first?",["Who collected it, when and why?","How large is the file?","What colour is the chart?","Who downloaded it before?"],0,"The source, date and purpose tell you whether the data suits your question."],
+["Census of India tables are",["Primary data for any user","Secondary data for most users","Not suitable for analysis","Always interview data"],1,"Most users did not collect them, so they are secondary."],
+["You publish an anonymised summary of your survey for others. For them it is",["Primary data","Secondary data","Fake data","Raw data"],1,"The same data is secondary for those who did not collect it."]]);
+defQ(6,[
+["You want to understand WHY customers leave a shop. Which method is best to start with?",["A 500-person tick-box survey","A few interviews","Census data","An experiment on prices"],1,"Reasons need open conversation. Interviews give detail that a tick-box survey cannot."],
+["You need numbers to compare two groups of dozens of people within days and with a small budget. Which method fits?",["A short survey","A year-long experiment","Census data","Focus groups only"],0,"A short questionnaire gives comparable numbers quickly and cheaply."],
+["Which method watches behaviour without asking questions?",["Survey","Interview","Observation","Existing records"],2,"Observation records what people do."],
+["Good data on your topic may already exist. What should you check first?",["Whether existing records can answer the question","Whether to run a new survey","Whether to run an experiment","Nothing"],0,"Existing records are usually quicker and cheaper, if they cover the people you need."]]);
+defQ(7,[
+["Which is the best way to protect respondents in a published table?",["Remove names and combine rare categories","Keep names but use initials","Do nothing, since they agreed to the survey","Publish the phone numbers"],0,"Rare combinations can identify a person even without a name, so combine them."],
+["A food survey needs only average spend. Collecting phone numbers breaks which habit?",["Consent","Minimum data","Honesty","Timeliness"],1,"Ask only for what you need."],
+["Which is part of informed consent?",["Telling respondents the purpose and that they can skip a question","Collecting the data without telling anyone","Asking a friend to agree for them","Keeping the form secret"],0,"Consent means that people agree after they know the purpose."],
+["The meter shows that 16 of 16 students are unique when Name is ticked. What does this mean?",["Everybody can be identified","Nobody can be identified","The data is clean","The data is secondary"],0,"If every row is unique on the published columns, each person can be found."]]);
+defQ(8,[
+["Mean Rs 5000 but median Rs 3500 suggests",["A few very high values pull the mean up","The data is symmetric","The data is wrong","The data is categorical"],0,"A mean above the median is the sign of a right-skewed distribution."],
+["For the values 2, 3, 3, 5, 12, which is the mode?",["3","5","5.0","12"],0,"3 appears most often."],
+["Which function gives the average of only the visible rows after a filter?",["AVERAGE","SUBTOTAL(101, range)","MEDIAN","COUNT"],1,"SUBTOTAL with 101 averages the visible rows only."],
+["A very rich student joins the class. Which measure changes most?",["The mean","The median","The mode","None"],0,"One very large value pulls the mean up. The median hardly moves."]]);
+defQ(9,[
+["Why remove duplicates after fixing spaces and case?",["'diya ' and 'Diya' only match once they look the same","Duplicates are rare","It is faster","Excel requires it"],0,"Cleaning the text first lets matching rows be recognised as duplicates."],
+["You must keep the original sheet untouched. Why?",["So that you can compare and undo any mistake","To save memory","To make the file larger","Because Excel requires it"],0,"A copy lets you check your work and start again if a step was wrong."],
+["Six ratings contain the text N/A. What is the best fix for averaging?",["Leave it, Excel will average it","Replace N/A with nothing so that averages ignore it","Replace N/A with 0","Delete the whole column"],1,"A zero would lower the average. A blank cell is ignored."],
+["12 rows have a blank in Units. What is the clearest choice, and what must you do?",["Fill with any number","Decide to drop or fill them, and write down what you did","Hide them","Ignore the issue"],1,"Any choice is acceptable if it is stated, so that readers can judge the effect."]]);
+defQ(10,[
+["Which shape is best for building a pivot table by subject?",["Wide","Long","Either, no difference","A chart"],1,"Pivot tables and most charts need one row per student per subject."],
+["Which formula makes pocket money per day from the monthly pocket money in F2?",["=F2*30","=F2/30","=F2+30","=F2-30"],1,"Divide the monthly amount by 30."],
+["Does reshaping a table change its facts?",["Yes, always","No, only the shape changes","Only for long tables","Only for wide tables"],1,"Reshaping rearranges the same facts."],
+["Which is an example of transforming data?",["Sorting the rows","Adding an Age band column made from Age","Closing the file","Printing the sheet"],1,"Transforming creates a new column from existing columns."]]);
+defQ(11,[
+["Order O4 belongs to customer C9, who is not in the customer table. Which join keeps O4?",["Inner","Left, with orders on the left","Neither, it is always dropped","Right"],1,"A left join keeps every row of the left table, here the orders."],
+["What is the key in the join of orders and customers?",["Amount","Cust","City","Name"],1,"The key is the column that both tables share."],
+["Which function does a join one column at a time?",["SUM","VLOOKUP or XLOOKUP","COUNT","TRIM"],1,"A lookup finds the key in another table and returns one value."],
+["An inner join of the two tables gives 3 rows. Why not 4?",["One order has no matching customer","The tables are too small","The join is wrong","Excel drops one row at random"],0,"An inner join keeps only keys that appear in both tables, so O4 (C9) is dropped."]]);
+
+
 lesson({nav:"Understanding data and its types",title:"Understanding data and the types of data",syl:"Understanding Data, Types of Data (Quantitative and Qualitative)",
 html:()=>`<p class="lead"><b>Data</b> is recorded facts: numbers, words, dates, answers. <b>Information</b> is what you learn after you organise and read the data. 16 survey rows are data. "Instagram is the favourite app of 6 out of 16" is information.</p>
 <div class="grid2"><div class="card"><h2>Quantitative</h2><p>Numbers you can add and average. <b>Discrete</b> = counted (siblings: 0, 1, 2). <b>Continuous</b> = measured (study hours: 2.5).</p></div>
@@ -285,7 +444,13 @@ html:()=>`<p class="lead"><b>Data</b> is recorded facts: numbers, words, dates, 
 <div class="callout k"><b>Trap to teach:</b> a number is not always quantitative. A phone PIN or an ID of 7 is a label. Ask: <i>does adding or averaging it make sense?</i></div>
 <div class="card try"><h3>Try it: classify each variable</h3><div id="tq"></div><p class="small muted" id="tscore"></p></div>
 <div class="card"><h3>Look at our table</h3><p class="small">Open the live data on the right. <b>Age, Pocket money, Study hrs</b> are quantitative. <b>Name, Gender, City, Favourite app</b> are qualitative. <b>Satisfaction (1 to 5)</b> looks like a number but behaves like a ranked label. Lesson 2 explains why.</p></div>
-${quiz("q1","Which of these is quantitative?",["Customer's city","Bill amount in Rs","Favourite colour"],1,"Bill amount is a measured number you can add and average.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">${g("data","Data")} is recorded facts: numbers, words, dates and answers. ${g("information","Information")} is what you learn after you organise and read the data. Sixteen rows of a survey are data. The statement "Instagram is the favourite app of 6 out of 16" is information.</p><p class="small">Data is of two broad kinds. ${g("quantitative","Quantitative data")} is numerical, and adding or averaging it makes sense. It is ${g("discrete","discrete")} when it is counted (the number of siblings: 0, 1, 2) and ${g("continuous","continuous")} when it is measured (study hours: 2.5). ${g("qualitative","Qualitative data")} is made of labels or categories, such as city or hair colour. You can count how many fall in each category, but adding the categories has no meaning.</p><p class="small">A number is not always quantitative. A phone number, a roll number or a PIN is a label. The test is simple: does adding or averaging it make sense? If not, treat it as qualitative.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Each variable in the demo has to be classified. Age, pocket money and study hours are quantitative. City, favourite app and hair colour are qualitative. The satisfaction rating looks like a number, but a rating of 4 is a ranked label: it says "better than 3", not "twice as good as 2". The next lesson explains why. The table on the right holds the real survey, so you can check each column against it.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Classify each column before you calculate anything.</li><li>Ask whether adding or averaging the values makes sense.</li><li>Treat IDs, phone numbers and PINs as labels.</li><li>Decide whether a number is counted (discrete) or measured (continuous).</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales_Raw</b> of bmt-sales-dataset.xlsx (1015 rows in 2 to 1016; Region is column C, OrderDate B, Units F, Rating J).</p><ol class="small"><li>Look at the alignment. Numbers sit on the right of the cell and text on the left. Dates are numbers shown in date format.</li><li>Test a column with a formula: <code>=ISNUMBER(F2)</code> and <code>=ISTEXT(C2)</code>. Fill down and count the results.</li><li>Home &gt; the Number Format box shows how Excel treats a cell (General, Number, Date, Text).</li><li>Classify each column: Region, Product and PaymentMode are qualitative; Units, MRP and DiscountPct are quantitative.</li></ol></div>
+
+${task(["Open the live table and write the type (quantitative or qualitative) of each of its columns.","Give two examples of numbers that are really labels.","Write one discrete and one continuous variable from your own day."])}
+${quizSet(1)}`,
 mount(r){regQuiz("q1",1,"Bill amount is a measured number you can add and average.");
   const box=$("#tq",r);let score=0,ans=0;
   box.innerHTML=TYPEQ.map((q,i)=>`<div class="row" data-i="${i}" style="justify-content:space-between;border-bottom:1px solid var(--line2);padding-bottom:6px"><span>${q[0]}</span><span><button class="btn sm" data-a="Quantitative">Quantitative</button> <button class="btn sm" data-a="Qualitative">Qualitative</button> <span class="fb small"></span></span></div>`).join("");
@@ -307,7 +472,13 @@ html:()=>`<p class="lead">The scale tells you <b>which calculations are legal</b
 <div class="row">Pick a column: <select id="scol"><option value="city">City (nominal)</option><option value="sat">Satisfaction 1-5 (ordinal)</option><option value="pocket">Pocket money (ratio)</option></select></div>
 <table class="dt"><thead><tr><th>Operation</th><th>Allowed?</th><th>Result on our data</th></tr></thead><tbody id="sops"></tbody></table>
 <div class="callout k small" id="snote"></div></div>
-${quiz("q2","Why is the average of 'Satisfaction 1 to 5' risky?",["Because it is a ratio scale","Because the gap between 1 and 2 may not equal the gap between 4 and 5","Because averages need text"],1,"Ordinal data has order but unequal, unknown gaps. Prefer median and counts. (Many surveys still average it; just say so.)")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">The ${g("scale","measurement scale")} of a variable tells you which calculations are meaningful. There are four scales. On a ${g("nominal","nominal")} scale the values are names only (gender, city). On an ${g("ordinal","ordinal")} scale the values have an order but the gaps between them are not known (Poor, Fair, Good). On an ${g("interval","interval")} scale the gaps are equal but there is no true zero (temperature in Celsius, calendar year). On a ${g("ratio","ratio")} scale the gaps are equal and there is a true zero (rupees, hours, age).</p><p class="small">The scale decides the allowed operations. Counts and the mode are allowed on every scale. The median needs an order, so it needs at least an ordinal scale. The mean and the differences need equal gaps, so they need an interval or a ratio scale. A statement such as "twice as much" needs a true zero, so it needs a ratio scale.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The second demo lists the operations for the column you pick. City is nominal, so only the count and the mode are allowed. Satisfaction is ordinal, so the median is allowed but the mean is blocked. Pocket money is ratio, so every operation is allowed and "twice as much" is meaningful: Rs 6,000 is twice Rs 3,000. Forty degrees Celsius is not twice as hot as 20 degrees, because zero degrees is not the absence of heat.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Identify the scale before you choose a statistic.</li><li>For ordinal data use the median and counts, not the mean.</li><li>Use the word "times" or "twice" only for ratio data.</li><li>When in doubt, choose the weaker scale.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales_Raw</b> of bmt-sales-dataset.xlsx (1015 rows in 2 to 1016; Region is column C, OrderDate B, Units F, Rating J).</p><ol class="small"><li>Write the scale of each column in row 1 notes or on a new sheet: Region (nominal), Rating (ordinal), OrderDate (interval), Units and MRP (ratio).</li><li>For ordinal data prefer the median: <code>=MEDIAN(J2:J1016)</code>. Compare it with <code>=AVERAGE(J2:J1016)</code>.</li><li>A ratio makes sense only on a ratio scale: <code>=G3/G2</code> is meaningful for prices, but a ratio of two dates is not.</li></ol></div>
+
+${task(["Write the scale of each column of the survey table.","For satisfaction ratings, write the median and say why the mean is risky.","Explain in two sentences why a year is interval and not ratio."])}
+${quizSet(2)}`,
 mount(r){regQuiz("q2",1,"Ordinal data has order but unequal, unknown gaps. Prefer median and counts. (Many surveys still average it; just say so.)");
   let sc=0,an=0;$("#sq",r).innerHTML=SCALES.map((q,i)=>`<div class="row" data-i="${i}" style="justify-content:space-between;border-bottom:1px solid var(--line2);padding-bottom:6px"><span>${q[0]}</span><span>${["Nominal","Ordinal","Interval","Ratio"].map(s=>`<button class="btn sm" data-a="${s}">${s}</button>`).join(" ")} <span class="fb small"></span></span></div>`).join("");
   $$("[data-a]",$("#sq",r)).forEach(b=>b.onclick=()=>{const row=b.closest("[data-i]");if(row.dataset.d)return;row.dataset.d=1;an++;const t=SCALES[+row.dataset.i][1],ok=b.dataset.a===t;if(ok)sc++;
@@ -357,7 +528,13 @@ html:()=>`<p class="lead"><b>Garbage in, garbage out.</b> A report is only as go
 <div class="card"><h2>Ensuring quality: prevent first, then fix</h2>
 <p><b>At entry (best):</b> data validation rules (dropdown lists, number limits, date pickers). In Google Sheets: select the range, Data, Data validation. In Excel: Data, Data Validation.</p>
 <p><b>After entry:</b> audits like the one above, then the cleaning steps in lesson 9.</p></div>
-${quiz("q3","Which is the cheapest way to get good data?",["Fix it after collection","Validate it when it is typed in","Ignore bad rows"],1,"Preventing errors at entry costs far less than finding them later.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">${g("quality","Data quality")} means how well the data suits the purpose it is used for. A report is only as good as its data: bad data leads to wrong stock orders, wrong bills and wrong decisions. Six checks are used. Data is complete when nothing is missing. It is accurate when the values are true. It is consistent when the same thing is written the same way everywhere. It is valid when each value lies in the allowed range. It is unique when no row is repeated. It is timely when it is recent enough for the decision.</p><p class="small">Quality is cheaper to protect than to repair. ${g("validation","Data validation")} sets rules at the point of entry, such as a drop-down list or a limit on a number, so that wrong values cannot be typed in.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The audit marks each broken cell in a colour. Red cells are blank, of the wrong type or impossible (an age of 190, an age written as "nineteen", a rating of 9). Yellow cells have spacing or case problems (bhopal and BHOPAL). Blue cells have a date in another format or are duplicates. Click a cell to read the reason. The same kinds of errors appear in real files, and the audit gives you a checklist to look for them before any analysis.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Audit a new file against the six checks before you analyse it.</li><li>Prevent errors with validation at entry where you can.</li><li>Keep a copy of the original file.</li><li>Record each problem found and how it was fixed.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Stop bad data at the point of entry.</p><ol class="small"><li>Select the Units column and choose Data &gt; Data Validation. Allow Whole number, between 1 and 100.</li><li>Select PaymentMode and choose Data &gt; Data Validation. Allow List, source <code>UPI,Card,Cash,Net Banking</code>.</li><li>On the Error Alert tab write a clear message, such as "Choose a payment mode from the list".</li><li>For existing data choose Data &gt; Data Validation &gt; Circle Invalid Data. Excel circles every value that breaks the rule.</li></ol></div>
+
+${task(["Run the audit and write the number of red, yellow and blue cells.","Write one validation rule for each of age, city and rating.","Find which of the six checks fails for 'nineteen' and which fails for 190."])}
+${quizSet(3)}`,
 mount(r){regQuiz("q3",1,"Preventing errors at entry costs far less than finding them later.");
   const rows=DIRTY0();let on=false;
   function draw(){const dups=dupIdx(rows),cnt={};
@@ -385,7 +562,13 @@ html:()=>`<p class="lead"><b>Primary data</b> is data you collect <b>first-hand<
 <select id="fap">${APPS.map(c=>`<option>${c}</option>`).join("")}</select><select id="fsat"><option>5</option><option>4</option><option selected>3</option><option>2</option><option>1</option></select></div>
 <div class="row"><button class="btn pri" id="add" type="button">Submit response</button><button class="btn" id="add5" type="button">Collect 5 random responses</button><button class="btn" id="reset" type="button">Reset to 16</button><span id="fmsg" class="small"></span></div></div>
 <div class="callout i small">Notice the form already enforces quality: Age is limited to 15 to 60, City is a dropdown. That is lesson 3 in action.</div>
-${quiz("q4","You stand at the canteen and count who orders tea. This is...",["Primary data","Secondary data","Neither"],0,"You observed it yourself for your own question, so it is primary data collected by observation.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">${g("primary","Primary data")} is data that you collect first-hand for your own question. You decide the questions, the people and the method. The class survey in the panel on the right is primary data. Its strengths are that it fits your exact question, that you know how it was collected, and that it is fresh. Its weaknesses are that it takes time and money, that it needs the consent of the people, that samples are often small and that you must clean it yourself.</p><p class="small">Common methods are the ${g("survey","survey")} (many people answer the same questions), the ${g("interview","interview")} (a one-to-one conversation), ${g("observation","observation")} (watching behaviour) and the ${g("experiment","experiment")} (changing one thing and measuring the effect). Lesson 6 shows how to choose between them.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Fill in the form and submit it. A new row is added to the live table on the right, and every other lesson uses it. You will notice that the form accepts only the fields that you asked for. This is a design decision: each field you add costs the respondent time and raises a privacy question. A short, clear form gives better answers than a long one.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Write the question you want to answer before you write the form.</li><li>Ask only what you need.</li><li>Test the form on two or three people before you use it.</li><li>Record who collected the data, when and how.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Collect your own data.</p><ol class="small"><li>Make a sheet with one question per column and one respondent per row. Turn it into a table with Ctrl+T.</li><li>Add Data Validation to each column (list for choices, whole number 1 to 5 for ratings).</li><li>Enter 10 responses, then count with <code>=COUNTIF(B2:B11,"Tea")</code> or Insert &gt; PivotTable.</li></ol></div>
+
+${task(["Add one row to the survey and write the number of rows after adding it.","Write three questions for a survey on canteen food and say the type of data each gives.","Write one advantage and one disadvantage of primary data for a small shop."])}
+${quizSet(4)}`,
 mount(r){regQuiz("q4",0,"You observed it yourself for your own question, so it is primary data collected by observation.");
   const msg=t=>$("#fmsg",r).textContent=t;
   $("#add",r).onclick=()=>{const n=$("#fn",r).value.trim(),a=+$("#fa",r).value,p=+$("#fp",r).value,s=+$("#fs",r).value;
@@ -413,7 +596,7 @@ function makeSecondary(o){
   }
   return {cols:[["stat","Published statistic"],["value","Value"]],rows:[{stat:"Students surveyed",value:DATA.length},{stat:"Average pocket money (Rs)",value:Math.round(mean(DATA.map(d=>d.pocket)))},{stat:"Average satisfaction",value:+mean(DATA.map(d=>d.sat)).toFixed(2)}],kind:"Headline figures"};
 }
-const QS=[["Average pocket money in Indore?",(o)=>o.mode==="copy"?"yes":o.mode==="summary"&&o.group==="city"?"yes":"no"],
+const QSX=[["Average pocket money in Indore?",(o)=>o.mode==="copy"?"yes":o.mode==="summary"&&o.group==="city"?"yes":"no"],
  ["Average age of boys vs girls?",(o)=>o.mode==="copy"?(o.binAge?"approx":"yes"):o.mode==="summary"&&o.group==="gender"?"yes":"no"],
  ["Who studies the most? (a name)",(o)=>o.mode==="copy"&&o.keepName?"yes":"no"],
  ["Does pocket money rise with study hours?",(o)=>o.mode==="copy"?(o.round?"approx":"yes"):"no"],
@@ -443,7 +626,13 @@ html:()=>`<p class="lead"><b>Secondary data</b> is data that <b>someone else col
 <tr><td>Detail</td><td>Row-level, raw</td><td>Often summarised or anonymised</td></tr>
 <tr><td>Examples</td><td>Your survey, interviews, lab experiment</td><td>Census of India, RBI, NSSO, company annual reports, published research</td></tr></tbody></table>
 <p class="small"><b>Before you trust secondary data, ask:</b> Who collected it? When? Why? How were they sampled? What was removed?</p></div>
-${quiz("q5","A company's own sales register, used by its analyst to study its customers, is...",["Primary data for the company, and secondary data for an outside researcher who buys it","Always secondary","Always primary"],0,"It depends on who is using the data and whether they collected it.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">${g("secondary","Secondary data")} is data that someone else collected, or that was collected for another purpose and that you reuse. Census tables, reports of the Reserve Bank and company sales records are examples. Primary and secondary are not two kinds of numbers. They describe your position relative to the data. The same table is primary for the person who collected it and secondary for everyone who uses it later.</p><p class="small">Secondary data is cheaper and faster, and it often covers more people than you could reach yourself. The price is control. It was collected for another question, it may be summarised or anonymised, and you cannot check how it was collected. Before you trust it, ask who collected it, when, why, how the people were chosen and what was removed.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The demo turns the class survey, which is primary for you, into data that others could use. You choose how to share it: as an anonymised copy, a summary table or headline figures. You can keep the names, replace the age with an age band, or round pocket money. Each choice protects the people more, but removes some detail. The result is a secondary dataset, and the detail that was removed is no longer available to the person who receives it.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Record the source, the date and the meaning of each column of any secondary data.</li><li>Check that the data covers the people and the period you need.</li><li>Prefer a recent source for a question about today.</li><li>Say clearly in your report which data is primary and which is secondary.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Bring in data somebody else collected.</p><ol class="small"><li>Choose Data &gt; Get Data &gt; From File &gt; From Text/CSV, pick the file, check the preview and choose Load.</li><li>For a table on a web page choose Data &gt; Get Data &gt; From Other Sources &gt; From Web.</li><li>If everything lands in one column, select it and choose Data &gt; Text to Columns.</li><li>On a new sheet write the source, the date it was published and what each column means. Without these the data cannot be trusted.</li></ol></div>
+
+${task(["Write whether each is primary or secondary for you: your class survey, the Census of India, a friend's survey results.","Share the survey as headline figures and write one thing that you can no longer see.","Choose one secondary source for a question on mobile phone sales and write four checks that you will make."])}
+${quizSet(5)}`,
 mount(r){regQuiz("q5",0,"It depends on who is using the data and whether they collected it.");
   let o={mode:"copy",keepName:false,binAge:true,round:true,group:"city"},persp="c";
   const pt=$("#ptab",r),pn=$("#pn",r);
@@ -465,7 +654,7 @@ mount(r){regQuiz("q5",0,"It depends on who is using the data and whether they co
     const lost=[];if(o.mode==="copy"){if(!o.keepName)lost.push("names");if(o.binAge)lost.push("exact ages");if(o.round)lost.push("exact pocket money")}else if(o.mode==="summary")lost.push("every individual row");else lost.push("all rows and columns");
     $("#lineage",r).innerHTML=`<b>Lineage:</b> ${DATA.length} primary rows &#10132; ${s.rows.length} secondary rows. <b>Lost:</b> ${lost.join(", ")||"nothing"}.`;
     $("#useCard",r).hidden=false;
-    $("#qs",r).innerHTML=`<table class="dt"><thead><tr><th>Researcher's question</th><th>Can they answer it?</th></tr></thead><tbody>`+QS.map(q=>{const a=q[1](o);return `<tr><td>${q[0]}</td><td>${a==="yes"?'<span class="tag g">Yes</span>':a==="approx"?'<span class="tag w">Only approximately</span>':'<span class="tag b">No, the information was removed</span>'}</td></tr>`}).join("")+`</tbody></table><p class="small muted">Privacy up means detail down. This trade-off is why secondary data is never "the same" as the primary data it came from.</p>`;
+    $("#qs",r).innerHTML=`<table class="dt"><thead><tr><th>Researcher's question</th><th>Can they answer it?</th></tr></thead><tbody>`+QSX.map(q=>{const a=q[1](o);return `<tr><td>${q[0]}</td><td>${a==="yes"?'<span class="tag g">Yes</span>':a==="approx"?'<span class="tag w">Only approximately</span>':'<span class="tag b">No, the information was removed</span>'}</td></tr>`}).join("")+`</tbody></table><p class="small muted">Privacy up means detail down. This trade-off is why secondary data is never "the same" as the primary data it came from.</p>`;
     $("#revCard",r).hidden=o.mode!=="summary";$("#revout",r).innerHTML="";};
   $("#rev",r).onclick=()=>{if(!last||o.mode!=="summary")return;const g=last.rows.reduce((a,b)=>b.n>a.n?b:a),n=g.n,avg=g.pocket,out=[];
     for(let t=0;t<3;t++){let v,ok=false;for(let k=0;k<400&&!ok;k++){v=[];let s=0;for(let i=0;i<n-1;i++){const x=2500+100*Math.floor(Math.random()*46);v.push(x);s+=x}
@@ -493,7 +682,13 @@ html:()=>`<p class="lead">No method is best. Pick by your <b>question</b>, then 
 <div class="row"><label class="chk"><input type="checkbox" id="w5"> Good data on this topic may already exist</label></div>
 <div id="wout"></div></div>
 <div class="card"><h3>Case: BBA students want to know if hostel students spend more on food</h3><p class="small">Numbers to compare two groups, dozens of people, days, small budget. A <b>short survey</b> fits. If the college already publishes mess billing, <b>existing records</b> are quicker, but check they cover day scholars too.</p></div>
-${quiz("q6","You want to understand WHY customers leave a shop. Best first method?",["A 500-person tick-box survey","A few interviews","Census data"],1,"Interviews give depth and reasons. A tick-box survey can come after, to measure how common each reason is.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">No method is best for every question. Start with the question and then check the time, the money and the number of people. A survey gives numbers that you can compare across many people. An interview gives reasons and detail from a few people. Observation shows what people really do, which may differ from what they say. An experiment shows the effect of changing one thing. Existing records are the cheapest source when they cover the people and the period you need.</p><p class="small">A good choice often combines methods: a few interviews to find the right questions, then a survey to count how common each answer is.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The adviser asks what you need, how many people you can reach, how much time and money you have, and whether good data may already exist. It then ranks the five methods. The ranking is a teaching model, not a law, so change the answers and watch the order move. In the hostel case, numbers for two groups of dozens of students within days and on a small budget point to a short survey. If the college already publishes mess billing, the records are quicker, but you must check that they cover day scholars too.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Choose the method from the question, not from habit.</li><li>Check whether usable data already exists.</li><li>Use interviews to find reasons and surveys to measure how common they are.</li><li>Write down the limits of the method you chose.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Collect and summarise survey answers.</p><ol class="small"><li>Put each question in a column and give the rating columns a list validation of 1 to 5.</li><li>Tally a closed question with <code>=COUNTIF(range,"Yes")/COUNTA(range)</code> to get the share.</li><li>Insert &gt; PivotTable puts a category in Rows and Count of responses in Values, so you can compare groups.</li></ol></div>
+
+${task(["Use the adviser for a question on why students skip the library. Write the best method it gives and whether you agree.","Change the time to 'Hours' and write what happens to the ranking.","Write a plan that combines two methods for one question."])}
+${quizSet(6)}`,
 mount(r){regQuiz("q6",1,"Interviews give depth and reasons. A tick-box survey can come after, to measure how common each reason is.");
   function draw(){const need=$("#w1",r).value,size=+$("#w2",r).value,time=+$("#w3",r).value,cost=+$("#w4",r).value,exist=$("#w5",r).checked;
     const sc=METHODS.map(m=>{let s=m[need]*2+(3-Math.abs(m.size-size))+(3-Math.abs(m.time-time)*1)*(0.5)+(3-Math.abs(m.cost-cost))*0.5;if(m.t==="Secondary")s+=exist?3:-2;return {m,s}}).sort((a,b)=>b.s-a.s);
@@ -511,7 +706,13 @@ html:()=>`<p class="lead">Data is about real people. Four habits: <b>consent</b>
 <div class="bar"><i id="ebar" style="width:0"></i></div><p id="etxt" class="small"></p></div>
 <div class="card try"><h3>Try it: ethical or not?</h3><div id="sc"></div></div>
 <div class="callout i small"><b>India:</b> the Digital Personal Data Protection Act, 2023 covers personal data. For classroom work, the rule of thumb is consent, anonymise, minimum data, secure storage. Check the current text of the Act for anything beyond a class exercise.</div>
-${quiz("q7","Which is the best way to protect respondents in a published table?",["Remove names and combine rare categories","Keep names but use initials","Nothing, they agreed to the survey"],0,"Removing direct identifiers and avoiding unique combinations lowers the risk of re-identification.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">Data is about real people, so its collection has duties. ${g("consent","Informed consent")} means that people agree to give data after they are told the purpose. Minimum data means that you ask only for what you need. Privacy means that people cannot be identified from what you publish. Honesty means that you report what you found and not what you hoped to find.</p><p class="small">To ${g("anonymise","anonymise")} data is to remove or change details so that a person cannot be found. Removing the name is not enough. A combination of age, city and favourite app may belong to only one person, and anyone who knows those facts can find that row. In India, the Digital Personal Data Protection Act, 2023 covers personal data. For classroom work, use the rule of thumb: consent, anonymise, minimum data and secure storage.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The meter counts how many of the 16 students are unique on the columns you tick. With only the city, few students are unique. Add the exact age and the pocket money and almost every student becomes unique, even without the name. This is why published tables should combine rare values, such as age bands instead of exact ages. The second demo gives four practice cases. Checking each one against the four habits is the skill to learn.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Tell people the purpose and that they can skip a question.</li><li>Collect only what the analysis needs.</li><li>Check the combinations of columns for uniqueness before you publish.</li><li>Store the data where only the intended people can open it.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales_Raw</b> of bmt-sales-dataset.xlsx (1015 rows in 2 to 1016; Region is column C, OrderDate B, Units F, Rating J).</p><ol class="small"><li>Copy the sheet first (right-click the tab &gt; Move or Copy &gt; Create a copy) and work on the copy.</li><li>Remove direct identifiers: delete the Salesperson column (it holds names) and, if needed, replace CustomerID with codes.</li><li>Combine rare categories with Find and Replace (Ctrl+H).</li><li>Hide small counts in a published table: <code>=IF(COUNTIF(C2:C1016,"North")<5,"fewer than 5",COUNTIF(C2:C1016,"North"))</code>.</li><li>Choose File &gt; Info &gt; Check for Issues &gt; Inspect Document to remove the author name and hidden data before sharing.</li></ol></div>
+
+${task(["Tick City only and then City, Age and Pocket money. Write how the number of unique students changes.","Rewrite the question 'What is your phone number?' for a survey that needs only the average spend.","Write a consent sentence for the first page of a class survey."])}
+${quizSet(7)}`,
 mount(r){regQuiz("q7",0,"Removing direct identifiers and avoiding unique combinations lowers the risk of re-identification.");
   $("#efs",r).previousElementSibling.innerHTML=$("#efs",r).previousElementSibling.innerHTML.replace("{N}",DATA.length);
   function draw(){const sel=$$("#efs input:checked",r).map(i=>i.value);
@@ -535,7 +736,13 @@ Sort by <select id="bs"><option value="id">Order entered</option><option value="
 <div class="row">Column <select id="nc"><option value="pocket">Pocket money</option><option value="study">Study hours</option><option value="age">Age</option><option value="sat">Satisfaction</option></select> (uses the filter above)</div>
 <div class="grid3" id="stats"></div><div id="sform" class="code" style="margin-top:10px"></div></div>
 <div class="callout k small"><b>Mean vs median:</b> if one very rich student joins, the mean jumps and the median hardly moves. Try adding a row in lesson 4 with pocket money 90000 and come back.</div>
-${quiz("q8","Mean Rs 5000 but median Rs 3500 suggests...",["A few very high values pull the mean up","The data is symmetric","The data is wrong"],0,"When mean is above median, a few large values stretch the right side (right-skewed).")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">Almost all analysis uses four moves: sort the rows, filter some of them, calculate a number, and group and compare. To sort is to reorder the rows by a column. To filter is to show only the rows that meet a condition.</p><p class="small">The numbers that summarise a column are of two kinds. Measures of centre say where the values are. The ${g("mean","mean")} is the sum divided by the count. The median is the middle value after sorting. The mode is the most frequent value. Measures of spread say how far the values are from each other: the range (maximum minus minimum), the ${g("sd","standard deviation")} and the ${g("quartile","quartiles")}. When the mean is above the median, the data is ${g("skew","right-skewed")}: a few large values pull the mean up.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Choose a city filter and a sort order and the table changes. The panel below it shows all the summary numbers for the visible rows. Compare the mean and the median of the pocket money. If you add a row with Rs 90,000 in lesson 4, the mean jumps and the median hardly moves. That is why the median is the safer centre for skewed data such as incomes and pocket money. With a filter on, use SUBTOTAL in a sheet so that hidden rows are not included.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Always report the centre together with the spread.</li><li>Compare the mean and the median before you decide which to use.</li><li>Sort and filter the whole table, never one column alone.</li><li>State which rows are included in each number.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales_Raw</b> of bmt-sales-dataset.xlsx (1015 rows in 2 to 1016; Region is column C, OrderDate B, Units F, Rating J).</p><ol class="small"><li>Sort: click a cell in the data, choose Data &gt; Sort, then Add Level (for example Region, then Units largest to smallest).</li><li>Filter: press Ctrl+Shift+L and use the drop-down arrows.</li><li>Summarise a numeric column: <code>=AVERAGE(F2:F1016)</code>, <code>=MEDIAN(F2:F1016)</code>, <code>=MODE.SNGL(F2:F1016)</code>, <code>=STDEV.S(F2:F1016)</code>, <code>=MIN(F2:F1016)</code>, <code>=MAX(F2:F1016)</code>.</li><li>If the mean is above the median, a few large values pull the mean up (right-skewed).</li><li>For many statistics at once enable the Analysis ToolPak (File &gt; Options &gt; Add-ins) and use Data &gt; Data Analysis &gt; Descriptive Statistics.</li></ol></div>
+
+${task(["Filter the city to Bhopal and write the mean and median of pocket money.","Add a row with pocket money 90000 in lesson 4 and write what happens to the mean and the median.","Write the range and the standard deviation of study hours."])}
+${quizSet(8)}`,
 mount(r){regQuiz("q8",0,"When mean is above median, a few large values stretch the right side (right-skewed).");
   const colL={pocket:"Pocket money",study:"Study hours",age:"Age",sat:"Satisfaction"};
   function rows(){const c=$("#bc",r).value,k=$("#bs",r).value,d=+$("#bd",r).value;return DATA.filter(x=>!c||x.city===c).sort((a,b)=>(a[k]-b[k])*d)}
@@ -564,7 +771,13 @@ html:()=>`<p class="lead">Cleaning means fixing the problems you found in the au
 <p class="small">Blanks remain in Age, Name and Rating. There is no single right answer. Choose, and see what happens to the average age.</p>
 <div class="row"><div class="seg" id="miss"><button type="button" data-m="none" aria-pressed="true">Leave blank</button><button type="button" data-m="drop" aria-pressed="false">Drop those rows</button><button type="button" data-m="fill" aria-pressed="false">Fill age with median</button></div></div>
 <p id="mout" class="small"></p></div>
-${quiz("q9","Why remove duplicates after fixing spaces and case?",["Because 'diya ' and 'Diya' only match once they look the same","Because duplicates are rare","Because it is faster"],0,"Duplicate detection compares exact text, so standardise first.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">${g("cleaning","Data cleaning")} fixes the problems found in the audit. The usual problems are spacing and case differences, ${g("duplicate","duplicate")} rows, values of the wrong type, impossible values, ${g("missing","missing values")} and dates in different formats. Always keep the original sheet untouched and work on a copy, so that you can check your work and start again.</p><p class="small">The order of the steps matters. Fix spaces and case first, because "diya " and "Diya" can be recognised as the same person only after they look the same. Then remove duplicates. Then deal with types, impossible values and missing values. For each missing value there are two choices, drop the row or fill the value, and either one is acceptable if you write down what you did.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Press the button to apply one step at a time to the ten-row file. Green cells show what changed in the last step. Step 1 fixes spaces and case, so the two Diya rows become identical. Step 2 converts the word "nineteen" to 19 and turns the N/A rating into a blank. Step 3 makes the dates the same. Step 4 removes the duplicate Diya row, which works only because step 1 came first. Step 5 sets the impossible age of 190 and the impossible rating of 9 to blank. After the five steps the file has nine rows and no wrong values, but it still has missing values, which you must handle by a stated choice.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Work on a copy of the file.</li><li>Fix the text first, then the duplicates, then the values.</li><li>Do not guess: if a value cannot be known, mark it missing.</li><li>Write a short log of each change and the number of rows affected.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales_Raw</b> of bmt-sales-dataset.xlsx (1015 rows in 2 to 1016; Region is column C, OrderDate B, Units F, Rating J). Work on a copy of the sheet.</p><ol class="small"><li><b>Fix spaces and case.</b> In a new column enter <code>=PROPER(TRIM(C2))</code> and fill down. The 25 spellings of the region become 5: Central, East, North, South, West. Copy the column and use Paste Special &gt; Values over column C.</li><li><b>Remove duplicates, after the fix.</b> Select the data and choose Data &gt; Remove Duplicates with all columns ticked. Excel reports 15 duplicate rows removed and 1000 unique rows remaining.</li><li><b>Fix text dates.</b> 20 dates are text such as 24-11-2025. Find them with <code>=ISTEXT(B2)</code>, then convert with <code>=DATE(RIGHT(B2,4),MID(B2,4,2),LEFT(B2,2))</code>.</li><li><b>Handle missing values.</b> Press Ctrl+Shift+L, open the Units filter and tick (Blanks). There are 12. The clean reference file drops these rows, which leaves 988 orders.</li><li><b>Handle wrong types.</b> Six ratings contain the text N/A. Use Ctrl+H to replace N/A with nothing, so that averages ignore them.</li><li>Check the result with a PivotTable of Region: it must show five rows only.</li></ol></div>
+
+${task(["Apply all five steps in the demo and write the number of rows at the end.","Write which step removed the duplicate and why it had to come after the case fix.","Step 5 sets the age 190 and the rating 9 to blank. Write why a blank is better than guessing a value."])}
+${quizSet(9)}`,
 mount(r){regQuiz("q9",0,"Duplicate detection compares exact text, so standardise first.");
   let rows=DIRTY0(),step=0,prev=null;
   function draw(){const cls=(row,c,i)=>{if(!prev)return"";const p=prev.find(x=>x.id===row.id);return p&&String(p[c])!==String(row[c])?" chg":""};
@@ -593,7 +806,13 @@ html:()=>`<p class="lead"><b>Transforming</b> = making new columns from old ones
 <div class="card try"><h3>Try it: transform a column</h3>
 <p class="small muted">Make a new column from existing ones. Pick the formula and see the new column appear on the survey.</p>
 <div class="row"><select id="tf"><option value="a">Pocket money per day = pocket / 30</option><option value="b">Age band = IF(age&lt;=19,"18-19","20+")</option><option value="c">Spender = IF(pocket&gt;=5000,"High","Normal")</option></select></div><div id="ttab"></div><div class="code" id="tform"></div></div>
-${quiz("q10","Which shape is best for building a pivot table by subject?",["Wide","Long","Either, no difference"],1,"Long format has one column holding the subject, so you can drag it into Rows or Filters.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">To ${g("transform","transform")} data is to make new columns from existing ones. Net sales is units multiplied by the price and the discount factor. An age band is made from age. A pocket money per day is the monthly amount divided by 30. To ${g("reshape","reshape")} data is to change the shape of the table without changing its facts.</p><p class="small">A table in ${g("wide","wide format")} has one row per student and one column per subject. It is easy to read. In long format there is one row per student per subject. Pivot tables, filters and most charts need long format, because then one column holds the subject and one column holds the marks. Going from wide to long is called unpivoting.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The first demo switches between the wide and the long form of the same marks. The number of rows grows from 3 to 9, and the number of columns falls from 4 to 3. No fact has changed. The second demo adds a new column to the survey, such as pocket money per day, an age band or a spender class. The formula for row 2 is shown, and it is filled down for all rows. A calculated column is better than a typed one, because it updates when the data changes.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Keep the raw columns and add calculated columns beside them.</li><li>Use long format when you want to pivot or chart by a category.</li><li>Check one row of a new column by hand.</li><li>Name each new column so that others know what it means.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales_Raw</b> of bmt-sales-dataset.xlsx (1015 rows in 2 to 1016; Region is column C, OrderDate B, Units F, Rating J).</p><ol class="small"><li><b>Calculated column.</b> Add NetSales: <code>=F2*G2*(1-H2/100)</code>. Add Month: <code>=TEXT(B2,"yyyy-mm")</code>.</li><li><b>Split a column.</b> Type the first name next to the first row, press Ctrl+E (Flash Fill) and Excel fills the rest.</li><li><b>Wide to long.</b> Select the data, choose Data &gt; From Table/Range, select the columns to keep, then Transform &gt; Unpivot Other Columns. Close and load.</li><li><b>Long to wide.</b> Insert &gt; PivotTable, then drag the category to Columns.</li><li>Turn the range into a table with Ctrl+T, so that formulas and pivots grow with new rows.</li></ol></div>
+
+${task(["Switch the marks table from wide to long and write the number of rows.","Add the age band column to the survey and write how many students are in the 20+ band.","Write a formula for a spender class that is High for pocket money of 5000 or more."])}
+${quizSet(10)}`,
 mount(r){regQuiz("q10",1,"Long format has one column holding the subject, so you can drag it into Rows or Filters.");
   let sh="w";const subs=["Maths","Statistics","Excel"];
   function draw(){if(sh==="w"){$("#stab2",r).innerHTML=table(WIDE,[["Student","Student"],...subs.map(s=>[s,s])],{small:true});$("#snote2",r).textContent="3 rows, 4 columns. Each subject is its own column. In Sheets, reshaping to long: use a formula per row, or Power Query's Unpivot in Excel and Power BI."}
@@ -613,7 +832,14 @@ html:()=>`<p class="lead">Real data lives in several tables. A <b>join</b> glues
 <div class="seg s" id="jt"><button type="button" data-j="inner" aria-pressed="true">Inner</button><button type="button" data-j="left" aria-pressed="false">Left (keep all orders)</button><button type="button" data-j="right" aria-pressed="false">Right (keep all customers)</button><button type="button" data-j="outer" aria-pressed="false">Full outer</button></div>
 <p id="jtxt" class="small"></p><div id="jtab"></div><div id="jnote" class="callout k small"></div></div>
 <div class="card"><h3>In a spreadsheet</h3><div class="code">=XLOOKUP(B2, Customers!A:A, Customers!B:B, "Not found")\n=VLOOKUP(B2, Customers!$A$2:$C$5, 2, FALSE)</div><p class="small">A lookup works like a <b>left join</b>: every row of the main sheet stays, and unmatched keys show #N/A (or your "Not found" text). In Power BI and Excel, use Power Query, Home, Merge Queries.</p></div>
-${quiz("q11","Order O4 belongs to customer C9, who is not in the customer table. Which join keeps O4?",["Inner","Left (orders on the left)","Neither, it is always dropped"],1,"A left join keeps every order and leaves the customer columns blank when there is no match.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">Real data is spread over several tables. A ${g("join","join")} combines two tables by a ${g("key","key column")}, a column that appears in both. In the example, the Cust column links each order to a customer. Four joins are common. An inner join keeps only the keys found in both tables. A left join keeps every row of the left table and leaves blanks where there is no match. A right join does the opposite. A full outer join keeps every row of both.</p><p class="small">The ${g("lookup","VLOOKUP and XLOOKUP")} functions of a spreadsheet work like a left join, one column at a time. Each row of the main sheet is kept. A key with no match shows an error such as #N/A, or a text that you choose.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Choose a join and the result table changes. The inner join gives 3 rows: order O4 (customer C9) is dropped because C9 is not in the customer table, and customer Kabir (C3) is dropped because he has no order. The left join keeps O4 with blanks for the name and city. The right join keeps Kabir with blanks for the order. The full join keeps every row of both. The choice depends on the question: to list all orders with customer details, use the left join and look for blanks.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Check that the key is the same kind of value in both tables.</li><li>Choose the join from the question, then check the row count.</li><li>Look for unmatched keys after every join.</li><li>Keep the original tables unchanged.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales_Raw</b> of bmt-sales-dataset.xlsx (1015 rows in 2 to 1016; Region is column C, OrderDate B, Units F, Rating J).</p><ol class="small"><li><b>Lookup.</b> Add the product category from the Products sheet: <code>=VLOOKUP(D2,Products!$A$2:$D$13,2,FALSE)</code>. Add the customer city: <code>=VLOOKUP(I2,Customers!$A$2:$D$121,3,FALSE)</code>. In newer Excel <code>=XLOOKUP(I2,Customers!A:A,Customers!C:C)</code> does the same.</li><li>Wrap the formula in <code>=IFERROR(...,"not found")</code>. Orders with no match show "not found", which is the left join result: every order is kept.</li><li><b>Merge with Power Query.</b> Load both tables with Data &gt; From Table/Range, then choose Data &gt; Get Data &gt; Combine Queries &gt; Merge. Pick the matching columns and a join kind (Left Outer keeps every order, Inner keeps only matches).</li><li><b>Stack tables.</b> To add rows from a second month with the same columns choose Combine Queries &gt; Append.</li></ol></div>
+
+${task(["Run all four joins and write the number of rows each gives.","Write which join you would use to list all customers who have not placed an order.","Write one reason why a key might fail to match even when the customer exists."
+])}
+${quizSet(11)}`,
 mount(r){regQuiz("q11",1,"A left join keeps every order and leaves the customer columns blank when there is no match.");
   const exp={inner:"Only keys that appear in both tables. O3's customer C4 matches; O4 (C9) and Kabir (C3) are dropped.",left:"All orders, with customer details where they exist. O4 has blanks for name and city.",right:"All customers, with their orders where they exist. Kabir (C3) appears with no order.",outer:"Everything from both sides. Blanks fill wherever there is no partner."};
   function draw(){const j=$$("#jt [aria-pressed=true]",r)[0].dataset.j,out=[];
@@ -624,6 +850,12 @@ mount(r){regQuiz("q11",1,"A left join keeps every order and leaves the customer 
   $$("#jt button",r).forEach(b=>b.onclick=()=>{$$("#jt button",r).forEach(x=>x.setAttribute("aria-pressed",x===b));draw()});draw();}
 });
 
+
+
+lesson({ref:true,nav:"Glossary",title:"Glossary of terms",syl:"Reference: terms used in this unit",
+html:()=>`<p class="lead">Every term below appears in the lessons. In a lesson, a dotted underline marks a term that is defined here.</p><div class="card"><h3>Your progress in this unit</h3><div class="tw sm"><table class="dt"><thead><tr><th>Lesson</th><th>Correct</th><th>First try</th></tr></thead><tbody id="unitsum"></tbody></table></div></div>`+GL.slice().sort((a,b)=>a[1].localeCompare(b[1])).map(x=>`<div class="card gl" id="gl-${x[0]}"><h3>${x[1]}</h3><p class="small" style="margin:0">${x[2]}</p></div>`).join(""),
+mount(r){}
+});
 
 renderLive();go(0);
 

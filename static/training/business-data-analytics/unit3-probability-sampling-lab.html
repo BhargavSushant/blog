@@ -100,7 +100,8 @@ td.ix{background:var(--bad-soft)} td.iy{background:var(--warn-soft)} td.iz{backg
 .kpi b{font-size:22px;display:block;font-variant-numeric:tabular-nums}
 .nextrow{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
 svg.chart{width:100%;height:auto;display:block;max-height:420px}
-svg.chart text{fill:var(--fg);font:12px var(--body)}
+svg.chart{font-size:calc(12px*var(--zoom))}
+svg.chart text{fill:var(--fg);font-family:var(--body);font-size:1em}
 svg.chart .ax{stroke:var(--muted);stroke-width:1}
 svg.chart .gr{stroke:var(--grid);stroke-width:1}
 svg.chart .lbl{fill:var(--muted)}
@@ -113,6 +114,19 @@ svg.chart .lbl{fill:var(--muted)}
 @media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.live{grid-column:1/-1;position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
 @media (max-width:760px){.app{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav ol{display:flex;overflow:auto;gap:4px}.nav li{flex:none}.nav .t{display:none}main{padding:18px 16px 60px}.grid2,.grid3,.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
 
+.dt.wrap td,.dt.wrap th{white-space:normal}
+.card.task{border-left:5px solid var(--good)}
+.numt{margin:4px 0 10px}.numt .tw{margin-top:8px}
+a.g{color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted)} a.g:hover{border-bottom-style:solid}
+.gl.hl{outline:3px solid var(--pri)}
+.qq+.qq{border-top:1px solid var(--line2);margin-top:8px}
+.opt:disabled{cursor:default}
+#prog{margin-top:6px;font-size:12.5px;line-height:1.5}
+select{max-width:100%}
+code{overflow-wrap:anywhere}
+.code{overflow-x:auto;max-width:100%}
+.grid3>*,.grid2>*,.flow>*{min-width:0}
+.grid2 select,.grid2 input{max-width:100%;width:100%}
 </style>
 </head>
 <body>
@@ -120,7 +134,7 @@ svg.chart .lbl{fill:var(--muted)}
   <nav class="nav" aria-label="Lessons">
     <h2 class="brand">Probability Lab<small>Unit III, Probability and Sampling<br>BBA Sem I, Business Management Tools I</small></h2>
     <ol id="navlist"></ol>
-    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
+    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><div id="prog" class="small"></div><button id="resetP" type="button">Reset my score</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
   </nav>
   <main id="stage" tabindex="-1"></main>
   <aside class="live" aria-label="Live data"><h3>Live data: Sunrise Retail</h3><div id="livebox"></div></aside>
@@ -130,7 +144,7 @@ svg.chart .lbl{fill:var(--muted)}
 /* ===== helpers ===== */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-US"):v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
+const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-IN"):v.toLocaleString("en-IN",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
 const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
 const sum=a=>a.reduce((x,y)=>x+y,0);
 const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
@@ -148,39 +162,46 @@ function table(rows,cols,opts={}){
     return `<td class="${cls.trim()}">${v===""||v==null?'<span class="muted">(blank)</span>':esc(typeof v==="number"?fmt(v,c[2]!=null?c[2]:(Number.isInteger(v)?0:2)):v)}</td>`}).join("")+"</tr>").join("");
   return `<div class="tw${opts.small?' sm':''}"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
-const QUIZ={};
-function quiz(id,q,opts,ans,why){QUIZ[id]={ans,why};
-  return `<div class="card"><h3>Quick check</h3><p style="margin:0 0 6px"><b>${q}</b></p>`+opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" style="margin-top:6px"></div></div>`;}
-function regQuiz(id,ans,why){QUIZ[id]={ans,why}}
+const IN=n=>Number(n).toLocaleString("en-IN",{maximumFractionDigits:0});
+const num=v=>Number(v).toLocaleString("en-IN",{maximumFractionDigits:2});
+const RS=v=>"Rs "+IN(v);
 function seg(id,items,cls=""){return `<div class="seg ${cls}" id="${id}" role="group">`+items.map((x,i)=>`<button type="button" data-v="${x[0]}" aria-pressed="${i===0}">${x[1]}</button>`).join("")+`</div>`}
 function bindSeg(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)});return ()=>$$("[aria-pressed=true]",g)[0].dataset.v}
-const IN=n=>n.toLocaleString("en-US",{maximumFractionDigits:0});
 
-/* ===== SVG charts (colours come from CSS variables, so both themes work) ===== */
+/* ===== SVG charts: colours from CSS variables; text size follows the Text size control ===== */
 const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
-const nice=(max)=>{const e=Math.pow(10,Math.floor(Math.log10(max||1))),f=max/e;const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*e};
-function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(lo+st*i);return out}
-const short=v=>Math.abs(v)>=100000?(v/100000).toFixed(1).replace(/\.0$/,"")+"L":Math.abs(v)>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":(Math.round(v*100)/100)+"";
-function chartBar(items,o={}){ // items:[{label,value,color}]
-  const W=o.w||640,H=o.h||320,m={l:56,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...items.map(i=>i.value))*1.08),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+const lakh=v=>v===0?"0":String(+(v/100000).toFixed(2))+"L";
+const fa=hi=>hi>=100000?lakh:num;                     /* one unit per axis: lakh or plain */
+const short=v=>Math.abs(v)>=100000?lakh(v):num(v);
+function niceStep(raw){const e=Math.pow(10,Math.floor(Math.log10(raw||1))),f=raw/e;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e}
+function axisFor(maxv){const step=niceStep((maxv||1)/5),n=Math.max(1,Math.ceil(maxv/step-1e-9));return {hi:step*n,n}}
+function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(+(lo+st*i).toFixed(6));return out}
+function tk(lo,hi,intOnly){let st=niceStep((hi-lo)/5||1);if(intOnly)st=Math.max(1,Math.round(st));const out=[];for(let v=Math.ceil(lo/st-1e-9)*st;v<=hi+1e-9;v+=st)out.push(+v.toFixed(6));return out}
+const TB=(h,rows,note)=>` data-tbl="${esc(JSON.stringify({h,rows,note:note||""}))}"`;
+const TS="font-weight:700;font-size:1.17em";
+function chartBar(items,o={}){
+  const W=o.w||640,H=o.h||320,m={l:58,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mn=o.min!=null?o.min:0,vmax=Math.max(...items.map(i=>i.value));
+  let mx,n=5;if(o.max){mx=o.max}else{const a=axisFor(vmax*1.04);mx=a.hi;n=a.n}
+  const fm=fa(mx),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length,step=(items.length>14&&!o.rotate)?Math.ceil(items.length/10):1;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}"${TB([o.cat||"Item",o.vlabel||"Value"],items.map(i=>[i.label,i.value]))}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  ticks(mn,mx,n).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fm(t)}</text>`);
   items.forEach((it,i)=>{const x=m.l+i*bw+bw*.15,w=bw*.7,y=sy(Math.max(it.value,mn));
     s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,sy(mn)-y)}" fill="${it.color||o.color||"var(--c1)"}" rx="2"><title>${esc(it.label)}: ${fmt(it.value)}</title></rect>`;
-    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:11px">${short(it.value)}</text>`;
-    const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`});
+    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:.92em">${fm(it.value)}</text>`;
+    if(i%step===0){const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`}});
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
   if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
   return s+"</svg>";}
-function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
-  const W=o.w||640,H=o.h||320,m={l:56,r:o.legendRight?110:16,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...all)*1.08);
-  const sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+function chartLine(series,labels,o={}){
+  const W=o.w||640,H=o.h||320,m={l:58,r:o.legendRight?110:26,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0;
+  let mx,n=5;if(o.max){mx=o.max}else{const a=axisFor(Math.max(...all)*1.08);mx=a.hi;n=a.n}
+  const fm=fa(mx),sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}"${TB([o.cat||"Period"].concat(series.map(x=>x.name)),labels.map((l,i)=>[l].concat(series.map(x=>x.vals[i]==null?"":Math.round(x.vals[i]*100)/100))))}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  ticks(mn,mx,n).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fm(t)}</text>`);
   const step=Math.ceil(labels.length/(o.maxLabels||12));labels.forEach((l,i)=>{if(i%step===0)s+=`<text class="lbl" x="${sx(i)}" y="${H-m.b+16}" text-anchor="middle">${esc(l)}</text>`});
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
   series.forEach((se,k)=>{const c=se.color||PAL[k%6];let d="";se.vals.forEach((v,i)=>{if(v!=null)d+=(d?"L":"M")+sx(i).toFixed(1)+" "+sy(v).toFixed(1)});
@@ -189,62 +210,102 @@ function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
     if(o.dots!==false&&!se.dash)se.vals.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${sx(i)}" cy="${sy(v)}" r="3.5" fill="${c}"><title>${esc(labels[i])}: ${fmt(v)}</title></circle>`});
     if(o.legendRight)s+=`<text x="${W-m.r+8}" y="${m.t+14+k*16}" style="fill:${c};font-weight:600">${esc(se.name)}</text>`;
     else if(series.length>1)s+=`<text x="${m.l+8+k*150}" y="${H-6}" style="fill:${c};font-weight:600">&#9632; ${esc(se.name)}</text>`});
-  (o.marks||[]).forEach(mk=>{s+=`<text x="${sx(mk.i)}" y="${sy(mk.v)-10}" text-anchor="middle" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
+  (o.marks||[]).forEach(mk=>{const x=sx(mk.i),up=sy(mk.v)-10>m.t+12,anc=x<m.l+70?"start":x>W-m.r-70?"end":"middle",dx=anc==="start"?-4:anc==="end"?4:0;
+    s+=`<text x="${x+dx}" y="${up?sy(mk.v)-10:sy(mk.v)+30}" text-anchor="${anc}" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
   return s+"</svg>";}
-function chartScatter(pts,o={}){ // pts:[{x,y,r,color,label}]
-  const W=o.w||640,H=o.h||340,m={l:60,r:16,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||nice(Math.max(...ys)*1.05);
-  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(y0,y1).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
-  ticks(x0,x1).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${short(t)}</text>`);
+function chartScatter(pts,o={}){
+  const W=o.w||640,H=o.h||340,m={l:62,r:18,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||axisFor(Math.max(...ys)*1.05).hi;
+  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih,fy=fa(y1),fx=fa(x1);
+  const lab=pts.some(p=>p.label),rows=(lab?pts:pts.slice(0,25)).map(p=>lab?[p.label,Math.round(p.x*100)/100,Math.round(p.y*100)/100]:[Math.round(p.x*100)/100,Math.round(p.y*100)/100]);
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}"${TB(lab?["Label",o.xlabel||"x",o.ylabel||"y"]:[o.xlabel||"x",o.ylabel||"y"],rows,lab?"":"First 25 of "+pts.length+" points (some jitter added to discrete values). Download the CSV for every row.")}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  tk(y0,y1,o.yint).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fy(t)}</text>`);
+  tk(x0,x1,o.xint).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${fx(t)}</text>`);
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(y0)}" y2="${sy(y0)}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${sy(y0)}"/>`;
   if(o.xlabel)s+=`<text class="lbl" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${esc(o.xlabel)}</text>`;
   if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
   if(o.fit){const f=o.fit;s+=`<line x1="${sx(x0)}" y1="${sy(f.m*x0+f.b)}" x2="${sx(x1)}" y2="${sy(f.m*x1+f.b)}" stroke="var(--sec)" stroke-width="2.5" stroke-dasharray="7 4"/>`}
   pts.forEach(p=>{s+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="${p.r||4}" fill="${p.color||"var(--c1)"}" fill-opacity="${o.alpha||.65}" stroke="${p.color||"var(--c1)"}"><title>${esc(p.label||"")} (${fmt(p.x)}, ${fmt(p.y)})</title></circle>`;
-    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:11px">${esc(p.label)}</text>`});
+    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:.92em">${esc(p.label)}</text>`});
   return s+"</svg>";}
-function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart">`;
+function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart"${TB(["Item","Value","Share"],items.map(i=>[i.label,Math.round(i.value),(100*i.value/tot).toFixed(1)+"%"]))}>`;
   items.forEach((it,k)=>{const ang=it.value/tot*2*Math.PI,x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(a+ang),y2=cy+R*Math.sin(a+ang);
     s+=`<path d="M${cx} ${cy}L${x1} ${y1}A${R} ${R} 0 ${ang>Math.PI?1:0} 1 ${x2} ${y2}Z" fill="${it.color||PAL[k%6]}" stroke="var(--surface)" stroke-width="2"><title>${esc(it.label)}: ${(100*it.value/tot).toFixed(1)}%</title></path>`;a+=ang;
     s+=`<text x="250" y="${40+k*22}" style="fill:${it.color||PAL[k%6]};font-weight:700">&#9632; <tspan style="fill:var(--fg);font-weight:400">${esc(it.label)} ${(100*it.value/tot).toFixed(1)}%</tspan></text>`});
   return s+"</svg>";}
-function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:short(lo+i*w),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:num(Math.round(lo+i*w)),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+
+/* "Show the numbers" toggle: every chart carries its data, so screen readers and students can read the values */
+let NTID=0;
+function tableHtml(d){const cell=v=>typeof v==="number"?`<td class="num">${num(v)}</td>`:`<td>${esc(v)}</td>`;
+  return `<div class="tw sm"><table class="dt"><thead><tr>${d.h.map(x=>`<th>${esc(x)}</th>`).join("")}</tr></thead><tbody>${d.rows.map(r=>"<tr>"+r.map(cell).join("")+"</tr>").join("")}</tbody></table></div>`+(d.note?`<p class="small muted">${esc(d.note)}</p>`:"")}
+function addNumToggles(root){$$("svg.chart[data-tbl]",root).forEach(s=>{if(s.dataset.nt)return;s.dataset.nt="1";let d;try{d=JSON.parse(s.getAttribute("data-tbl"))}catch(e){return}
+  const id="nt"+(++NTID),w=document.createElement("div");w.className="numt";w.innerHTML=`<button type="button" class="btn sm" aria-expanded="false" aria-controls="${id}">Show the numbers</button><div id="${id}" hidden>${tableHtml(d)}</div>`;
+  s.insertAdjacentElement("afterend",w);const b=$("button",w),box=$("div",w);b.onclick=()=>{const open=box.hidden;box.hidden=!open;b.setAttribute("aria-expanded",String(open));b.textContent=open?"Hide the numbers":"Show the numbers"}})}
+
+/* ===== quiz set per lesson, score kept in localStorage ===== */
+const QZ={},QBY={};let QS={};
+try{QS=JSON.parse(localStorage.getItem("u3_q")||"{}")}catch(e){}
+const saveQ=()=>{try{localStorage.setItem("u3_q",JSON.stringify(QS))}catch(e){}};
+function shufQ(opts,ans,seed){const idx=opts.map((_,i)=>i);let h=(Math.imul(seed+1,2654435761)>>>0)^0x9e3779b9;const rnd=()=>{h^=h<<13;h>>>=0;h^=h>>>17;h^=h<<5;h>>>=0;return h/4294967296};for(let k=0;k<8;k++)rnd();for(let i=idx.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]]}return {opts:idx.map(i=>opts[i]),ans:idx.indexOf(ans)}}
+function defQ(n,list){QBY[n]=list.map((x,i)=>{const id="u3l"+n+"q"+(i+1);const sh=shufQ(x[1],x[2],n*97+i*31+7);QZ[id]={n,q:x[0],opts:sh.opts,ans:sh.ans,why:x[3]};return id})}
+function quizSet(n){return `<div class="card"><h3>Quick check: ${QBY[n].length} questions</h3>`+QBY[n].map((id,k)=>{const z=QZ[id];return `<div class="qq"><p style="margin:12px 0 6px"><b>${k+1}. ${z.q}</b></p>`+z.opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" aria-live="polite" style="margin-top:6px"></div></div>`}).join("")+`</div>`}
+const lessonDone=n=>QBY[n]&&QBY[n].every(id=>QS[id]&&QS[id].c);
+function showQ(id){const s=QS[id],z=QZ[id];if(!s||!s.c)return;$$(`[data-q="${id}"]`).forEach(b=>{b.disabled=true;if(+b.dataset.i===z.ans)b.classList.add("ok")});$("#why-"+id).textContent="Correct. "+z.why}
+function answerQ(b){const id=b.dataset.q,z=QZ[id],s=QS[id]||(QS[id]={t:0,c:false,f:false});if(s.c)return;s.t++;const ok=+b.dataset.i===z.ans;
+  $$(`[data-q="${id}"]`).forEach(x=>x.classList.remove("no"));
+  if(ok){s.c=true;s.f=s.t===1;showQ(id)}else{b.classList.add("no");$("#why-"+id).textContent="Not quite. Read the lesson again and try another answer."}
+  saveQ();drawNav();updateProg()}
+function updateProg(){const ids=Object.keys(QZ),tot=ids.length,c=ids.filter(i=>QS[i]&&QS[i].c).length,f=ids.filter(i=>QS[i]&&QS[i].f).length,nl=Object.keys(QBY).length,ld=Object.keys(QBY).filter(n=>lessonDone(+n)).length,box=$("#prog");
+  if(box)box.innerHTML=`<b>Your score</b><br>Questions correct: ${c} of ${tot}<br>Correct on first try: ${f}<br>Lessons complete: ${ld} of ${nl}<div class="bar" style="margin-top:6px"><i style="width:${tot?100*c/tot:0}%"></i></div>`;
+  const sm=$("#unitsum");if(sm)sm.innerHTML=Object.keys(QBY).map(n=>{const a=QBY[n],k=a.filter(i=>QS[i]&&QS[i].c).length,ft=a.filter(i=>QS[i]&&QS[i].f).length;return `<tr><td>${n}. ${L[n-1].nav}</td><td class="num">${k} of ${a.length}</td><td class="num">${ft}</td></tr>`}).join("")+`<tr><td><b>Unit total</b></td><td class="num"><b>${c} of ${tot}</b></td><td class="num"><b>${f}</b></td></tr>`}
+
+/* ===== glossary links ===== */
+const GLBACK={i:null};
+function g(k,label){const a=GL.find(x=>x[0]===k)||GL.find(x=>x[0]===ALIAS[k]);const key=a?a[0]:k;return `<a class="g" href="#gl-${key}" data-gl="${key}">${label||a[1]}</a>`}
+function openGloss(k){GLBACK.i=cur;go(L.length-1);const el=$("#gl-"+k);if(el){el.scrollIntoView({block:"center"});el.classList.add("hl")}}
 
 /* ===== lesson framework ===== */
 const L=[];
 function lesson(o){L.push(o)}
-let cur=0, done=new Set();
-const UKEY="dalab_"+(document.title||"x");
-try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e){}
+let cur=0;
 function go(i){
   cur=Math.max(0,Math.min(L.length-1,i));
-  const l=L[cur],st=$("#stage");
-  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
-    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
-  $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
+  const l=L[cur],st=$("#stage"),nl=L.filter(x=>!x.ref).length;
+  st.innerHTML=`<div class="crumb">${l.ref?"Reference":"Lesson "+(cur+1)+" of "+nl}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button>${l.ref&&GLBACK.i!=null?`<button class="btn" type="button" id="backB">Back to lesson ${GLBACK.i+1}</button>`:""}<button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
+  $("#prevB").onclick=()=>go(cur-1);$("#nextB").onclick=()=>go(cur+1);const bb=$("#backB");if(bb)bb.onclick=()=>go(GLBACK.i);
   l.mount&&l.mount(st);
-  $$("[data-q]",st).forEach(b=>b.onclick=()=>{
-    const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
-    $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
-    b.classList.add(ok?"ok":"no");
-    $("#why-"+id,st).textContent=(ok?"Correct. ":"Not quite. ")+k.why;
-    if(ok){done.add(cur);try{localStorage.setItem(UKEY,JSON.stringify([...done]))}catch(e){}drawNav()}
-  });
-  drawNav(); window.scrollTo(0,0); st.focus({preventScroll:true});
+  if(!l.ref)QBY[cur+1].forEach(showQ);
+  addNumToggles(st);fitChartText(st);drawNav();updateProg();
+  window.scrollTo(0,0);st.focus({preventScroll:true});
 }
 function drawNav(){
-  $("#navlist").innerHTML=L.map((l,i)=>`<li class="${done.has(i)?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${done.has(i)?"&#10003;":i+1}</span><span class="t">${l.nav}</span></button></li>`).join("");
+  $("#navlist").innerHTML=L.map((l,i)=>{const dn=!l.ref&&lessonDone(i+1);return `<li class="${dn?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${dn?"&#10003;":l.ref?"G":i+1}</span><span class="t">${l.nav}</span></button></li>`}).join("");
   $$("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
 }
+window.addEventListener("DOMContentLoaded",()=>{
+  $("#stage").addEventListener("click",e=>{const q=e.target.closest("[data-q]");if(q&&!q.disabled){answerQ(q);return}
+    const a=e.target.closest("[data-gl]");if(a){e.preventDefault();openGloss(a.dataset.gl)}});
+  new MutationObserver(()=>{addNumToggles($("#stage"));fitChartText($("#stage"))}).observe($("#stage"),{childList:true,subtree:true});
+  const rp=$("#resetP");if(rp)rp.onclick=()=>{if(confirm("Clear your quiz progress on this device?")){QS={};saveQ();if(!L[cur].ref)go(cur);else{drawNav();updateProg()}}};
+});
+
+/* chart text grows with the Text size control: size it in screen pixels, not in chart units */
+function fitChartText(root){const z=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--zoom"))||1;
+  $$("svg.chart",root||document).forEach(s=>{try{const k=s.getScreenCTM();if(k&&k.a>0)s.style.fontSize=(14*z/k.a).toFixed(2)+"px"}catch(e){}})}
+window.addEventListener("resize",()=>fitChartText(document));
+
+function wrapTables(root){$$("table",root).forEach(t=>{if(t.closest(".tw"))return;let a=t.parentElement,ok=false;while(a&&a.id!=="stage"){const o=getComputedStyle(a).overflowX;if(o==="auto"||o==="scroll"){ok=true;break}a=a.parentElement}if(ok)return;const w=document.createElement("div");w.className="tw";t.parentNode.insertBefore(w,t);w.appendChild(t)})}
+(function(){const st=document.getElementById("stage");if(!st)return;let busy=false;new MutationObserver(()=>{if(busy)return;busy=true;try{wrapTables(st)}finally{busy=false}}).observe(st,{childList:true,subtree:true})})();
+
 /* theme + text size (for projectors) */
 (function(){
   const R=document.documentElement;let theme=null,zi=0;const Z=[1,1.15,1.3];
   try{theme=localStorage.getItem("dalab_theme")}catch(e){}
   if(!theme)theme=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
-  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);
+  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);typeof fitChartText==="function"&&fitChartText(document);
     const b=$("#themeBtn"),z=$("#zoomBtn");if(b)b.innerHTML=theme==="dark"?"&#9728; Switch to LIGHT mode":"&#9790; Switch to DARK mode";if(z)z.textContent="Text size: "+Math.round(Z[zi]*100)+"%";}
   window.addEventListener("DOMContentLoaded",()=>{
     $("#themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("dalab_theme",theme)}catch(e){}apply()};
@@ -264,10 +325,16 @@ const monthly=(rows=SALES)=>{const g=sumBy(rows,r=>r.month);return MONTHS.map(m=
 const REGIONS=["Central","East","North","South","West"],CATS=["Accessories","Electronics","Home","Stationery"];
 const sample=(arr,n)=>{const a=arr.slice();for(let i=0;i<n;i++){const j=i+Math.floor(Math.random()*(a.length-i));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,n)};
 
+function csvDownload(){const H=["OrderID","OrderDate","Region","Product","Salesperson","Units","MRP","DiscountPct","CustomerID","Rating","PaymentMode","Category","NetSales","City","Segment","Month","CostPrice","Profit"];
+  const q=v=>{if(v==null)return "";const t=String(v);return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t};
+  const rows=[H.join(",")].concat(SALES.map(r=>KEYS.map(k=>q(r[k])).join(",")));
+  const blob=new Blob(["\ufeff"+rows.join("\r\n")],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="sunrise-retail-sales.csv";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function renderLive(){
   const tot=sum(SALES.map(r=>r.net));
-  $("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">The Sunrise Retail data (1 Apr 2025 to 31 Mar 2026), already cleaned. Same numbers as your Notion pages.</p><div class="grid2"><div class="kpi"><span class="small muted">Orders</span><b>${SALES.length}</b></div><div class="kpi"><span class="small muted">Net sales</span><b>${fmt(tot)}</b></div></div><div style="height:8px"></div>`+
-  table(SALES.slice(0,14),[["order","Order"],["region","Region"],["product","Product"],["units","Units"],["net","Net sales"]],{small:true})+`<p class="small muted">First 14 of ${SALES.length} rows. Net Sales = Units x MRP x (1 - Discount/100).</p>`;
+  $("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">The Sunrise Retail data (1 Apr 2025 to 31 Mar 2026), already cleaned. Every lesson in this unit uses these ${SALES.length} orders.</p><button class="btn pri sm" type="button" id="csvB">Download the data (CSV)</button><div style="height:8px"></div><div class="grid2"><div class="kpi"><span class="small muted">Orders</span><b>${SALES.length}</b></div><div class="kpi"><span class="small muted">Net sales (Rs)</span><b>${IN(tot)}</b></div></div><div style="height:8px"></div>`+
+  table(SALES.slice(0,14),[["order","Order"],["region","Region"],["product","Product"],["units","Units"],["cost","Cost price (Rs)"],["net","Net sales (Rs)"]],{small:true})+`<p class="small muted">First 14 of ${SALES.length} rows. Net sales = Units x MRP x (1 - Discount / 100). Profit margin = (Net sales - Units x Cost price) / Net sales.</p>`;
+  $("#csvB").onclick=csvDownload;
 }
 
 /* ===== Unit III: Probability and Sampling ===== */
@@ -279,6 +346,77 @@ const lgam=n=>{let s=0;for(let i=2;i<=n;i++)s+=Math.log(i);return s};
 const binP=(n,k,p)=>p<=0?(k===0?1:0):p>=1?(k===n?1:0):Math.exp(lgam(n)-lgam(k)-lgam(n-k)+k*Math.log(p)+(n-k)*Math.log(1-p));
 
 /* 1 basics + law of large numbers */
+function regQuiz(){}
+const task=items=>`<div class="card task"><h3>Your task</h3><ol class="small">${items.map(x=>`<li>${x}</li>`).join("")}</ol></div>`;
+const GL=[
+["probability","Probability","A number from 0 to 1 that says how likely an event is. 0 means it cannot happen and 1 means it must happen. For equally likely outcomes it is favourable outcomes divided by total outcomes."],
+["experiment","Experiment","Any process with a result that is not known in advance, such as rolling a die or picking one order from the sales sheet."],
+["outcome","Outcome","One possible result of an experiment. Rolling a 4 is one outcome."],
+["event","Event","A set of outcomes that we care about. 'The die shows an even number' is an event made of the outcomes 2, 4 and 6."],
+["empirical","Empirical probability","A probability found from data: the number of times the event happened divided by the number of trials. Example: 238 UPI orders out of 988 orders."],
+["lln","Law of Large Numbers","As the number of trials grows, the share of times an event happens moves close to its true probability. It does not mean that past results are balanced out by later ones."],
+["independent","Independent events","Two events are independent when knowing that one happened does not change the probability of the other. Then P(A and B) = P(A) x P(B)."],
+["exclusive","Mutually exclusive events","Events that cannot happen together. For one die roll, 'six' and 'one' are mutually exclusive, so P(A and B) = 0."],
+["conditional","Conditional probability","The probability of A when we already know that B has happened, written P(A given B) = P(A and B) / P(B)."],
+["randvar","Random variable","A number whose value depends on chance, such as the units in one order."],
+["expected","Expected value E(X)","The long-run average of a random variable. Add each value multiplied by its probability."],
+["variance","Variance and standard deviation","Variance is the average squared distance from the mean. The standard deviation (SD) is its square root, in the same unit as the data."],
+["binomial","Binomial distribution","The distribution of the number of successes in n independent trials, each with the same success probability p. Mean = n x p."],
+["normal","Normal distribution","A continuous, bell-shaped distribution fixed by its mean and SD. It is symmetric about the mean."],
+["zscore","Z-score","How many SDs a value is above (positive) or below (negative) the mean: z = (x - mean) / SD."],
+["emprule","Empirical rule","For a normal distribution, about 68% of values lie within 1 SD of the mean, 95% within 2 SD and 99.7% within 3 SD."],
+["population","Population","The whole group we want to know about. Here: all 988 orders."],
+["sample","Sample","The part of the population that we actually study."],
+["srs","Simple random sample","A sample in which every member of the population has an equal chance of being chosen."],
+["systematic","Systematic sample","A sample made by taking every k-th member of an ordered list, after a random start."],
+["stratified","Stratified sample","A sample made by dividing the population into groups (strata), such as regions, and drawing from each group in proportion to its size."],
+["cluster","Cluster sample","A sample made by choosing whole groups at random, such as two regions, and keeping every member of the chosen groups."],
+["samplingerror","Sampling error","The difference between a sample statistic and the population value that arises only because we looked at part of the population. It shrinks as the sample grows."],
+["bias","Bias","A systematic error caused by the way the sample is chosen. A larger sample does not remove it."],
+["se","Standard error","The SD of the sample mean: SD divided by the square root of the sample size n."],
+["clt","Central Limit Theorem","The means of many random samples form an approximately normal distribution around the population mean, with spread SD / sqrt(n), even if the data itself is skewed."],
+["ci","Confidence interval","A range, mean plus or minus z x standard error, that is built so that a stated share of such intervals (for example 95%) contain the true value."],
+["moe","Margin of error","The amount added to and subtracted from the sample mean to form a confidence interval: z x standard error."]
+];
+const ALIAS={};
+
+defQ(1,[
+["You flip a fair coin 10 times and get 7 heads. What do you expect over 10,000 flips?",["Tails will make up for the early heads, so heads will fall below half","The share of heads will be close to 0.5","Heads will stay ahead of tails","Nothing can be said about a coin"],1,"The Law of Large Numbers: the share settles near the true probability. Earlier results are not cancelled, they are outweighed."],
+["A bag has 3 red and 7 blue balls. One ball is drawn at random. What is P(red)?",["3/7","3/10","7/10","1/3"],1,"Favourable outcomes divided by total outcomes: 3 red out of 10 balls."],
+["Which value can NOT be a probability?",["0","0.5","1","1.2"],3,"A probability lies between 0 and 1. A value above 1 would mean more than certain."],
+["238 of 988 orders were paid by UPI. What does 238/988 = 0.2409 represent?",["A theoretical probability from a formula","An empirical probability from past data","A confidence interval","A probability that is always 24 percent in future orders"],1,"It is a relative frequency from recorded data, so it is an empirical probability and may change with new data."]]);
+defQ(2,[
+["P(A) = 0.3, P(B) = 0.4 and P(A and B) = 0.12. What is P(A or B)?",["0.70","0.58","0.12","0.82"],1,"Addition rule: 0.3 + 0.4 - 0.12 = 0.58. The overlap is subtracted once."],
+["For the same values, are A and B independent?",["Yes, because 0.3 x 0.4 = 0.12 equals P(A and B)","No, because P(A or B) is not 0.7","No, because P(A) is smaller than P(B)","Cannot be said without more data"],0,"Independence means P(A and B) = P(A) x P(B). Here 0.3 x 0.4 = 0.12, so the test is met."],
+["Two events cannot happen together. What is P(A and B)?",["P(A) x P(B)","1","0","P(A) + P(B)"],2,"Mutually exclusive events have no overlap, so P(A and B) = 0 and P(A or B) = P(A) + P(B)."],
+["P(A and B) = 0.06 and P(B) = 0.2. What is P(A given B)?",["0.012","0.3","0.26","0.06"],1,"P(A given B) = P(A and B) / P(B) = 0.06 / 0.2 = 0.3."]]);
+defQ(3,[
+["Which situation is binomial?",["The height of students in a class","The number of defective items in a box of 50, each defective with probability 0.02","The time taken to serve a customer","The average of 50 order values"],1,"Fixed number of independent trials, two outcomes each, same p. The other three are continuous or are not counts of successes."],
+["A binomial has n = 20 and p = 0.24. What is the mean?",["0.24","4.8","20","24"],1,"Mean = n x p = 20 x 0.24 = 4.8 successes."],
+["What is the expected value of a random variable?",["The most frequent value","The middle value","The long-run average, each value times its probability, added up","The largest possible value"],2,"E(X) is the probability-weighted average. It need not be a value that can actually occur."],
+["Which is NOT a condition for the binomial distribution?",["A fixed number of trials","Each trial has two outcomes","The trials are independent","The probability of success changes in each trial"],3,"p must be the same in every trial. A changing p breaks the binomial model."]]);
+defQ(4,[
+["About what share of a normal distribution lies within 2 SD of the mean?",["68%","95%","99.7%","50%"],1,"Empirical rule: 68%, 95% and 99.7% for 1, 2 and 3 SD."],
+["A value is 130 in a normal distribution with mean 100 and SD 15. What is its z-score?",["1","2","30","0.5"],1,"z = (130 - 100) / 15 = 2. The value is 2 SD above the mean."],
+["Why is order value in the Sunrise data not normal?",["Its mean is too large","A normal curve would give values below zero, and the data is right-skewed","The sample has too few rows","Normal curves apply only to height"],1,"With mean 761 and SD 779 a normal curve puts a large share below 0. Order value is bounded at 0 and has a long right tail."],
+["For a continuous variable, P(X = exactly 100) is",["The height of the curve at 100","0.5","Zero, because probability is an area and a single point has no width","1"],2,"Probability is the area under the curve between two values. A single point has no width, so its area is zero."]]);
+defQ(5,[
+["Why is stratified sampling often more accurate than simple random sampling with the same sample size?",["It uses more rows","It makes sure every group appears in proportion","It needs no randomness","It removes all bias"],1,"Each region is represented in proportion to its size, so the sample cannot miss a group by bad luck."],
+["You take every 20th order from the sheet after a random start. Which method is this?",["Simple random","Systematic","Cluster","Stratified"],1,"Taking every k-th item from an ordered list is systematic sampling."],
+["You choose two regions at random and keep every order from them. Which method is this?",["Cluster sampling","Stratified sampling","Systematic sampling","Quota sampling"],0,"Whole groups are chosen and all of their members kept: cluster sampling."],
+["What is the population in this unit?",["The 50 orders in one sample","All 988 orders","The five regions","The average order value"],1,"The population is everything we want to know about: all 988 orders."]]);
+defQ(6,[
+["Surveying only people who walk into the shop on a weekday morning, to describe all customers, is an example of",["Random sampling","Selection bias","Stratified sampling","Sampling error only"],1,"Some customers cannot be chosen at all, so the sample is distorted by the way it is selected."],
+["You double the size of a biased sample. What happens to the bias?",["It halves","It disappears","It stays about the same","It doubles"],2,"Bias comes from how the sample is chosen, not how big it is. More rows of the same kind give the same wrong answer with more confidence."],
+["Which statement about sampling error is correct?",["It is a mistake by the surveyor","It shrinks as the sample size grows","It is the same as bias","It is zero for a random sample"],1,"Sampling error is the natural luck-of-the-draw difference. A larger random sample has a smaller error."],
+["Only customers who left a rating are used to estimate average satisfaction. Which bias is most likely?",["Self-selection and non-response","Survivorship only","No bias, since ratings are numbers","Rounding"],0,"People who choose to respond often differ from those who do not."]]);
+defQ(7,[
+["What does the Central Limit Theorem say?",["Every dataset is normal","Means of many random samples are approximately normal around the true mean, even for skewed data","A larger sample removes bias","The sample mean always equals the population mean"],1,"The shape of the sample means becomes bell-like, with spread SD / sqrt(n)."],
+["The SD is 800 and n = 64. What is the standard error?",["800","100","12.5","10"],1,"SE = SD / sqrt(n) = 800 / 8 = 100."],
+["What does a 95% confidence interval mean?",["95% of orders lie inside it","The method gives intervals that contain the true mean in about 95% of repeated samples","The sample mean is 95% accurate","There is a 5% chance the data is wrong"],1,"The 95% describes the method over many samples, not the share of data points."],
+["You want the margin of error to be half as large. How should n change?",["Double it","Multiply it by 4","Halve it","Leave it"],1,"The margin falls with the square root of n, so n must be four times larger."]]);
+
+
 lesson({nav:"Probability basics",title:"Probability: chance as a number",syl:"Basic concepts of probability, experiments, outcomes, events",
 html:()=>`<p class="lead"><b>Probability</b> = how likely an event is, from 0 (impossible) to 1 (certain). For equally likely outcomes: <code>P(event) = favourable outcomes / total outcomes</code>. A fair die: P(six) = 1/6 = 0.1667.</p>
 <div class="grid3"><div class="cardsel"><b>Experiment</b><br><span class="small">A process: roll a die</span></div><div class="cardsel"><b>Outcome</b><br><span class="small">One result: 4</span></div><div class="cardsel"><b>Event</b><br><span class="small">A set of outcomes: "even"</span></div></div>
@@ -286,7 +424,13 @@ html:()=>`<p class="lead"><b>Probability</b> = how likely an event is, from 0 (i
 <div class="row">Rolls: <select id="dn"><option>10</option><option>50</option><option selected>500</option><option>5000</option></select> <button class="btn pri" id="droll" type="button">Roll the die</button></div>
 <div id="dc"></div><div class="callout k small" id="dnote"></div></div>
 <div class="card"><h3>Probability from real data</h3><p class="small">Of ${SALES.length} orders, ${SALES.filter(r=>r.pay==="UPI").length} were paid by UPI. So <code>P(UPI) = ${SALES.filter(r=>r.pay==="UPI").length}/${SALES.length} = ${(SALES.filter(r=>r.pay==="UPI").length/SALES.length).toFixed(4)}</code>. This is an <b>empirical</b> probability: relative frequency from data.</p><div class="code">In a sheet:  =COUNTIF(K2:K989,"UPI")/COUNT(F2:F989)\nSimulate a die:  =RANDBETWEEN(1,6)</div></div>
-${quiz("u3q1","You flip a fair coin 10 times and get 7 heads. What should happen over 10,000 flips?",["More tails will 'make up' for it","The share of heads moves towards 0.5","Heads will keep winning"],1,"The Law of Large Numbers: the proportion settles near the true probability. Earlier flips are not 'repaid'.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">An ${g("experiment")} is any process whose result is not known in advance: rolling a die, or picking one order from the sales sheet. Each possible result is an ${g("outcome")}. A group of outcomes that we care about is an ${g("event")}. For a die, "an even number" is the event made of the outcomes 2, 4 and 6, so its ${g("probability")} is 3 out of 6, or 0.5.</p><p class="small">Probability is always a number from 0 to 1. A value of 0 means the event cannot happen, and 1 means it must happen. If all outcomes are equally likely, probability is the number of favourable outcomes divided by the total number of outcomes. A value outside the range 0 to 1 means a calculation mistake.</p><p class="small">There are two ways to get a probability. In the first, we work it out from the structure of the experiment: a fair die has six equal faces, so P(six) = 1/6. In the second, we count from recorded data: 238 of the 988 orders were paid by UPI, so the ${g("empirical","empirical probability")} of UPI is 238/988 = 0.2409. The second kind can change when new orders arrive.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">With 10 rolls the share of sixes can be far from 1/6, for example 0.30 or 0.00. With 5000 rolls it stays close to 0.1667. This is the ${g("lln")}. It says that the share settles near the true probability as the number of trials grows. It does not say that a run of tails must be followed by heads. Each toss of a fair coin has no memory of the earlier ones.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>A probability lies between 0 and 1. Check this before you use a result.</li><li>State the experiment first, then the event, then count.</li><li>Use a large number of trials before you trust a relative frequency.</li><li>Past results do not change the chance of the next independent trial.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Simulate coin tosses and read probabilities from the data.</p><ol class="small"><li>In A1 enter <code>=RANDBETWEEN(0,1)</code> and fill down to A1000. Each cell is one toss (1 = head).</li><li>In B1 enter <code>=AVERAGE($A$1:A1)</code> and fill down. This is the running share of heads.</li><li>Select column B and choose Insert &gt; Line. The line settles near 0.5 as the number of tosses grows. Press F9 to run a new experiment.</li><li>Probability from the sales data: <code>=COUNTIF(K2:K989,"UPI")/COUNTA(A2:A989)</code> gives P(UPI).</li></ol></div>
+
+${task(["Run the demo with 10 rolls five times and write down the five shares of sixes. Then run it with 5000 rolls five times. In one sentence, say which set of five is closer together and why.","Using the sheet, work out P(Card) as COUNTIF of Card divided by the number of orders. Write the answer with 4 decimals and say whether it is empirical or theoretical.","A bag has 4 red and 6 green balls. Write P(green) as a fraction and as a decimal."])}
+${quizSet(1)}`,
 mount(r){function roll(){const n=+$("#dn",r).value;let c=0,run=[],pts=[];for(let i=1;i<=n;i++){if(Math.floor(Math.random()*6)===5)c++;run.push(c/i)}
     const idx=run.map((_,i)=>i).filter(i=>i%Math.max(1,Math.floor(n/60))===0||i===n-1);
     $("#dc",r).innerHTML=chartLine([{name:"Share of sixes",vals:idx.map(i=>run[i]),color:"var(--c1)"},{name:"True 1/6",vals:idx.map(()=>1/6),color:"var(--c2)",dash:true}],idx.map(i=>String(i+1)),{w:640,h:280,min:0,max:Math.max(.5,Math.max(...run)*1.1),dots:false,maxLabels:8});
@@ -303,7 +447,13 @@ html:()=>`<p class="lead">Pick two events from the Sunrise orders. The page comp
 <div id="eout"></div></div>
 <div class="grid2"><div class="card"><h3>Addition rule (OR)</h3><p class="small"><code>P(A or B) = P(A) + P(B) - P(A and B)</code>. Subtract the overlap, or it is counted twice. If A and B cannot both happen (mutually exclusive), P(A and B) = 0.</p></div>
 <div class="card"><h3>Multiplication rule (AND)</h3><p class="small"><code>P(A and B) = P(A) x P(B given A)</code>. If A and B are <b>independent</b>, this is just <code>P(A) x P(B)</code>. Compare the two values on this page to test independence.</p></div></div>
-${quiz("u3q2","P(A)=0.3, P(B)=0.4, P(A and B)=0.12. What is P(A or B)?",["0.70","0.58","0.12"],1,"0.3 + 0.4 - 0.12 = 0.58. Here P(A and B) equals P(A) x P(B), so A and B are independent.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">Two events A and B can be combined in two ways. "A and B" means both happen in the same trial. "A or B" means at least one happens. The ${g("conditional","conditional probability")} P(A given B) is the probability of A when we already know that B happened. It is worked out inside the group where B is true: P(A given B) = P(A and B) / P(B).</p><p class="small">Two events are ${g("independent")} when knowing that one happened does not change the probability of the other. Then P(A and B) = P(A) x P(B). Two events are ${g("exclusive","mutually exclusive")} when they cannot happen together, so P(A and B) = 0. These are different ideas. Mutually exclusive events with nonzero probabilities are never independent, because if one happens the other is certain not to.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The page counts orders in the data and computes each value. When P(A and B) is close to P(A) x P(B), the events behave as independent: knowing the region tells you little about the payment mode. When the two values are far apart, the events are linked. Compare the two lines for several choices before you decide. A small gap in a data table is expected, because a sample never matches a formula exactly.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Addition rule for OR: P(A or B) = P(A) + P(B) - P(A and B). Subtract the overlap once.</li><li>Multiplication rule for AND: P(A and B) = P(A) x P(B given A).</li><li>Use P(A) x P(B) only after you have checked that the events are independent.</li><li>For P(A given B), divide by P(B), not by the total number of orders.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales</b> of bmt-sales-clean-reference.xlsx (988 orders in rows 2 to 989; Region is column C, Units F, PaymentMode K, NetSales M, Month P).</p><ol class="small"><li>P(A): <code>=COUNTIF(C2:C989,"North")/COUNTA(A2:A989)</code>. Put P(B) for UPI in the next cell.</li><li>P(A and B): <code>=COUNTIFS(C2:C989,"North",K2:K989,"UPI")/COUNTA(A2:A989)</code>.</li><li>P(A or B): add the two and subtract P(A and B).</li><li>P(A given B): <code>=COUNTIFS(C2:C989,"North",K2:K989,"UPI")/COUNTIF(K2:K989,"UPI")</code>.</li><li>Independence test: if P(A and B) is close to P(A) x P(B), the two events are close to independent.</li></ol></div>
+
+${task(["Choose A = Payment mode UPI and B = Region North. Write down P(A), P(B), P(A and B) and P(A or B). Check the addition rule with your own calculator.","Compare P(A and B) with P(A) x P(B) for two other pairs of events. Say which pair looks the most dependent.","A shop finds that 40% of customers pay by UPI and 30% are students. Can you work out P(UPI and student) from these two numbers? Explain in two sentences."])}
+${quizSet(2)}`,
 mount(r){function fill(a,b){const k=$(a,r).value;$(b,r).innerHTML=EVT[k][1].map(x=>`<option>${x}</option>`).join("")}
   fill("#ea1","#ea2");fill("#eb1","#eb2");$("#ea2",r).value="UPI";$("#eb2",r).value="North";
   function d(){const ka=$("#ea1",r).value,va=$("#ea2",r).value,kb=$("#eb1",r).value,vb=$("#eb2",r).value,N=SALES.length;
@@ -321,7 +471,13 @@ html:()=>`<p class="lead">A <b>random variable</b> is a number that depends on c
 <div class="card try"><h3>Binomial: n trials, success chance p</h3><p class="small muted">Use when there are a fixed number of independent yes/no trials. Example: out of 20 orders, how many are paid by UPI? (p = 0.24)</p>
 <div class="row">n = <input type="range" id="bn" min="1" max="50" value="20"> <b id="bnv">20</b> &nbsp; p = <input type="range" id="bp" min="0.05" max="0.95" step="0.01" value="0.24"> <b id="bpv">0.24</b> &nbsp; P(X &gt;= <input type="number" id="bk" value="6" min="0" style="width:60px">)</div>
 <div id="bc"></div><div class="callout k small" id="bnn"></div><div class="code">In a sheet:  =BINOM.DIST(k, n, p, FALSE)   exactly k\n             =BINOM.DIST(k, n, p, TRUE)    k or fewer\nMean = n x p      SD = SQRT(n x p x (1-p))</div></div>
-${quiz("u3q3","Which situation is binomial?",["Height of students","Number of defective items in a box of 50 (each item defective with p=0.02)","Time to serve a customer"],1,"A fixed number of independent trials with two outcomes each, and a constant success probability.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">A ${g("randvar","random variable")} is a number whose value depends on chance. The units in one order is a random variable, because we do not know the next order's units before it arrives. If the variable takes separate values (1, 2, 3 and so on), its distribution is a list of each value with its probability. The probabilities add up to 1.</p><p class="small">The ${g("expected","expected value")} E(X) is the long-run average: multiply each value by its probability and add. For units per order it is 2.178. No single order has 2.178 units, but over many orders the average moves to that figure. The ${g("variance","variance")} measures spread, and its square root is the standard deviation (SD). Here the SD is 1.576.</p><p class="small">The ${g("binomial")} distribution counts successes in n trials. It applies only when the number of trials is fixed, each trial has two outcomes, the trials are independent and the probability of success p is the same each time. The mean is n x p and the SD is the square root of n x p x (1 - p).</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The first chart is a real distribution: about 46% of orders are for 1 unit, and the bars fall quickly after 2 units. The second chart builds a binomial for any n and p. For 20 orders with p = 0.24, the mean is 4.8, so the tallest bars are around 4 and 5. The orange bars add up to the probability of 6 or more UPI orders. Move n and p and watch the mean and spread change.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Check the four conditions of the binomial before you use it.</li><li>The probabilities of a distribution add up to 1.</li><li>E(X) is a long-run average and need not be a possible value.</li><li>For "at least k" add the bars from k upwards, or use 1 minus the probability of fewer than k.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Binomial probabilities for n trials with success chance p.</p><ol class="small"><li>Put n in B1 (for example 10) and p in B2 (for example 0.3).</li><li>P(exactly 3 successes): <code>=BINOM.DIST(3,B1,B2,FALSE)</code>. This gives 0.2668 for n = 10 and p = 0.3.</li><li>P(3 or fewer): <code>=BINOM.DIST(3,B1,B2,TRUE)</code>.</li><li>For the whole distribution fill A5:A15 with 0 to 10, put <code>=BINOM.DIST(A5,$B$1,$B$2,FALSE)</code> in B5 and fill down, then Insert &gt; Column chart.</li><li>Mean and spread: <code>=B1*B2</code> and <code>=SQRT(B1*B2*(1-B2))</code>.</li></ol></div>
+
+${task(["Set n = 20 and p = 0.24. Read P(X >= 6) from the page and write it with 4 decimals.","Change p to 0.50 and write what happens to the mean and to the shape of the chart.","Give one example from a shop where the binomial applies and one where it does not. Say which condition fails in the second."])}
+${quizSet(3)}`,
 mount(r){const U=SALES.map(x=>x.units),ks=[...new Set(U)].sort((a,b)=>a-b),pm=ks.map(k=>U.filter(u=>u===k).length/U.length),E=sum(ks.map((k,i)=>k*pm[i])),V=sum(ks.map((k,i)=>(k-E)**2*pm[i]));
   $("#ud",r).innerHTML=chartBar(ks.map((k,i)=>({label:String(k),value:pm[i]})),{w:560,h:240,title:"P(Units = k)",values:true});
   $("#un",r).innerHTML=`E(Units) = <b>${E.toFixed(3)}</b>, variance ${V.toFixed(3)}, SD ${Math.sqrt(V).toFixed(3)}. Most orders are for 1 or 2 units.`;
@@ -339,7 +495,13 @@ html:()=>`<p class="lead">A <b>continuous</b> variable (height, time, weight) ca
 <div class="row">P( <input type="number" id="na" value="85" style="width:70px"> &lt; X &lt; <input type="number" id="nb" value="115" style="width:70px"> )</div>
 <div id="nc"></div><div class="callout k small" id="nn"></div><div class="code">In a sheet:  =NORM.DIST(b, mean, sd, TRUE) - NORM.DIST(a, mean, sd, TRUE)\n z-score:      =(x - mean)/sd</div></div>
 <div class="card"><h3>Is order value normal? (Sunrise data)</h3><p class="small">Mean ${fmt(MU)}, SD ${fmt(SIG)}. A normal curve would put values below 0, which is impossible, so order value is <b>not</b> normal: it is right-skewed (lesson II.4). Yet the <b>averages</b> of many orders ARE close to normal. That is the Central Limit Theorem (lesson 7).</p></div>
-${quiz("u3q4","In a normal distribution, about what share lies within 2 SD of the mean?",["68%","95%","99.7%"],1,"The empirical rule: 68, 95, 99.7 for 1, 2, 3 SD.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">A continuous variable, such as height or waiting time, can take any value in a range. For such a variable, probability is the area under a curve between two values. The probability of one exact value is zero because a single point has no width. The ${g("normal")} distribution is the bell-shaped curve fixed by its mean and its SD. It is symmetric: the left half mirrors the right half.</p><p class="small">The ${g("zscore","z-score")} converts a value to a standard scale: z = (x - mean) / SD. A z of 2 means the value is two SDs above the mean. The ${g("emprule","empirical rule")} says that about 68% of values lie within 1 SD, 95% within 2 SD and 99.7% within 3 SD of the mean.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The shaded area is the probability that X falls between the two limits you choose. With mean 100, SD 15 and limits 85 and 115, the area is 0.6827. This matches the 68% of the empirical rule because the limits are one SD on each side. Move the limits to 70 and 130 and the area becomes about 0.95.</p><p class="small">The data check at the bottom is important. Order value has a mean of 761 and an SD of 779. A normal curve with these values would give a large probability below zero, which is impossible for a sale. So order value is right-skewed and not normal. Do not assume a normal curve without checking.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Convert to z-scores before you compare values from different scales.</li><li>Use the 68, 95, 99.7 rule only for data that is close to normal.</li><li>Check for impossible values, such as negative sales, before you assume normality.</li><li>For a probability between a and b, subtract: P(X below b) - P(X below a).</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales</b> of bmt-sales-clean-reference.xlsx (988 orders in rows 2 to 989; Region is column C, Units F, PaymentMode K, NetSales M, Month P).</p><ol class="small"><li>Find the mean and standard deviation: <code>=AVERAGE(M2:M989)</code> and <code>=STDEV.S(M2:M989)</code>.</li><li>Z-score of a value x: <code>=STANDARDIZE(x,mean,sd)</code>.</li><li>Probability below x: <code>=NORM.DIST(x,mean,sd,TRUE)</code>. Between two values: subtract the two results.</li><li>Value for a given probability: <code>=NORM.INV(0.975,mean,sd)</code>.</li><li>Empirical rule check: <code>=NORM.S.DIST(2,TRUE)-NORM.S.DIST(-2,TRUE)</code> gives 0.9545, about 95 percent within 2 SD.</li></ol></div>
+
+${task(["Set mean 100 and SD 15. Find P(70 < X < 130) from the page and compare it with 95%.","A test has mean 60 and SD 10. Work out the z-score of a mark of 85 and say in words what it means.","Explain in two sentences why the daily temperature is a better candidate for a normal curve than the value of one sales order."])}
+${quizSet(4)}`,
 mount(r){function d(){const m=+$("#nm",r).value,s=+$("#ns",r).value,a=+$("#na",r).value,b=+$("#nb",r).value;$("#nmv",r).textContent=m;$("#nsv",r).textContent=s;
     const W=640,H=280,mg={l:40,r:16,t:16,b:36},lo=40,hi=160,sx=v=>mg.l+(v-lo)/(hi-lo)*(W-mg.l-mg.r),pk=npdf(m,m,s),sy=v=>H-mg.b-v/pk*(H-mg.t-mg.b-10);
     let line="",area="";for(let x=lo;x<=hi;x+=1){line+=(x===lo?"M":"L")+sx(x).toFixed(1)+" "+sy(npdf(x,m,s)).toFixed(1)}
@@ -363,7 +525,13 @@ html:()=>`<p class="lead">A <b>population</b> is everything (all ${SALES.length}
 <p class="small muted" id="smd2"></p><div id="smo"></div></div>
 <div class="card try"><h3>Repeat 300 times</h3><p class="small muted">One sample can be lucky or unlucky. Repeat it 300 times and see how the sample means <b>spread</b>. A good method centres on the true mean with small spread.</p>
 <div class="row"><button class="btn sec" id="smr" type="button">Run 300 samples with this method</button></div><div id="smh"></div></div>
-${quiz("u3q5","Why is stratified sampling often more accurate than simple random for the same sample size?",["It uses more data","It guarantees every group is represented in proportion","It needs no randomness"],1,"Each stratum (region) appears in the right proportion, so group differences cannot distort the sample.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">The ${g("population")} is the whole group we want to know about: here, all 988 orders. A ${g("sample")} is the part we actually study. We sample because checking every member is often too slow or too costly. A good sample lets us estimate the population mean, here 761.36, from far fewer rows.</p><p class="small">Four methods are used in this lesson. In a ${g("srs","simple random sample")} every member has an equal chance. In a ${g("systematic","systematic sample")} we take every k-th member after a random start. In a ${g("stratified","stratified sample")} we divide the population into groups, such as regions, and draw from each group in proportion to its size. In a ${g("cluster","cluster sample")} we choose whole groups at random and keep all their members.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">One sample can be lucky or unlucky, so the second demo repeats the draw 300 times. Each sample gives one mean. If the method is sound, those 300 means centre on the true mean, and a narrow spread means that a single sample is reliable. Compare the four methods at the same sample size. Stratified sampling usually has the smallest spread because no region can be missed. Cluster sampling usually has the largest because the clusters differ from each other.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Decide the population first, then the method.</li><li>Use random selection so that every member has a known chance.</li><li>Use stratified sampling when groups differ and each must be represented.</li><li>Report the sample size together with the sample mean.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales</b> of bmt-sales-clean-reference.xlsx (988 orders in rows 2 to 989; Region is column C, Units F, PaymentMode K, NetSales M, Month P).</p><ol class="small"><li><b>Simple random sample.</b> In Q2 enter <code>=RAND()</code> and fill down to Q989. Copy column Q and use Paste Special &gt; Values (otherwise the numbers change on every edit). Sort the table by Q and take the first 50 rows.</li><li><b>Using the add-in.</b> Enable File &gt; Options &gt; Add-ins &gt; Manage Excel Add-ins &gt; Analysis ToolPak. Then Data &gt; Data Analysis &gt; Sampling, input range M2:M989, Random, number of samples 50.</li><li><b>Systematic sample.</b> Choose the step k = 988 / 50, about 20. In R2 enter <code>=MOD(ROW()-2,20)</code>, then filter column R for 0.</li><li><b>Stratified sample.</b> Filter by Region and take a share of each region equal to its share of all orders (for example 20 percent of each).</li><li><b>Cluster sample.</b> Pick two regions at random with <code>=RANDBETWEEN(1,5)</code> and keep every order from those regions.</li><li>Compare each sample with the population using <code>=AVERAGE(...)</code>.</li></ol></div>
+
+${task(["Draw one sample of 50 with each of the four methods and write down the four sample means. Compare them with 761.36.","Run 300 samples for simple random and for cluster sampling. Write which has the wider spread.","A college has 2000 students in four years of study. Describe how you would draw a stratified sample of 200."])}
+${quizSet(5)}`,
 mount(r){let m="srs";const gm=bindSeg(r,"smv",v=>{m=v;$("#smd2",r).textContent=SM[v][1];$("#smo",r).innerHTML="";$("#smh",r).innerHTML=""});$("#smd2",r).textContent=SM.srs[1];
   $("#smd",r).onclick=()=>{const n=+$("#smn",r).value,s=drawSample(m,n),v=s.map(x=>x.net),mm=mean(v);
     $("#smo",r).innerHTML=`<div class="grid3"><div class="kpi"><span class="small muted">Sample size</span><b>${s.length}</b></div><div class="kpi"><span class="small muted">Sample mean</span><b>${fmt(mm)}</b></div><div class="kpi"><span class="small muted">Error vs true ${fmt(MU)}</span><b>${(mm>=MU?"+":"")+fmt(mm-MU)}</b></div></div><div class="code">In a sheet: add a helper column =RAND(), sort by it, take the first ${n} rows, then =AVERAGE(...)</div>`};
@@ -377,7 +545,13 @@ html:()=>`<p class="lead"><b>Sampling error</b> is the natural luck-of-the-draw 
 <div class="card try"><h3>Try it: biased shortcuts vs the truth</h3><p class="small muted">True mean order value: <b>${fmt(MU)}</b>. Pick a convenient (biased) sample.</p>
 <div class="row"><select id="bs">${BIAS.map((b,i)=>`<option value="${i}">${b[0]}</option>`).join("")}</select></div><div id="bo"></div></div>
 <div class="card"><h3>Types of bias to name in class</h3><span class="pill"><b>Selection</b>: some units can never be chosen</span><span class="pill"><b>Self-selection</b>: only people who care respond</span><span class="pill"><b>Survivorship</b>: only winners are seen</span><span class="pill"><b>Non-response</b>: those who skip differ from those who answer</span></div>
-${quiz("u3q6","Surveying only the people who walk into the shop on a weekday morning to estimate all customers is...",["Random sampling","Convenience sampling with selection bias","Stratified sampling"],1,"It excludes people who shop at other times, so the sample is systematically different.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">Two different things can make a sample mean differ from the population mean. ${g("samplingerror","Sampling error")} is the natural difference that comes from looking at part of the population. It is random, and it shrinks when the sample is larger. ${g("bias","Bias")} is a systematic push in one direction that comes from how the sample was chosen. A bigger sample does not remove it.</p><p class="small">Common kinds of bias are selection bias (some members can never be chosen), self-selection (only people who care respond), survivorship (only the successes are seen) and non-response (those who skip the survey differ from those who answer). The ${g("se","standard error")}, SD divided by the square root of n, measures sampling error. It does not measure bias.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Each shortcut picks rows by a convenient rule, for example only Cash orders or only orders above Rs 1,500. Some of these samples have hundreds of rows, yet the sample mean is far from the true mean. The "Off by" figure shows the distance. Size did not help because the rows were not chosen at random. This is the main lesson: a large but biased sample gives a confidently wrong answer.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Ask how the sample was chosen before you ask how large it is.</li><li>Use random selection to protect against bias.</li><li>Use a larger sample to reduce sampling error, not bias.</li><li>Name the possible bias in your report when you cannot avoid it.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales</b> of bmt-sales-clean-reference.xlsx (988 orders in rows 2 to 989; Region is column C, Units F, PaymentMode K, NetSales M, Month P).</p><ol class="small"><li>Population mean: <code>=AVERAGE(M2:M989)</code>. Sample mean: the same formula on your sample.</li><li>Sampling error = sample mean minus population mean.</li><li>Standard error: <code>=STDEV.S(sample)/SQRT(COUNT(sample))</code>.</li><li>Create a biased sample on purpose: filter Segment (column O) to one value only and take that sample. Compare its mean with the population mean. The gap does not shrink when the sample grows.</li></ol></div>
+
+${task(["Pick the biased sample 'Only Cash orders'. Write the sample mean and the percentage by which it is off.","Pick 'Only North region'. Say whether the bias is large or small and why.","A restaurant asks for feedback only on its website. Name the bias and say who is missing from the answers."])}
+${quizSet(6)}`,
 mount(r){function d(){const f=BIAS[+$("#bs",r).value][1],s=SALES.filter(f),v=s.map(x=>x.net),mm=mean(v);
     $("#bo",r).innerHTML=`<div class="grid3"><div class="kpi"><span class="small muted">Rows in this 'sample'</span><b>${s.length}</b></div><div class="kpi"><span class="small muted">Sample mean</span><b>${fmt(mm)}</b></div><div class="kpi"><span class="small muted">Off by</span><b>${(100*(mm/MU-1)).toFixed(0)}%</b></div></div>`+
     chartBar([{label:"True mean",value:MU,color:"var(--c1)"},{label:"Biased sample",value:mm,color:"var(--c2)"}],{w:420,h:220})+`<div class="callout k small">Even with ${s.length} rows (a big sample) the answer is wrong, because the way we picked rows is not random.</div>`}
@@ -391,7 +565,14 @@ html:()=>`<p class="lead"><b>Central Limit Theorem:</b> take many samples of siz
 <div id="cc"></div><div class="callout k small" id="cnn"></div></div>
 <div class="card try"><h3>Confidence intervals: do they catch the truth?</h3><p class="small muted">Draw 50 samples of size 50. For each, build a 95% interval. About 95% of the lines should cross the true mean (the vertical line).</p>
 <div class="row"><button class="btn sec" id="ci" type="button">Draw 50 intervals</button></div><div id="cio"></div></div>
-${quiz("u3q7","If you quadruple the sample size, the standard error (SD/sqrt n) becomes...",["Half as big","A quarter as big","The same"],0,"sqrt(4)=2, so the standard error halves. Precision grows slowly with n.")}`,
+<div class="card sec"><h3>What the terms mean</h3><p class="small">Take many random samples of the same size n and calculate each sample's mean. The ${g("clt","Central Limit Theorem")} says that these means form an approximately normal distribution centred on the population mean, with spread SD / sqrt(n). This holds even when the data itself is skewed, as order values are. A larger n gives a narrower bell.</p><p class="small">This lets us attach a range to a single sample. A ${g("ci","confidence interval")} is the sample mean plus or minus the ${g("moe","margin of error")}, where the margin is z times the standard error. For 95% confidence, z is about 1.96. The 95% describes the method: if we repeat the whole process many times, about 95% of the intervals will contain the true mean.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">In the first demo, the data is skewed, yet the histogram of sample means is bell-shaped. Raise n from 5 to 50 and the bell becomes narrower. In the second demo each line is the interval from one sample. About 95% of the lines cross the true mean, and a few do not. The ones that miss are the expected 5%, not mistakes.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Standard error = SD / sqrt(n). To halve it you need four times the sample.</li><li>Margin of error = z x standard error, with z = 1.96 for 95%.</li><li>Say "we are 95% confident the mean lies between a and b" and report both limits.</li><li>The Central Limit Theorem needs random samples and a reasonably large n.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales</b> of bmt-sales-clean-reference.xlsx (988 orders in rows 2 to 989; Region is column C, Units F, PaymentMode K, NetSales M, Month P).</p><ol class="small"><li>Make a grid of 300 sample means. In a block of 30 rows by 300 columns enter <code>=INDEX($M$2:$M$989,RANDBETWEEN(1,988))</code>. Each column is one sample of 30 orders.</li><li>In the row below the block enter <code>=AVERAGE(A1:A30)</code> and fill right. These are 300 sample means.</li><li>Select the 300 means and choose Insert &gt; Statistic Chart &gt; Histogram. The shape is close to a bell, even though order value is skewed. This is the Central Limit Theorem.</li><li>Confidence interval for one sample: margin = <code>=CONFIDENCE.T(0.05,STDEV.S(sample),COUNT(sample))</code>. Lower limit = sample mean minus margin, upper limit = sample mean plus margin.</li><li>Press F9 to draw new samples and count how often the interval contains the population mean. About 95 percent should.</li></ol></div>
+
+${task(["Take 1000 samples with n = 5 and then n = 50. Write the spread of the bell in each case.","For one sample of 50 orders, work out the 95% interval in Excel from the mean, SD and the formula given above.","In two sentences, explain why a confidence interval from a sample of 400 is narrower than one from a sample of 100."
+])}
+${quizSet(7)}`,
 mount(r){$("#cn",r).oninput=()=>$("#cnv",r).textContent=$("#cn",r).value;
   $("#cgo",r).onclick=()=>{const n=+$("#cn",r).value,ms=[];for(let i=0;i<1000;i++){let s=0;for(let j=0;j<n;j++)s+=NETS[Math.floor(Math.random()*NETS.length)];ms.push(s/n)}
     const b=histBins(ms,24,200,1500);$("#cc",r).innerHTML=chartBar(b,{w:640,h:260,title:"1000 sample means, n="+n,values:false});
@@ -401,6 +582,12 @@ mount(r){$("#cn",r).oninput=()=>$("#cnv",r).textContent=$("#cn",r).value;
     rows.forEach((q,i)=>{const y=12+i*5.6;s+=`<line x1="${sx(q.lo)}" x2="${sx(q.hi)}" y1="${y}" y2="${y}" stroke="${q.ok?"var(--c3)":"var(--bad)"}" stroke-width="2.5"/>`});
     s+=`<line x1="${sx(MU)}" x2="${sx(MU)}" y1="0" y2="${H-20}" stroke="var(--fg)" stroke-width="2" stroke-dasharray="5 3"/><text x="${sx(MU)+4}" y="${H-6}">true mean ${fmt(MU)}</text></svg>`;
     $("#cio",r).innerHTML=s+`<div class="callout k small"><b>${hit} of 50</b> intervals contain the true mean (${(100*hit/50).toFixed(0)}%). Red lines missed. Over many runs the hit rate is close to 95%.</div><div class="code">In a sheet:  =CONFIDENCE.NORM(0.05, STDEV(range), COUNT(range))   gives the +/- margin</div>`}}
+});
+
+
+lesson({ref:true,nav:"Glossary",title:"Glossary of terms",syl:"Reference: terms used in this unit",
+html:()=>`<p class="lead">Every term below appears in the lessons. In a lesson, a dotted underline marks a term that is defined here.</p><div class="card"><h3>Your progress in this unit</h3><div class="tw sm"><table class="dt"><thead><tr><th>Lesson</th><th>Correct</th><th>First try</th></tr></thead><tbody id="unitsum"></tbody></table></div></div>`+GL.slice().sort((a,b)=>a[1].localeCompare(b[1])).map(x=>`<div class="card gl" id="gl-${x[0]}"><h3>${x[1]}</h3><p class="small" style="margin:0">${x[2]}</p></div>`).join(""),
+mount(r){}
 });
 
 renderLive();go(0);

@@ -100,7 +100,8 @@ td.ix{background:var(--bad-soft)} td.iy{background:var(--warn-soft)} td.iz{backg
 .kpi b{font-size:22px;display:block;font-variant-numeric:tabular-nums}
 .nextrow{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
 svg.chart{width:100%;height:auto;display:block;max-height:420px}
-svg.chart text{fill:var(--fg);font:12px var(--body)}
+svg.chart{font-size:calc(12px*var(--zoom))}
+svg.chart text{fill:var(--fg);font-family:var(--body);font-size:1em}
 svg.chart .ax{stroke:var(--muted);stroke-width:1}
 svg.chart .gr{stroke:var(--grid);stroke-width:1}
 svg.chart .lbl{fill:var(--muted)}
@@ -113,6 +114,19 @@ svg.chart .lbl{fill:var(--muted)}
 @media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.live{grid-column:1/-1;position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
 @media (max-width:760px){.app{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav ol{display:flex;overflow:auto;gap:4px}.nav li{flex:none}.nav .t{display:none}main{padding:18px 16px 60px}.grid2,.grid3,.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
 
+.dt.wrap td,.dt.wrap th{white-space:normal}
+.card.task{border-left:5px solid var(--good)}
+.numt{margin:4px 0 10px}.numt .tw{margin-top:8px}
+a.g{color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted)} a.g:hover{border-bottom-style:solid}
+.gl.hl{outline:3px solid var(--pri)}
+.qq+.qq{border-top:1px solid var(--line2);margin-top:8px}
+.opt:disabled{cursor:default}
+#prog{margin-top:6px;font-size:12.5px;line-height:1.5}
+select{max-width:100%}
+code{overflow-wrap:anywhere}
+.code{overflow-x:auto;max-width:100%}
+.grid3>*,.grid2>*,.flow>*{min-width:0}
+.grid2 select,.grid2 input{max-width:100%;width:100%}
 </style>
 </head>
 <body>
@@ -120,7 +134,7 @@ svg.chart .lbl{fill:var(--muted)}
   <nav class="nav" aria-label="Lessons">
     <h2 class="brand">Analytics Lab<small>Unit V, Introduction to Business Analytics<br>BBA Sem I, Business Management Tools I</small></h2>
     <ol id="navlist"></ol>
-    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
+    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><div id="prog" class="small"></div><button id="resetP" type="button">Reset my score</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
   </nav>
   <main id="stage" tabindex="-1"></main>
   <aside class="live" aria-label="Live data"><h3>Live data: Sunrise Retail</h3><div id="livebox"></div></aside>
@@ -130,7 +144,7 @@ svg.chart .lbl{fill:var(--muted)}
 /* ===== helpers ===== */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-US"):v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
+const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-IN"):v.toLocaleString("en-IN",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
 const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
 const sum=a=>a.reduce((x,y)=>x+y,0);
 const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
@@ -148,39 +162,46 @@ function table(rows,cols,opts={}){
     return `<td class="${cls.trim()}">${v===""||v==null?'<span class="muted">(blank)</span>':esc(typeof v==="number"?fmt(v,c[2]!=null?c[2]:(Number.isInteger(v)?0:2)):v)}</td>`}).join("")+"</tr>").join("");
   return `<div class="tw${opts.small?' sm':''}"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
-const QUIZ={};
-function quiz(id,q,opts,ans,why){QUIZ[id]={ans,why};
-  return `<div class="card"><h3>Quick check</h3><p style="margin:0 0 6px"><b>${q}</b></p>`+opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" style="margin-top:6px"></div></div>`;}
-function regQuiz(id,ans,why){QUIZ[id]={ans,why}}
+const IN=n=>Number(n).toLocaleString("en-IN",{maximumFractionDigits:0});
+const num=v=>Number(v).toLocaleString("en-IN",{maximumFractionDigits:2});
+const RS=v=>"Rs "+IN(v);
 function seg(id,items,cls=""){return `<div class="seg ${cls}" id="${id}" role="group">`+items.map((x,i)=>`<button type="button" data-v="${x[0]}" aria-pressed="${i===0}">${x[1]}</button>`).join("")+`</div>`}
 function bindSeg(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)});return ()=>$$("[aria-pressed=true]",g)[0].dataset.v}
-const IN=n=>n.toLocaleString("en-US",{maximumFractionDigits:0});
 
-/* ===== SVG charts (colours come from CSS variables, so both themes work) ===== */
+/* ===== SVG charts: colours from CSS variables; text size follows the Text size control ===== */
 const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
-const nice=(max)=>{const e=Math.pow(10,Math.floor(Math.log10(max||1))),f=max/e;const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*e};
-function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(lo+st*i);return out}
-const short=v=>Math.abs(v)>=100000?(v/100000).toFixed(1).replace(/\.0$/,"")+"L":Math.abs(v)>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":(Math.round(v*100)/100)+"";
-function chartBar(items,o={}){ // items:[{label,value,color}]
-  const W=o.w||640,H=o.h||320,m={l:56,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...items.map(i=>i.value))*1.08),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+const lakh=v=>v===0?"0":String(+(v/100000).toFixed(2))+"L";
+const fa=hi=>hi>=100000?lakh:num;                     /* one unit per axis: lakh or plain */
+const short=v=>Math.abs(v)>=100000?lakh(v):num(v);
+function niceStep(raw){const e=Math.pow(10,Math.floor(Math.log10(raw||1))),f=raw/e;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e}
+function axisFor(maxv){const step=niceStep((maxv||1)/5),n=Math.max(1,Math.ceil(maxv/step-1e-9));return {hi:step*n,n}}
+function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(+(lo+st*i).toFixed(6));return out}
+function tk(lo,hi,intOnly){let st=niceStep((hi-lo)/5||1);if(intOnly)st=Math.max(1,Math.round(st));const out=[];for(let v=Math.ceil(lo/st-1e-9)*st;v<=hi+1e-9;v+=st)out.push(+v.toFixed(6));return out}
+const TB=(h,rows,note)=>` data-tbl="${esc(JSON.stringify({h,rows,note:note||""}))}"`;
+const TS="font-weight:700;font-size:1.17em";
+function chartBar(items,o={}){
+  const W=o.w||640,H=o.h||320,m={l:58,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mn=o.min!=null?o.min:0,vmax=Math.max(...items.map(i=>i.value));
+  let mx,n=5;if(o.max){mx=o.max}else{const a=axisFor(vmax*1.04);mx=a.hi;n=a.n}
+  const fm=fa(mx),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length,step=(items.length>14&&!o.rotate)?Math.ceil(items.length/10):1;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}"${TB([o.cat||"Item",o.vlabel||"Value"],items.map(i=>[i.label,i.value]))}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  ticks(mn,mx,n).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fm(t)}</text>`);
   items.forEach((it,i)=>{const x=m.l+i*bw+bw*.15,w=bw*.7,y=sy(Math.max(it.value,mn));
     s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,sy(mn)-y)}" fill="${it.color||o.color||"var(--c1)"}" rx="2"><title>${esc(it.label)}: ${fmt(it.value)}</title></rect>`;
-    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:11px">${short(it.value)}</text>`;
-    const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`});
+    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:.92em">${fm(it.value)}</text>`;
+    if(i%step===0){const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`}});
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
   if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
   return s+"</svg>";}
-function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
-  const W=o.w||640,H=o.h||320,m={l:56,r:o.legendRight?110:16,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...all)*1.08);
-  const sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+function chartLine(series,labels,o={}){
+  const W=o.w||640,H=o.h||320,m={l:58,r:o.legendRight?110:26,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0;
+  let mx,n=5;if(o.max){mx=o.max}else{const a=axisFor(Math.max(...all)*1.08);mx=a.hi;n=a.n}
+  const fm=fa(mx),sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}"${TB([o.cat||"Period"].concat(series.map(x=>x.name)),labels.map((l,i)=>[l].concat(series.map(x=>x.vals[i]==null?"":Math.round(x.vals[i]*100)/100))))}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  ticks(mn,mx,n).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fm(t)}</text>`);
   const step=Math.ceil(labels.length/(o.maxLabels||12));labels.forEach((l,i)=>{if(i%step===0)s+=`<text class="lbl" x="${sx(i)}" y="${H-m.b+16}" text-anchor="middle">${esc(l)}</text>`});
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
   series.forEach((se,k)=>{const c=se.color||PAL[k%6];let d="";se.vals.forEach((v,i)=>{if(v!=null)d+=(d?"L":"M")+sx(i).toFixed(1)+" "+sy(v).toFixed(1)});
@@ -189,62 +210,102 @@ function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
     if(o.dots!==false&&!se.dash)se.vals.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${sx(i)}" cy="${sy(v)}" r="3.5" fill="${c}"><title>${esc(labels[i])}: ${fmt(v)}</title></circle>`});
     if(o.legendRight)s+=`<text x="${W-m.r+8}" y="${m.t+14+k*16}" style="fill:${c};font-weight:600">${esc(se.name)}</text>`;
     else if(series.length>1)s+=`<text x="${m.l+8+k*150}" y="${H-6}" style="fill:${c};font-weight:600">&#9632; ${esc(se.name)}</text>`});
-  (o.marks||[]).forEach(mk=>{s+=`<text x="${sx(mk.i)}" y="${sy(mk.v)-10}" text-anchor="middle" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
+  (o.marks||[]).forEach(mk=>{const x=sx(mk.i),up=sy(mk.v)-10>m.t+12,anc=x<m.l+70?"start":x>W-m.r-70?"end":"middle",dx=anc==="start"?-4:anc==="end"?4:0;
+    s+=`<text x="${x+dx}" y="${up?sy(mk.v)-10:sy(mk.v)+30}" text-anchor="${anc}" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
   return s+"</svg>";}
-function chartScatter(pts,o={}){ // pts:[{x,y,r,color,label}]
-  const W=o.w||640,H=o.h||340,m={l:60,r:16,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||nice(Math.max(...ys)*1.05);
-  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(y0,y1).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
-  ticks(x0,x1).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${short(t)}</text>`);
+function chartScatter(pts,o={}){
+  const W=o.w||640,H=o.h||340,m={l:62,r:18,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||axisFor(Math.max(...ys)*1.05).hi;
+  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih,fy=fa(y1),fx=fa(x1);
+  const lab=pts.some(p=>p.label),rows=(lab?pts:pts.slice(0,25)).map(p=>lab?[p.label,Math.round(p.x*100)/100,Math.round(p.y*100)/100]:[Math.round(p.x*100)/100,Math.round(p.y*100)/100]);
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}"${TB(lab?["Label",o.xlabel||"x",o.ylabel||"y"]:[o.xlabel||"x",o.ylabel||"y"],rows,lab?"":"First 25 of "+pts.length+" points (some jitter added to discrete values). Download the CSV for every row.")}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  tk(y0,y1,o.yint).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fy(t)}</text>`);
+  tk(x0,x1,o.xint).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${fx(t)}</text>`);
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(y0)}" y2="${sy(y0)}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${sy(y0)}"/>`;
   if(o.xlabel)s+=`<text class="lbl" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${esc(o.xlabel)}</text>`;
   if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
   if(o.fit){const f=o.fit;s+=`<line x1="${sx(x0)}" y1="${sy(f.m*x0+f.b)}" x2="${sx(x1)}" y2="${sy(f.m*x1+f.b)}" stroke="var(--sec)" stroke-width="2.5" stroke-dasharray="7 4"/>`}
   pts.forEach(p=>{s+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="${p.r||4}" fill="${p.color||"var(--c1)"}" fill-opacity="${o.alpha||.65}" stroke="${p.color||"var(--c1)"}"><title>${esc(p.label||"")} (${fmt(p.x)}, ${fmt(p.y)})</title></circle>`;
-    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:11px">${esc(p.label)}</text>`});
+    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:.92em">${esc(p.label)}</text>`});
   return s+"</svg>";}
-function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart">`;
+function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart"${TB(["Item","Value","Share"],items.map(i=>[i.label,Math.round(i.value),(100*i.value/tot).toFixed(1)+"%"]))}>`;
   items.forEach((it,k)=>{const ang=it.value/tot*2*Math.PI,x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(a+ang),y2=cy+R*Math.sin(a+ang);
     s+=`<path d="M${cx} ${cy}L${x1} ${y1}A${R} ${R} 0 ${ang>Math.PI?1:0} 1 ${x2} ${y2}Z" fill="${it.color||PAL[k%6]}" stroke="var(--surface)" stroke-width="2"><title>${esc(it.label)}: ${(100*it.value/tot).toFixed(1)}%</title></path>`;a+=ang;
     s+=`<text x="250" y="${40+k*22}" style="fill:${it.color||PAL[k%6]};font-weight:700">&#9632; <tspan style="fill:var(--fg);font-weight:400">${esc(it.label)} ${(100*it.value/tot).toFixed(1)}%</tspan></text>`});
   return s+"</svg>";}
-function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:short(lo+i*w),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:num(Math.round(lo+i*w)),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+
+/* "Show the numbers" toggle: every chart carries its data, so screen readers and students can read the values */
+let NTID=0;
+function tableHtml(d){const cell=v=>typeof v==="number"?`<td class="num">${num(v)}</td>`:`<td>${esc(v)}</td>`;
+  return `<div class="tw sm"><table class="dt"><thead><tr>${d.h.map(x=>`<th>${esc(x)}</th>`).join("")}</tr></thead><tbody>${d.rows.map(r=>"<tr>"+r.map(cell).join("")+"</tr>").join("")}</tbody></table></div>`+(d.note?`<p class="small muted">${esc(d.note)}</p>`:"")}
+function addNumToggles(root){$$("svg.chart[data-tbl]",root).forEach(s=>{if(s.dataset.nt)return;s.dataset.nt="1";let d;try{d=JSON.parse(s.getAttribute("data-tbl"))}catch(e){return}
+  const id="nt"+(++NTID),w=document.createElement("div");w.className="numt";w.innerHTML=`<button type="button" class="btn sm" aria-expanded="false" aria-controls="${id}">Show the numbers</button><div id="${id}" hidden>${tableHtml(d)}</div>`;
+  s.insertAdjacentElement("afterend",w);const b=$("button",w),box=$("div",w);b.onclick=()=>{const open=box.hidden;box.hidden=!open;b.setAttribute("aria-expanded",String(open));b.textContent=open?"Hide the numbers":"Show the numbers"}})}
+
+/* ===== quiz set per lesson, score kept in localStorage ===== */
+const QZ={},QBY={};let QS={};
+try{QS=JSON.parse(localStorage.getItem("u5_q")||"{}")}catch(e){}
+const saveQ=()=>{try{localStorage.setItem("u5_q",JSON.stringify(QS))}catch(e){}};
+function shufQ(opts,ans,seed){const idx=opts.map((_,i)=>i);let h=(Math.imul(seed+1,2654435761)>>>0)^0x9e3779b9;const rnd=()=>{h^=h<<13;h>>>=0;h^=h>>>17;h^=h<<5;h>>>=0;return h/4294967296};for(let k=0;k<8;k++)rnd();for(let i=idx.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]]}return {opts:idx.map(i=>opts[i]),ans:idx.indexOf(ans)}}
+function defQ(n,list){QBY[n]=list.map((x,i)=>{const id="u5l"+n+"q"+(i+1);const sh=shufQ(x[1],x[2],n*97+i*31+7);QZ[id]={n,q:x[0],opts:sh.opts,ans:sh.ans,why:x[3]};return id})}
+function quizSet(n){return `<div class="card"><h3>Quick check: ${QBY[n].length} questions</h3>`+QBY[n].map((id,k)=>{const z=QZ[id];return `<div class="qq"><p style="margin:12px 0 6px"><b>${k+1}. ${z.q}</b></p>`+z.opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" aria-live="polite" style="margin-top:6px"></div></div>`}).join("")+`</div>`}
+const lessonDone=n=>QBY[n]&&QBY[n].every(id=>QS[id]&&QS[id].c);
+function showQ(id){const s=QS[id],z=QZ[id];if(!s||!s.c)return;$$(`[data-q="${id}"]`).forEach(b=>{b.disabled=true;if(+b.dataset.i===z.ans)b.classList.add("ok")});$("#why-"+id).textContent="Correct. "+z.why}
+function answerQ(b){const id=b.dataset.q,z=QZ[id],s=QS[id]||(QS[id]={t:0,c:false,f:false});if(s.c)return;s.t++;const ok=+b.dataset.i===z.ans;
+  $$(`[data-q="${id}"]`).forEach(x=>x.classList.remove("no"));
+  if(ok){s.c=true;s.f=s.t===1;showQ(id)}else{b.classList.add("no");$("#why-"+id).textContent="Not quite. Read the lesson again and try another answer."}
+  saveQ();drawNav();updateProg()}
+function updateProg(){const ids=Object.keys(QZ),tot=ids.length,c=ids.filter(i=>QS[i]&&QS[i].c).length,f=ids.filter(i=>QS[i]&&QS[i].f).length,nl=Object.keys(QBY).length,ld=Object.keys(QBY).filter(n=>lessonDone(+n)).length,box=$("#prog");
+  if(box)box.innerHTML=`<b>Your score</b><br>Questions correct: ${c} of ${tot}<br>Correct on first try: ${f}<br>Lessons complete: ${ld} of ${nl}<div class="bar" style="margin-top:6px"><i style="width:${tot?100*c/tot:0}%"></i></div>`;
+  const sm=$("#unitsum");if(sm)sm.innerHTML=Object.keys(QBY).map(n=>{const a=QBY[n],k=a.filter(i=>QS[i]&&QS[i].c).length,ft=a.filter(i=>QS[i]&&QS[i].f).length;return `<tr><td>${n}. ${L[n-1].nav}</td><td class="num">${k} of ${a.length}</td><td class="num">${ft}</td></tr>`}).join("")+`<tr><td><b>Unit total</b></td><td class="num"><b>${c} of ${tot}</b></td><td class="num"><b>${f}</b></td></tr>`}
+
+/* ===== glossary links ===== */
+const GLBACK={i:null};
+function g(k,label){const a=GL.find(x=>x[0]===k)||GL.find(x=>x[0]===ALIAS[k]);const key=a?a[0]:k;return `<a class="g" href="#gl-${key}" data-gl="${key}">${label||a[1]}</a>`}
+function openGloss(k){GLBACK.i=cur;go(L.length-1);const el=$("#gl-"+k);if(el){el.scrollIntoView({block:"center"});el.classList.add("hl")}}
 
 /* ===== lesson framework ===== */
 const L=[];
 function lesson(o){L.push(o)}
-let cur=0, done=new Set();
-const UKEY="dalab_"+(document.title||"x");
-try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e){}
+let cur=0;
 function go(i){
   cur=Math.max(0,Math.min(L.length-1,i));
-  const l=L[cur],st=$("#stage");
-  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
-    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
-  $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
+  const l=L[cur],st=$("#stage"),nl=L.filter(x=>!x.ref).length;
+  st.innerHTML=`<div class="crumb">${l.ref?"Reference":"Lesson "+(cur+1)+" of "+nl}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button>${l.ref&&GLBACK.i!=null?`<button class="btn" type="button" id="backB">Back to lesson ${GLBACK.i+1}</button>`:""}<button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
+  $("#prevB").onclick=()=>go(cur-1);$("#nextB").onclick=()=>go(cur+1);const bb=$("#backB");if(bb)bb.onclick=()=>go(GLBACK.i);
   l.mount&&l.mount(st);
-  $$("[data-q]",st).forEach(b=>b.onclick=()=>{
-    const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
-    $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
-    b.classList.add(ok?"ok":"no");
-    $("#why-"+id,st).textContent=(ok?"Correct. ":"Not quite. ")+k.why;
-    if(ok){done.add(cur);try{localStorage.setItem(UKEY,JSON.stringify([...done]))}catch(e){}drawNav()}
-  });
-  drawNav(); window.scrollTo(0,0); st.focus({preventScroll:true});
+  if(!l.ref)QBY[cur+1].forEach(showQ);
+  addNumToggles(st);fitChartText(st);drawNav();updateProg();
+  window.scrollTo(0,0);st.focus({preventScroll:true});
 }
 function drawNav(){
-  $("#navlist").innerHTML=L.map((l,i)=>`<li class="${done.has(i)?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${done.has(i)?"&#10003;":i+1}</span><span class="t">${l.nav}</span></button></li>`).join("");
+  $("#navlist").innerHTML=L.map((l,i)=>{const dn=!l.ref&&lessonDone(i+1);return `<li class="${dn?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${dn?"&#10003;":l.ref?"G":i+1}</span><span class="t">${l.nav}</span></button></li>`}).join("");
   $$("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
 }
+window.addEventListener("DOMContentLoaded",()=>{
+  $("#stage").addEventListener("click",e=>{const q=e.target.closest("[data-q]");if(q&&!q.disabled){answerQ(q);return}
+    const a=e.target.closest("[data-gl]");if(a){e.preventDefault();openGloss(a.dataset.gl)}});
+  new MutationObserver(()=>{addNumToggles($("#stage"));fitChartText($("#stage"))}).observe($("#stage"),{childList:true,subtree:true});
+  const rp=$("#resetP");if(rp)rp.onclick=()=>{if(confirm("Clear your quiz progress on this device?")){QS={};saveQ();if(!L[cur].ref)go(cur);else{drawNav();updateProg()}}};
+});
+
+/* chart text grows with the Text size control: size it in screen pixels, not in chart units */
+function fitChartText(root){const z=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--zoom"))||1;
+  $$("svg.chart",root||document).forEach(s=>{try{const k=s.getScreenCTM();if(k&&k.a>0)s.style.fontSize=(14*z/k.a).toFixed(2)+"px"}catch(e){}})}
+window.addEventListener("resize",()=>fitChartText(document));
+
+function wrapTables(root){$$("table",root).forEach(t=>{if(t.closest(".tw"))return;let a=t.parentElement,ok=false;while(a&&a.id!=="stage"){const o=getComputedStyle(a).overflowX;if(o==="auto"||o==="scroll"){ok=true;break}a=a.parentElement}if(ok)return;const w=document.createElement("div");w.className="tw";t.parentNode.insertBefore(w,t);w.appendChild(t)})}
+(function(){const st=document.getElementById("stage");if(!st)return;let busy=false;new MutationObserver(()=>{if(busy)return;busy=true;try{wrapTables(st)}finally{busy=false}}).observe(st,{childList:true,subtree:true})})();
+
 /* theme + text size (for projectors) */
 (function(){
   const R=document.documentElement;let theme=null,zi=0;const Z=[1,1.15,1.3];
   try{theme=localStorage.getItem("dalab_theme")}catch(e){}
   if(!theme)theme=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
-  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);
+  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);typeof fitChartText==="function"&&fitChartText(document);
     const b=$("#themeBtn"),z=$("#zoomBtn");if(b)b.innerHTML=theme==="dark"?"&#9728; Switch to LIGHT mode":"&#9790; Switch to DARK mode";if(z)z.textContent="Text size: "+Math.round(Z[zi]*100)+"%";}
   window.addEventListener("DOMContentLoaded",()=>{
     $("#themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("dalab_theme",theme)}catch(e){}apply()};
@@ -264,10 +325,16 @@ const monthly=(rows=SALES)=>{const g=sumBy(rows,r=>r.month);return MONTHS.map(m=
 const REGIONS=["Central","East","North","South","West"],CATS=["Accessories","Electronics","Home","Stationery"];
 const sample=(arr,n)=>{const a=arr.slice();for(let i=0;i<n;i++){const j=i+Math.floor(Math.random()*(a.length-i));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,n)};
 
+function csvDownload(){const H=["OrderID","OrderDate","Region","Product","Salesperson","Units","MRP","DiscountPct","CustomerID","Rating","PaymentMode","Category","NetSales","City","Segment","Month","CostPrice","Profit"];
+  const q=v=>{if(v==null)return "";const t=String(v);return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t};
+  const rows=[H.join(",")].concat(SALES.map(r=>KEYS.map(k=>q(r[k])).join(",")));
+  const blob=new Blob(["\ufeff"+rows.join("\r\n")],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="sunrise-retail-sales.csv";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function renderLive(){
   const tot=sum(SALES.map(r=>r.net));
-  $("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">The Sunrise Retail data (1 Apr 2025 to 31 Mar 2026), already cleaned. Same numbers as your Notion pages.</p><div class="grid2"><div class="kpi"><span class="small muted">Orders</span><b>${SALES.length}</b></div><div class="kpi"><span class="small muted">Net sales</span><b>${fmt(tot)}</b></div></div><div style="height:8px"></div>`+
-  table(SALES.slice(0,14),[["order","Order"],["region","Region"],["product","Product"],["units","Units"],["net","Net sales"]],{small:true})+`<p class="small muted">First 14 of ${SALES.length} rows. Net Sales = Units x MRP x (1 - Discount/100).</p>`;
+  $("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">The Sunrise Retail data (1 Apr 2025 to 31 Mar 2026), already cleaned. Every lesson in this unit uses these ${SALES.length} orders.</p><button class="btn pri sm" type="button" id="csvB">Download the data (CSV)</button><div style="height:8px"></div><div class="grid2"><div class="kpi"><span class="small muted">Orders</span><b>${SALES.length}</b></div><div class="kpi"><span class="small muted">Net sales (Rs)</span><b>${IN(tot)}</b></div></div><div style="height:8px"></div>`+
+  table(SALES.slice(0,14),[["order","Order"],["region","Region"],["product","Product"],["units","Units"],["cost","Cost price (Rs)"],["net","Net sales (Rs)"]],{small:true})+`<p class="small muted">First 14 of ${SALES.length} rows. Net sales = Units x MRP x (1 - Discount / 100). Profit margin = (Net sales - Units x Cost price) / Net sales.</p>`;
+  $("#csvB").onclick=csvDownload;
 }
 
 /* ===== Unit V: Introduction to Business Analytics ===== */
@@ -275,12 +342,122 @@ const TOTAL=sum(SALES.map(x=>x.net)),PROFIT=sum(SALES.map(x=>x.profit)),MN=month
 const byCust=Object.entries(groupBy(SALES,x=>x.cust)).map(([c,rs])=>({cust:c,orders:rs.length,net:sum(rs.map(x=>x.net)),last:Math.max(...rs.map(x=>MONTHS.indexOf(x.month)))}));
 /* 1 */
 const LEVELS=[["What were total sales last year?","Descriptive"],["Which category earned the most profit?","Descriptive"],["Why did March sales jump?","Diagnostic"],["What will next month's sales be?","Predictive"],["Which customers are likely to stop buying?","Predictive"],["How many of each product should we make with limited hours?","Prescriptive"],["What discount should we offer to keep margin above 50%?","Prescriptive"],["How many orders came from the North?","Descriptive"]];
+function regQuiz(){}
+const task=items=>`<div class="card task"><h3>Your task</h3><ol class="small">${items.map(x=>`<li>${x}</li>`).join("")}</ol></div>`;
+const GL=[
+["ba","Business analytics","Using data, statistics and tools to answer business questions and support decisions."],
+["descriptive","Descriptive analytics","Answers 'what happened?' with totals, averages and charts."],
+["diagnostic","Diagnostic analytics","Answers 'why did it happen?' by drilling down and comparing groups."],
+["predictive","Predictive analytics","Answers 'what will happen?' with forecasts and probabilities."],
+["prescriptive","Prescriptive analytics","Answers 'what should we do?' with optimization and simulation."],
+["lifecycle","Analytics life cycle","The repeating steps of an analysis: define the problem, collect data, clean and prepare it, analyse, interpret, communicate, act, and review. Results often send you back to an earlier step."],
+["limitation","Limitation","A statement of what the data cannot show. A recommendation should name its limitations."],
+["mining","Data mining","Searching large data for useful patterns."],
+["pareto","Pareto analysis","Ranking items by value to see whether a small group gives most of the total. The 80/20 rule says that about 20 percent of customers give about 80 percent of sales."],
+["rfm","RFM","A way to score customers by Recency (how lately they bought), Frequency (how often) and Monetary value (how much). Each is scored 1 to 3 here."],
+["tercile","Tercile","One of three equal-sized groups made by splitting ranked data at the 33rd and 67th percentiles."],
+["basket","Market-basket analysis","Counting which items are bought together in the same bill so that they can be bundled or placed together."],
+["forecast","Forecast","A prediction of a future value from past values."],
+["backtest","Back-testing","Testing a forecasting method on past data by hiding the latest values, predicting them, and measuring the error."],
+["mae","Mean absolute error (MAE)","The average size of the forecast errors, ignoring whether each error is above or below. A smaller MAE means a better method."],
+["movavg","Moving average","The average of the last few values, for example the last three months."],
+["rsq","R-squared","The share of the variation in one variable that a straight-line trend on another variable explains. A value near 0 means that the trend line explains almost nothing."],
+["optim","Optimization","Finding the best choice under limits."],
+["decvar","Decision variable","A quantity that you choose, such as the number of backpacks to make."],
+["objective","Objective","The quantity to maximise or minimise, such as profit."],
+["constraint","Constraint","A limit that the plan must respect, such as 400 assembly hours."],
+["feasible","Feasible plan","A plan that satisfies every constraint."],
+["shadow","Shadow price","The extra profit from one more unit of a limited resource, such as one more packing hour."],
+["solver","Solver","A spreadsheet add-in that searches for the best values of the decision variables."],
+["simulation","Simulation (Monte Carlo)","Repeating a random process thousands of times to see the range of possible outcomes."],
+["percentile","Percentile","The value below which a given share of the results fall. The 5th percentile is the value below which 5 percent of the simulated results fall."],
+["breakeven","Break-even sales","The sales at which profit is zero: fixed cost divided by the profit margin."],
+["metric","Metric","Any measurement, such as the number of orders."],
+["kpi","KPI","A Key Performance Indicator: a metric linked to a goal, with a target, an owner and a review period."],
+["smart","SMART","A check for a good target: Specific, Measurable, Achievable, Relevant and Time-bound."],
+["margin","Profit margin","Profit divided by net sales, written as a percentage."],
+["segment","Segment","A group of customers with something in common, such as Student, Corporate or Retail."],
+["attrition","Attrition rate","The number of employees who leave, divided by the average headcount, as a percentage."],
+["privacy","Data privacy","The right of people to control how their personal data is collected and used."],
+["bias","Bias","Unfair or distorted treatment of groups that comes from the data, the model or the rule."],
+["transparency","Transparency","People can see how a result or rule was produced."],
+["accountability","Accountability","A named person or team is responsible for the outcome of a decision or rule."]
+];
+const ALIAS={};
+
+defQ(1,[
+["'How many units of each product should we make?' is which kind of analytics?",["Descriptive","Diagnostic","Predictive","Prescriptive"],3,"It asks what we should do, which is the prescriptive level."],
+["Why did March sales jump? Which level of analytics is this?",["Descriptive","Diagnostic","Predictive","Prescriptive"],1,"'Why' questions are diagnostic: you drill down and compare groups."],
+["What will next month's sales be? Which level is this?",["Descriptive","Diagnostic","Predictive","Prescriptive"],2,"It asks about the future from past data, so it is predictive."],
+["Total sales are 752,219.75 and profit is 394,495.75. Which statement is correct?",["These are predictive numbers","These describe what happened, so they are descriptive","They show why sales happened","They tell us what to do"],1,"Totals of past data are descriptive. Decisions need the next levels as well."]]);
+defQ(2,[
+["Most of an analyst's time usually goes into",["Building models","Collecting, cleaning and preparing data","Making charts","Presenting"],1,"Preparing data is normally the largest share of the work."],
+["Why is analytics called a cycle and not a straight line?",["Because every project is repeated yearly","Because results raise new questions and you loop back","Because charts are round","Because data never changes"],1,"Findings often send you back to define the problem again or to collect more data."],
+["Which step turns a vague worry into a question with a number?",["Collect data","Define the problem","Communicate results","Review"],1,"The first step is to state the problem so that data can answer it."],
+["You find 15 duplicate rows in the data file. Which step of the cycle is this work?",["Define the problem","Clean and prepare the data","Communicate results","Act"],1,"Removing duplicates and fixing errors is data cleaning and preparation."]]);
+defQ(3,[
+["A good analytics recommendation includes",["Only the number","A number, an action and a stated limitation","A long table","The analyst's opinion alone"],1,"The reader needs the evidence, the decision and what the data cannot show."],
+["Stationery is 4.8% of net sales. Does that alone show that it should be dropped?",["Yes, it is small","No, you must also look at its profit, its margin and what its buyers buy with it","Yes, if its margin is below 60%","No, because 4.8% is a large share"],1,"A small share of sales does not show a loss. Stationery still earns profit at about 49.7% margin."],
+["Which of these is a limitation of the Stationery analysis?",["The table has four rows","The data does not show whether Stationery buyers also buy other items","Net sales are in rupees","The data covers one year"],1,"The data has one product per order, so it cannot show baskets. Naming this gap is part of the recommendation."],
+["After testing 'Drop Stationery', total profit falls by 18,006.50. What do you do with this figure?",["Ignore it","Compare it with what else the space and staff time could earn, then recommend","Delete the category","Raise the price"],1,"The number is one side of the comparison. The decision also needs the alternative use of resources."]]);
+defQ(4,[
+["In RFM, a customer who bought recently, often and spent a lot is called",["At risk","A champion","Lost","A new customer"],1,"High scores on Recency, Frequency and Monetary value make a champion."],
+["The top 20 percent of customers give 33.9 percent of sales. What does this say about the 80/20 rule?",["The rule holds exactly","Sales are spread more evenly than the rule predicts","The data is wrong","Customers are all equal"],1,"33.9 percent is far below 80 percent, so the sales are flatter than the rule says. That is a finding."],
+["Why can we not do a market-basket analysis on this data?",["It needs a program","Each order has only one product, so there are no pairs in a bill","The data is too small","Baskets are illegal"],1,"Pairs of items in the same bill are needed. This data has one product per order."],
+["Which action fits a customer in the 'At risk (valuable but quiet)' group?",["Send an offer to bring them back","Ignore them","Remove them from the list","Charge a higher price"],0,"These customers spent well in the past but have not bought lately, so a targeted offer is sensible."]]);
+defQ(5,[
+["Monthly sales have R-squared 0.0085 against time. Which forecast is sensible?",["A steep rising trend line","The long-run average","Last month's spike repeated","A falling line"],1,"A tiny R-squared means time explains almost nothing, so the average is a safer forecast."],
+["What does back-testing do?",["It checks the spelling of the data","It hides recent values, forecasts them with a method and measures the error","It deletes old data","It prints the forecast"],1,"You test the method on past data, where the answer is known."],
+["Method A has MAE 15,473 and method B has MAE 21,213. Which is better on this test?",["A, since its average error is smaller","B, since its error is larger","Both are equal","Neither can be tested"],0,"A lower MAE means smaller errors."],
+["Why can a simple average beat a trend line?",["Averages are always more advanced","When the data has no real trend, a trend line follows noise","Trend lines cannot be calculated","Averages use more data"],1,"A trend line is only useful if there is a trend. Here there is none."]]);
+defQ(6,[
+["If one more packing hour raises the best profit by Rs 249, that number is called the",["Shadow price","Margin","Break-even","Variance"],0,"It is the extra profit from one more unit of a limited resource."],
+["Which is a decision variable?",["Profit per unit","The number of backpacks to make","The limit of 400 assembly hours","Total profit"],1,"A decision variable is a quantity you choose."],
+["A plan needs 410 assembly hours but only 400 are available. What is the plan?",["Feasible","Infeasible, since it breaks a constraint","Optimal","The shadow price"],1,"A plan must satisfy all constraints. This one exceeds the assembly limit."],
+["Why do we say that Solver searches for the best plan?",["It guesses randomly once","It tries combinations within the limits and picks the one with the highest objective","It chooses the cheapest product","It sorts the products"],1,"Solver searches the feasible plans for the maximum of the objective."]]);
+defQ(7,[
+["A simulation gives the 5th percentile of next month's sales as Rs 33,000. This means",["Sales will be exactly 33,000","In 5 percent of runs sales were at or below 33,000","Sales cannot exceed 33,000","The average is 33,000"],1,"A percentile is the value below which that share of the results fall."],
+["Break-even sales are fixed cost divided by",["The profit margin","The average order","The number of customers","The standard deviation"],0,"Each rupee of sales gives margin in profit, so the sales needed to cover the fixed cost are fixed cost / margin."],
+["What does simulation give that optimization does not?",["A single best answer","The range and risk around an outcome","A list of customers","A shorter model"],1,"Optimization gives one best plan. Simulation shows the range of outcomes."],
+["You run 1000 simulated months and 380 are below break-even. What is the estimated probability of a loss?",["3.8%","38%","62%","380%"],1,"380 out of 1000 is 0.38, or 38 percent."]]);
+defQ(8,[
+["Which is a better KPI?",["Number of charts made","Profit margin against a 50% target, owned by Finance, reviewed monthly","Total rows in the sheet","The size of the file"],1,"A KPI is linked to a goal and has a target, an owner and a review period."],
+["What is the difference between a metric and a KPI?",["There is none","A KPI is a metric tied to a goal, with a target and an owner","A metric is always a percentage","A KPI is always a total"],1,"Every KPI is a metric, but most metrics are not KPIs."],
+["Average order value is 761.36 and the target is at least 800. What is the status?",["On target","Off target","Not measurable","Cannot be said"],1,"761.36 is below 800, so the target is not met."],
+["Which target is SMART?",["Improve sales","Raise net sales by 10 percent in the quarter ending 31 March","Sell more","Be the best"],1,"It is specific, measurable, achievable, relevant and has a time limit."]]);
+defQ(9,[
+["Margin falls as discount rises (54.9% at 0%, 47.3% at 15%). To justify a 15% discount you need",["More volume to make up the lost margin","Nothing, discounts always pay","Fewer customers","A smaller product range"],0,"A discount cuts the profit on each unit, so extra sales volume must pay for it."],
+["Which segment has the largest net sales in the table?",["Student","Corporate","Retail","All are equal"],2,"Retail has the highest net sales at 280,055.05."],
+["Fixed cost is 30,000 and the margin is 52.44%. What are the break-even sales?",["15,732","30,000","57,204","143,000"],2,"30,000 / 0.5244 = 57,204."],
+["The commission rule pays North 5% on every order. What does a flat 2% rule do to the North?",["Raises its commission","Lowers its commission","No change","Removes it"],1,"The rule favours North. A flat 2% would cost North less."]]);
+defQ(10,[
+["Department A: start 40, end 38, exits 4. What is the attrition rate?",["10.3%","10.0%","4%","40%"],0,"Average headcount is (40 + 38)/2 = 39. Attrition = 4 / 39 = 10.3%."],
+["Salespeople handle 90 to 107 orders each but their sales differ by about 50 percent. What explains this?",["The number of orders","The average order size","The number of regions","The month"],1,"The workload is similar. The gap comes from larger or smaller orders."],
+["Which of these is an operations metric?",["Attrition rate","Orders handled per salesperson","Employee age","Number of departments"],1,"Workload and capacity belong to operations. Attrition is an HR metric."],
+["Why do we use the average headcount in the attrition rate?",["It is easier","The headcount changes during the period","The start is unknown","It makes the rate smaller always"],1,"People join and leave during the year, so the average represents the size of the team better than one date."]]);
+defQ(11,[
+["A good analysis is ignored because staff do not trust it. This is a challenge of",["Data privacy","Organizational adoption","Data quality only","Hardware"],1,"If people do not use or believe the result, the analysis has no effect."],
+["The raw file had 12 blank Units and 6 'N/A' ratings. Which challenge is this?",["Data quality","Data privacy","Adoption","Ethics only"],0,"Missing and inconsistent values are data quality problems."],
+["Why should you check the numbers in a case study before class?",["They never change","Numbers in popular articles change and differ by source","They are always wrong","They are secret"],1,"Verify figures from a reliable source."],
+["A retailer predicts private life events from purchases. Which challenge does this raise most?",["Data privacy","Axis scaling","Sorting","Rounding"],0,"Inferring sensitive facts about people from their data raises privacy concerns."]]);
+defQ(12,[
+["An automated rule treats groups differently and nobody can explain why. Which principle is broken?",["Transparency and accountability","Accuracy of arithmetic","Speed","Storage"],0,"People should be able to see how the rule works, and someone should own it."],
+["Which is a good use of the skills self-assessment?",["Choose your two lowest scores as next learning goals","Hide the lowest scores","Rate everything 5","Ignore it"],0,"The point is to find gaps and plan to close them."],
+["A rule gives North 5% commission and others 2% to 5%. What must you check first for fairness?",["That the rule is written, owned and has a business reason","The colour of the report","The file size","The number of rows"],0,"Transparency, accountability and a stated reason are the checks used in the lab."],
+["Machine learning means",["Computers learn patterns from data","Machines that never fail","Spreadsheets with more rows","Manual data entry"],0,"It is the use of algorithms that learn patterns from data."]]);
+
+
 lesson({nav:"What is business analytics?",title:"Business analytics: definition, role and significance",syl:"Definition, role and significance of business analytics",
 html:()=>`<p class="lead"><b>Business analytics</b> is using data, statistics and tools to answer business questions and support decisions. It works on four levels:</p>
 <div class="grid2"><div class="card"><span class="tag p">Descriptive</span> <b>What happened?</b><br><span class="small">Totals, averages, charts. Units I, II, IV.</span></div><div class="card"><span class="tag s">Diagnostic</span> <b>Why did it happen?</b><br><span class="small">Drill down, compare groups.</span></div><div class="card"><span class="tag g">Predictive</span> <b>What will happen?</b><br><span class="small">Forecasts, probabilities. Unit III and lesson 5 here.</span></div><div class="card"><span class="tag w">Prescriptive</span> <b>What should we do?</b><br><span class="small">Optimization and simulation. Lessons 6 and 7.</span></div></div>
 <div class="card try"><h3>Try it: which level is each question?</h3><div id="lv"></div><p class="small muted" id="lsc"></p></div>
 <div class="card"><h3>Why it matters</h3><p class="small">Decisions backed by evidence are easier to defend and usually better than gut feeling alone. On the Sunrise data: total sales <b>${fmt(TOTAL)}</b>, profit <b>${fmt(PROFIT)}</b> (margin <b>${(100*PROFIT/TOTAL).toFixed(2)}%</b>). Those numbers are descriptive. The decisions in this unit go further.</p></div>
-${quiz("u5q1","'How many units of each product should we make?' is which kind of analytics?",["Descriptive","Predictive","Prescriptive"],2,"It recommends an action under limits, which is prescriptive.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">${g("ba","Business analytics")} is the use of data, statistics and tools to answer business questions and support decisions. Its work falls at four levels, and each level answers a different kind of question. ${g("descriptive","Descriptive")} analytics answers "what happened?" with totals, averages and charts. ${g("diagnostic","Diagnostic")} analytics answers "why did it happen?" by drilling down and comparing groups. ${g("predictive","Predictive")} analytics answers "what will happen?" with forecasts and probabilities. ${g("prescriptive","Prescriptive")} analytics answers "what should we do?" with optimization and simulation.</p><p class="small">The levels build on each other. You cannot explain a change in sales before you know what the sales were, and you cannot decide what to do before you have some view of what will happen. Most business problems need more than one level.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Each question in the demo belongs to one level. The key is to look at the first word and the verb. "What were total sales" and "How many orders" are descriptive: they report past facts. "Why" questions are diagnostic. Questions about next month or about customers who are likely to stop buying are predictive. "How many should we make" and "what discount should we offer" are prescriptive because they ask for a decision. The Sunrise totals (sales 752,219.75, profit 394,495.75, margin 52.44%) are descriptive. They are the starting point, not the decision.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Name the level of a question before you choose a tool.</li><li>Start with descriptive analytics, because every other level depends on it.</li><li>Do not present a descriptive number as if it were a recommendation.</li><li>Match the method to the decision that the reader has to make.</li></ul></div>
+${task(["Write one descriptive, one diagnostic, one predictive and one prescriptive question for a mobile phone shop.","From the demo, list the two questions that you found hardest to classify and say why.","Use the Sunrise totals to write one descriptive sentence about profit."])}
+${quizSet(1)}`,
 mount(r){let s=0,a=0;$("#lv",r).innerHTML=LEVELS.map((q,i)=>`<div class="row" data-i="${i}" style="justify-content:space-between;border-bottom:1px solid var(--line2);padding-bottom:6px"><span style="flex:1;min-width:230px">${q[0]}</span><span>${["Descriptive","Diagnostic","Predictive","Prescriptive"].map(l=>`<button class="btn sm" data-a="${l}">${l}</button>`).join(" ")} <span class="fb small"></span></span></div>`).join("");
   $$("[data-a]",r).forEach(b=>b.onclick=()=>{const row=b.closest("[data-i]");if(row.dataset.d)return;row.dataset.d=1;a++;const t=LEVELS[+row.dataset.i][1],ok=b.dataset.a===t;if(ok)s++;$(".fb",row).innerHTML=ok?'<span class="tag g">Correct</span>':`<span class="tag b">${t}</span>`;$("#lsc",r).textContent=`Score ${s} of ${a}`})}
 });
@@ -290,7 +467,12 @@ lesson({nav:"Process and life cycle",title:"The business analytics process and l
 html:()=>`<p class="lead">Analytics is a <b>cycle</b>, not a straight line. Results raise new questions and you loop back. Click each step.</p>
 <div class="card try"><h3>Try it: walk the cycle with Sunrise Retail</h3><div class="row" id="pst"></div><div class="callout i" id="pbox"></div></div>
 <div class="callout k small"><b>Mapping to this course:</b> every unit you studied is one or two steps of this cycle. That is why the order of units makes sense.</div>
-${quiz("u5q2","Most of an analyst's time usually goes into...",["Building models","Collecting, cleaning and preparing data","Making charts"],1,"Defining the problem and preparing data take the largest share, which is why Unit I matters.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">The ${g("lifecycle","analytics life cycle")} is the set of steps that an analysis follows: define the problem, collect data, clean and prepare it, analyse it, interpret the results, communicate them, act, and review. It is a cycle and not a straight line, because the results of one step often raise new questions that send you back. A finding such as "March was unusually high" leads to a new question about what happened in March.</p><p class="small">The steps are not equal in size. Collecting, cleaning and preparing data usually takes the largest share of an analyst's time. Errors that enter at this stage, such as duplicate rows, blank values and mixed spellings, run through every later result.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Click each step and read how it applies to Sunrise Retail. Step 1 turns a vague worry into a question that has a number in it: "Should we drop Stationery?" The later steps decide which data is needed, how to clean it, which method to use and how to report. Each unit of this course covers one or two steps: data types and collection (Unit I), charts for analysis and communication (Unit II), probability and sampling for uncertainty (Unit III), spreadsheet skills for the working tools (Unit IV), and this unit for the methods and the decisions.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Write the problem as a question with a number before you collect any data.</li><li>Plan time for cleaning. Do not treat it as a small task.</li><li>Record what you changed in the data so that others can check your work.</li><li>Expect to repeat steps, and plan for it.</li></ul></div>
+${task(["Write a one-line problem statement for a college canteen that has falling sales.","List the eight steps of the cycle and mark the two on which an analyst spends most time.","Find one example from the Sunrise data where cleaning would change the answer, for example a duplicate order."])}
+${quizSet(2)}`,
 mount(r){function d(i){$("#pst",r).innerHTML=PROC.map((p,k)=>`<button class="btn ${k===i?"pri":""}" data-k="${k}" type="button">${p[0].split(".")[0]}</button>`).join("");$("#pbox",r).innerHTML=`<h2>${PROC[i][0]}</h2><p>${PROC[i][1]}</p><p class="small"><b>Where in this course:</b> ${PROC[i][2]}</p>`;$$("[data-k]",r).forEach(b=>b.onclick=()=>d(+b.dataset.k))}d(0)}
 });
 /* 3 decisions */
@@ -302,7 +484,12 @@ html:()=>`<p class="lead">The owner says: <i>"Stationery sells little. Should we
 <div class="row">${seg("dd",[["keep","Keep all four"],["drop","Drop Stationery"]])}</div><div id="ddo"></div></div>
 <div class="card try"><h3>Step 3: write the recommendation</h3><p class="small muted">Pick the best statement.</p><div id="rec"></div></div>
 <div class="card"><h3>What the data cannot tell us</h3><p class="small">Whether Stationery buyers also buy other items, whether it brings new customers, or whether space and staff time could earn more elsewhere. Name the gap in your recommendation.</p></div>
-${quiz("u5q3","A good analytics recommendation includes...",["Only the number","A number, an action and a stated limitation","A long table"],1,"Evidence, a clear action, and honesty about limits.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">A data-driven decision follows a fixed pattern. First, state the question with numbers. Second, compare the options: here, keep Stationery or drop it. Third, write the recommendation with an action. Fourth, state what the data cannot show. This last item is a ${g("limitation","limitation")}. A recommendation without a limitation looks more certain than it is.</p><p class="small">The ${g("margin","profit margin")} is profit divided by net sales. It tells you how much of each rupee of sales is kept as profit. A category with small sales can still have a healthy margin.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Stationery gives 4.8 percent of the net sales, which is small. The first reaction is to drop it. The numbers say more: it still earns 18,006.50 of profit at a margin of 49.7 percent, which is close to the overall margin of 52.44 percent. Dropping it would remove that profit and leave the other categories unchanged. The remaining question is whether the shop could earn more from the space and the staff time. The data cannot answer that, so the recommendation says so and names the next step: check whether Stationery buyers also buy other items.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Compare options on profit and margin, not on sales alone.</li><li>State a number, an action and a limitation in every recommendation.</li><li>Do not decide on a gut feeling when the data is available.</li><li>Name the next check that would change the decision.</li></ul></div>
+${task(["In the demo, test 'Drop Stationery' and write the new total profit and margin.","Write a three-line recommendation for the owner: one number, one action and one limitation.","Choose another category and write whether you would drop it, with one reason from the table."])}
+${quizSet(3)}`,
 mount(r){const st=catRows.find(c=>c.cat==="Stationery");function d(v){const keep=v==="keep",p=keep?PROFIT:PROFIT-st.profit,n=keep?TOTAL:TOTAL-st.net;
     $("#ddo",r).innerHTML=`<div class="grid3"><div class="kpi"><span class="small muted">Net sales</span><b>${fmt(n)}</b></div><div class="kpi"><span class="small muted">Profit</span><b>${fmt(p)}</b></div><div class="kpi"><span class="small muted">Margin</span><b>${(100*p/n).toFixed(2)}%</b></div></div><div class="callout k small">${keep?"Baseline.":`Dropping Stationery loses <b>${fmt(st.profit)}</b> of profit. Margin rises only slightly, because Stationery's margin (${st.margin.toFixed(1)}%) is not far below average.`}</div>`}
   d("keep");bindSeg(r,"dd",d);
@@ -316,7 +503,12 @@ html:()=>`<p class="lead"><b>Data mining</b> looks for useful patterns in large 
 <div class="card try"><h3>Pareto: customers ranked by net sales</h3><div class="row">Show top <input type="range" id="pk" min="5" max="120" value="24"> <b id="pkv">24</b> of ${byCust.length} customers</div><div id="pc"></div><div class="callout k small" id="pn"></div></div>
 <div class="card try"><h3>RFM: who are our best and at-risk customers?</h3><p class="small muted">Each customer gets a score of 1 (low) to 3 (high) on Recency (latest purchase), Frequency (orders) and Monetary (net sales), using terciles.</p><div id="rfm"></div></div>
 <div class="card"><h3>Market-basket idea (no data here)</h3><p class="small">'Customers who bought a Laptop Sleeve also bought a Backpack' is found by counting pairs of items in the same bill. Groups that go together can be bundled. Our dataset has one product per order, so we cannot do it here, but the method is the same counting.</p></div>
-${quiz("u5q4","In RFM, a customer who bought recently, often and spent a lot is called...",["At risk","A champion","Lost"],1,"High on all three scores: your best customers.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">${g("mining","Data mining")} is the search of large data for useful patterns. ${g("pareto","Pareto analysis")} ranks items by value to see whether a few of them give most of the total. The traditional 80/20 rule says that about 20 percent of customers give about 80 percent of sales. ${g("rfm","RFM")} scores each customer on Recency (how lately they bought), Frequency (how often they bought) and Monetary value (how much they spent). Here each score is 1 to 3, set by ${g("tercile","terciles")}: the ranked customers are split into three equal groups.</p><p class="small">${g("basket","Market-basket analysis")} counts which items appear together in the same bill, so that they can be bundled. It needs bills with several items. Our data has one product per order, so we explain the idea but do not run it.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">In the Pareto chart the top 20 percent of customers give 33.9 percent of sales. This is far from 80 percent, so Sunrise does not depend on a few large customers. That is a finding and not a failure. The RFM table splits the 120 customers into three groups. The group "at risk" holds 30 customers who spent well in the past but have been quiet lately. Their net sales are 209,830.65, so a targeted offer is worth the effort. Remember that the cut-offs come from this year's data, and another year may give different groups.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Rank before you summarise, and look at the cumulative share.</li><li>State the finding even when it disagrees with a known rule.</li><li>Link every segment to an action.</li><li>Say how the scores were set, since another dataset gives other cut-offs.</li></ul></div>
+${task(["Use the slider to show the top 12 customers and write their share of net sales.","Write one action for each of the three RFM groups.","Explain in two sentences why the 80/20 rule does not hold for this data."])}
+${quizSet(4)}`,
 mount(r){const S=byCust.slice().sort((a,b)=>b.net-a.net),cum=[];let c=0;S.forEach(x=>{c+=x.net;cum.push(c)});
   function d(){const k=+$("#pk",r).value;$("#pkv",r).textContent=k;const it=S.slice(0,k).map((x,i)=>({label:i<12?x.cust:"",value:Math.round(x.net),color:"var(--c1)"}));
     $("#pc",r).innerHTML=chartBar(it,{w:640,h:260,title:"Net sales by customer (top "+k+")",values:false});$("#pn",r).innerHTML=`The top <b>${k}</b> customers (${(100*k/S.length).toFixed(0)}%) give <b>${(100*cum[k-1]/TOTAL).toFixed(1)}%</b> of sales. ${k===24?"For 20 percent of customers the share is 33.9 percent: flatter than the usual 80/20 rule. A finding in itself.":""}`}
@@ -333,7 +525,12 @@ lesson({hero:true,nav:"Forecasting models",title:"Forecasting models and back-te
 html:()=>`<p class="lead">A <b>forecast</b> predicts the next value from past ones. Which method is best? Do not guess: <b>back-test</b>. Pretend you do not know the last 9 months, predict each, and measure the average error (MAE).</p>
 <div class="card try"><h3>Try it: compare methods</h3><div class="row">${seg("fm",Object.entries(FM).map(([k,v])=>[k,v[0]]))}</div><div id="fo"></div><div class="callout k small" id="fn"></div></div>
 <div class="card"><h3>In a spreadsheet</h3><div class="code">Naive:      =B13\n3-month avg: =AVERAGE(B11:B13)\nTrend:      =FORECAST(13, B2:B13, A2:A13)      (A = month numbers 1 to 12)\nError (MAE): =AVERAGE(ABS range of errors)  or  =SUMPRODUCT(ABS(B5:B13-C5:C13))/9</div></div>
-${quiz("u5q5","Monthly sales have R-squared 0.0085 against time. Which forecast is sensible?",["A steep upward trend line","The long-run average","Last month's spike (March) repeated"],1,"With no real trend, the average is the safest guide. A spike should not be projected forward.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">A ${g("forecast","forecast")} predicts a future value from past values. To decide which method to trust, we use ${g("backtest","back-testing")}: hide the latest months, predict them with each method, and compare the predictions with what really happened. The average size of the errors is the ${g("mae","mean absolute error")} (MAE). A smaller MAE means a better method on this test.</p><p class="small">Four methods are compared. The naive method repeats last month. A ${g("movavg","moving average")} uses the mean of the last three months. The mean so far uses all earlier months. The linear trend fits a straight line to time and extends it. A trend line is useful only if there is a trend. The ${g("rsq","R-squared")} of monthly sales on time is 0.0085, so time explains less than one percent of the variation.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The chart shows the actual sales and the forecast of the chosen method for the last nine months. The errors are listed for all four methods. The mean so far has the lowest error and the naive method the highest. The simple averaging methods win because the sales have no trend: they swing around a middle level. The clever method, the trend line, follows noise. Choose the method by its back-test result and not by how advanced it looks.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Back-test at least two methods before you trust one.</li><li>Report the error with the forecast.</li><li>Check R-squared before you use a trend line.</li><li>A forecast is a range of likely values, not a promise.</li></ul></div>
+${task(["Switch between the four methods and write the MAE of each.","Write which method you would use for next month and give the reason in one sentence.","In Excel, fill the formula =AVERAGE(B11:B13) down and compare it with the actual values."])}
+${quizSet(5)}`,
 mount(r){function d(k){const f=FM[k][1],pred=MN.map((_,i)=>i>=3?f(MN,i):null),errs=pred.map((p,i)=>p==null?null:Math.abs(MN[i]-p)).filter(x=>x!=null),mae=mean(errs),nxt=f([...MN],MN.length);
     $("#fo",r).innerHTML=chartLine([{name:"Actual",vals:MN,color:"var(--c1)"},{name:FM[k][0],vals:pred,color:"var(--c2)",dash:true}],MLAB,{w:640,h:280,min:0,maxLabels:12});
     const all=Object.entries(FM).map(([kk,v])=>[v[0],mean(MN.map((_,i)=>i>=3?Math.abs(MN[i]-v[1](MN,i)):null).filter(x=>x!=null))]);
@@ -349,7 +546,12 @@ html:()=>`<p class="lead"><b>Optimization</b> finds the best choice under limits
 <div class="grid3"><label>Backpacks <input type="range" id="ob" min="0" max="200" value="50"> <b id="obv">50</b></label><label>Study Lamps <input type="range" id="ol" min="0" max="200" value="50"> <b id="olv">50</b></label><label>Mice <input type="range" id="om" min="0" max="140" value="50"> <b id="omv">50</b></label></div>
 <div id="oo"></div><div class="row"><button class="btn pri" id="ofind" type="button">Find the best plan (Solver)</button> ${seg("os",[["400|220","400 assembly, 220 packing hours"],["410|220","410 assembly hours"],["400|230","230 packing hours"]],"s")}</div><div id="of" class="callout k"></div></div>
 <div class="card"><h3>Solver in your tool</h3><p class="small"><b>Google Sheets:</b> Extensions, Add-ons, search Solver, install. <b>Excel:</b> Data, Solver (enable the add-in first). <b>LibreOffice:</b> Tools, Solver. Set the objective (profit cell) to Max, variable cells = the three quantities, add the three constraints, and Solve. Expect <b>Backpack 80, Study Lamp 80, Wireless Mouse 120, profit 95,440</b>.</p></div>
-${quiz("u5q6","If one more packing hour raises best profit by Rs 249, that number is called the...",["Shadow price","Margin","Break-even"],0,"The shadow price is the value of relaxing a constraint by one unit.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">${g("optim","Optimization")} finds the best choice under limits. It has three parts. The ${g("decvar","decision variables")} are the quantities you choose: here the number of backpacks, study lamps and mice. The ${g("objective","objective")} is what you want to maximise or minimise: total profit. The ${g("constraint","constraints")} are the limits: 400 assembly hours, 220 packing hours and a demand of 120 mice.</p><p class="small">A plan that respects every constraint is ${g("feasible","feasible")}. The best feasible plan is the optimum. The ${g("shadow","shadow price")} of a constraint is the extra profit that one more unit of that resource would bring. ${g("solver","Solver")} is the spreadsheet add-in that searches for the best plan.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Try plans by hand first. The page shows the hours used against the limits and the total profit. A plan that goes over a limit is shown as infeasible, for example 410 assembly hours. The button finds the best plan: 80 backpacks, 80 study lamps and 120 mice, with a profit of Rs 95,440. At the optimum, the assembly and packing hours are both fully used. Because they are fully used, they limit the profit, and one more packing hour would add Rs 249.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Write the objective and every constraint in words before you open Solver.</li><li>Check that the plan is feasible, then that it is the best.</li><li>Use the shadow price to decide whether more of a resource is worth buying.</li><li>Test the answer by changing one limit and running again.</li></ul></div>
+${task(["Try the plan 80, 80, 120 by hand and write the hours used and the profit.","Increase the packing limit by 10 hours in your own sheet and write the new best profit.","Write one example of a decision variable, an objective and a constraint for a bakery."])}
+${quizSet(6)}`,
 mount(r){let A=400,P=220;
   function hand(){const b=+$("#ob",r).value,l=+$("#ol",r).value,m=+$("#om",r).value;$("#obv",r).textContent=b;$("#olv",r).textContent=l;$("#omv",r).textContent=m;
     const as=2*b+1.5*l+m,pk=b+l+.5*m,ok=as<=A&&pk<=P&&m<=120,pr=449*b+399*l+230*m;
@@ -364,7 +566,12 @@ html:()=>`<p class="lead"><b>Simulation</b> repeats a random process thousands o
 <div class="card try"><h3>Try it: probability of making a loss</h3><div class="row">Fixed cost per month (invented): Rs <input type="range" id="fc" min="20000" max="50000" step="1000" value="30000"> <b id="fcv">30,000</b> &nbsp; Runs: <select id="sr"><option>200</option><option selected>1000</option><option>5000</option></select> <button class="btn pri" id="sgo" type="button">Simulate</button></div>
 <div id="so"></div><div class="callout k small" id="sn"></div></div>
 <div class="code">In a sheet:  =NORMINV(RAND(), 62685, 18392)   fill down 1000 rows\n             =PERCENTILE(range, 0.05)  and  =COUNTIF(range, "&lt;"&amp;break_even)/1000\nBreak-even sales = fixed cost / margin (${(100*PROFIT/TOTAL).toFixed(2)}%)</div>
-${quiz("u5q7","A simulation gives the 5th percentile of next month's sales as Rs 33,000. This means...",["Sales will be exactly 33,000","In 5 percent of runs sales were at or below 33,000","Sales cannot exceed 33,000"],1,"A percentile marks a position in the simulated range, not a prediction of the single outcome.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">${g("simulation","Simulation")}, also called Monte Carlo simulation, repeats a random process thousands of times to see the range of possible outcomes. Optimization gives one best answer. Simulation shows the risk around an answer. Here, next month's sales are drawn from a normal curve with mean 62,685 and SD 18,392, the figures from our 12 months.</p><p class="small">${g("breakeven","Break-even sales")} are the sales at which the profit is exactly zero: fixed cost divided by the profit margin. A ${g("percentile","percentile")} is the value below which a stated share of the results fall. The 5th percentile of the simulated sales is the level that sales fall below in only 5 percent of the runs.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">With a fixed cost of Rs 30,000, break-even sales are 57,204. The page simulates 1000 months. About 38 percent of them fall below break-even, so the chance of a loss month is about 38 percent. The 5th to 95th percentile range, 33,861 to 93,235, shows how wide the range of sales is. Change the fixed cost and run again: a higher cost raises the break-even and the chance of a loss. Each run gives slightly different results because the numbers are random. The pattern stays the same.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Use enough runs, such as 1000, so that the result is stable.</li><li>State the assumptions: the mean, the SD and the shape of the curve.</li><li>Report a range or a probability, not one number.</li><li>Check the simulation against real data, as the page does with the 12 months.</li></ul></div>
+${task(["Set the fixed cost to 40,000. Write the break-even sales and the chance of a loss.","Run the simulation three times and write how much the chance of a loss changes between runs.","Explain in two sentences why a manager would want the range and not only the average."])}
+${quizSet(7)}`,
 mount(r){const margin=PROFIT/TOTAL;const gn=()=>{let u=0,v=0;while(!u)u=Math.random();v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
   $("#fc",r).oninput=()=>$("#fcv",r).textContent=(+$("#fc",r).value).toLocaleString();
   function go(){const n=+$("#sr",r).value,fcost=+$("#fc",r).value,be=fcost/margin,v=Array.from({length:n},()=>Math.max(0,MEANM+SDM*gn()));
@@ -379,7 +586,12 @@ html:()=>`<p class="lead">A <b>metric</b> is any measurement. A <b>KPI</b> (Key 
 <div class="card try"><h3>Try it: set targets and read the lights</h3><p class="small muted">Change a target and watch the status change. Green = target met.</p><div id="kp"></div></div>
 <div class="card"><h3>SMART check</h3><span class="pill"><b>S</b>pecific</span><span class="pill"><b>M</b>easurable</span><span class="pill"><b>A</b>chievable</span><span class="pill"><b>R</b>elevant</span><span class="pill"><b>T</b>ime-bound</span></div>
 <div class="code">Gross sales  =SUMPRODUCT(F2:F989,G2:G989)\nDiscount %   =(gross - SUM(M2:M989))/gross     (here 5.17%)</div>
-${quiz("u5q8","Which is a better KPI?",["Number of charts made","Profit margin against a 50% target, owned by Finance, reviewed monthly","Total rows in the sheet"],1,"It has a measure, a target, an owner and a review rhythm.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">A ${g("metric","metric")} is any measurement, such as the number of orders. A ${g("kpi","KPI")} is a metric that is linked to a goal and has a target, an owner and a review period. A number without a target and an owner is only a metric. The test of a good target is ${g("smart","SMART")}: Specific, Measurable, Achievable, Relevant and Time-bound.</p><p class="small">A KPI can be "higher is better" (net sales, profit margin, average rating) or "lower is better" (discount given, cash share). The status is then on target or off target, depending on which side of the target the value falls.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The table lists six KPIs with their current values, a target that you can change, and an owner. Net sales, profit margin and average order value meet their starting targets. The average rating, discount and cash share do not. Move a target and the status changes at once. This shows that the status depends as much on the target as on the value, so a target must be set with care and not to make the result look good. The formulas below the table show how the gross sales and the discount percentage are calculated.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Give every KPI a target, an owner and a review period.</li><li>Say whether higher or lower is better.</li><li>Keep the list short, so that each KPI gets attention.</li><li>Set targets from past data and goals, not from the current value alone.</li></ul></div>
+${task(["Change two targets in the demo so that every KPI is on target, then write whether your targets are realistic.","Write three KPIs for a college library and give each a target and an owner.","Check one of your targets against the SMART list."])}
+${quizSet(8)}`,
 mount(r){const tg=KP.map(k=>k[3]);function d(){$("#kp",r).innerHTML=`<table class="dt"><thead><tr><th>KPI</th><th>Value</th><th>Target</th><th>Owner</th><th>Status</th></tr></thead><tbody>`+KP.map((k,i)=>{const ok=k[4]==="higher"?k[1]>=tg[i]:k[1]<=tg[i];return `<tr><td>${k[0]}</td><td class="num"><b>${fmt(k[1])}</b></td><td><input type="number" data-t="${i}" value="${tg[i]}" style="width:100px"> <span class="small muted">${k[4]==="higher"?"or more":"or less"}</span></td><td>${k[2]}</td><td>${ok?'<span class="tag g">On target</span>':'<span class="tag b">Off target</span>'}</td></tr>`}).join("")+`</tbody></table>`;
     $$("[data-t]",r).forEach(i=>i.onchange=()=>{tg[+i.dataset.t]=+i.value;d()})}d();}
 });
@@ -390,7 +602,12 @@ html:()=>`<p class="lead"><b>Marketing:</b> who buys, and does discounting pay? 
 <div class="card try"><h3>Marketing: does discounting pay?</h3><div id="mdisc"></div><div class="callout k small" id="mdn"></div></div>
 <div class="card try"><h3>Finance: break-even (invented fixed cost)</h3><div class="row">Fixed cost per month Rs <input type="range" id="bf" min="20000" max="50000" step="1000" value="30000"> <b id="bfv"></b></div><div id="bfo"></div></div>
 <div class="card try"><h3>Finance: commission cost by region</h3><div class="row">${seg("cm",[["rule","Rule: 5% if North or order >= 1500, else 2%"],["flat","Flat 2% for everyone"]])}</div><div id="cmo"></div></div>
-${quiz("u5q9","Margin falls as discount rises (54.9% at 0%, 47.3% at 15%). To justify a 15% discount you need...",["More volume to make up the lost margin","Nothing, discounts always pay","Fewer customers"],0,"Each sale earns less, so you must sell enough extra units. The data here does not show that extra volume.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">The same tools serve different functions. In marketing, a ${g("segment","segment")} is a group of customers with something in common, here Student, Corporate and Retail. Marketing asks which segment buys most and whether discounts pay. In finance, the ${g("margin","margin")}, the ${g("breakeven","break-even")} and the cost of incentives such as commission are the key questions.</p><p class="small">A discount lowers the profit on every unit. It pays only if the extra sales that it brings are large enough to cover the lost margin. The margin of the data falls from 54.93 percent with no discount to 47.26 percent with 15 percent off.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The segments are close: the average order is Rs 745 to Rs 780. The chart of margin by discount level starts at 40 on purpose, to show a small range, and the page says so. A chart that starts above zero should always say so. The finance sections use an invented fixed cost of Rs 30,000, so the break-even of 57,204 is an example. The commission table compares two rules. The rule that pays North 5 percent on every order gives North an effective rate of 5 percent and the others 3.1 to 3.5 percent.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Link each segment to a different action.</li><li>Judge a discount by its margin and its volume, not by volume alone.</li><li>Label invented figures as examples.</li><li>State when a chart axis does not start at zero.</li></ul></div>
+${task(["Write which discount level you would allow and what volume increase it needs to pay.","Change the fixed cost to 40,000 and write the number of months below break-even.","Write one marketing action for the Student segment."])}
+${quizSet(9)}`,
 mount(r){const g=groupBy(SALES,x=>x.seg);$("#mseg",r).innerHTML=table(Object.entries(g).map(([k,rs])=>({seg:k,orders:rs.length,net:sum(rs.map(x=>x.net)),avg:mean(rs.map(x=>x.net))})),[["seg","Segment"],["orders","Orders"],["net","Net sales"],["avg","Average order"]],{small:true});
   const gd=groupBy(SALES,x=>x.disc),dk=Object.keys(gd).map(Number).sort((a,b)=>a-b),mg=dk.map(k=>100*sum(gd[k].map(x=>x.profit))/sum(gd[k].map(x=>x.net)));
   $("#mdisc",r).innerHTML=chartBar(dk.map((k,i)=>({label:k+"% off",value:+mg[i].toFixed(2),color:"var(--c2)"})),{w:520,h:240,title:"Profit margin % by discount level",min:40,max:60});$("#mdn",r).innerHTML=`Margin: ${dk.map((k,i)=>k+"% = "+mg[i].toFixed(2)+"%").join(", ")}. (Axis starts at 40 on purpose to show a small range; say so when you present.)`;
@@ -405,7 +622,12 @@ lesson({nav:"Operations and HR",title:"Business analytics in operations and HR",
 html:()=>`<p class="lead"><b>Operations:</b> workload, capacity, efficiency. <b>HR analytics:</b> attrition, performance, hiring. The same tables and ratios apply.</p>
 <div class="card try"><h3>Operations: salesperson workload and results</h3><div class="row">${seg("sp",[["net","Net sales"],["orders","Orders"],["avg","Average order"]])}</div><div id="spo"></div><div class="callout k small">Workload is fairly even (90 to 107 orders) but sales per person vary by about 50 percent. The difference comes from the average order size, not the number of orders.</div></div>
 <div class="card try"><h3>HR: attrition rate (invented practice data)</h3><p class="small muted">Attrition rate = exits / average headcount. Edit the numbers.</p><div id="hr"></div></div>
-${quiz("u5q10","Department A: start 40, end 38, exits 4. What is the attrition rate?",["10.3%","10.0%","4%"],0,"Average headcount = (40+38)/2 = 39. 4/39 = 10.3%.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">Operations looks at workload, capacity and efficiency. For a sales team, workload is the number of orders per salesperson and the result is the net sales per salesperson. Human resources (HR) analytics tracks people: hiring, performance and ${g("attrition","attrition")}. The attrition rate is the number of people who leave divided by the average headcount, shown as a percentage.</p><p class="small">The average headcount is the mean of the start and the end of the period, because the team size changes during the year. A department with 40 people at the start, 38 at the end and 4 exits has an average of 39 and an attrition rate of 4/39 = 10.3 percent.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">In the Sunrise data, the workload is fairly even: each salesperson handles 90 to 107 orders. Their sales still differ by about 50 percent. The reason is the average order size, not the number of orders. A manager who looked only at order counts would miss this. The HR table uses invented practice data: edit the starts, ends and exits and the attrition rates update. The formula is written below it so that you can repeat it in a sheet.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Look at both volume and value for each person or team.</li><li>Use the average headcount in the attrition rate.</li><li>Label invented data as practice data.</li><li>Do not rank people on one measure alone.</li></ul></div>
+${task(["Write which salesperson has the highest average order and which has the most orders.","Edit the HR table to make Operations have 15 percent attrition and write the numbers you used.","Write two other HR metrics and how you would calculate them."])}
+${quizSet(10)}`,
 mount(r){const sp=Object.entries(groupBy(SALES,x=>x.sp)).map(([k,rs])=>({k,net:sum(rs.map(x=>x.net)),orders:rs.length,avg:mean(rs.map(x=>x.net))}));
   function d(v){const s=sp.slice().sort((a,b)=>b[v]-a[v]);$("#spo",r).innerHTML=chartBar(s.map(x=>({label:x.k.split(" ")[0],value:Math.round(x[v]),color:"var(--c1)"})),{w:640,h:260,rotate:true,title:"By salesperson"})}d("net");bindSeg(r,"sp",d);
   const H=[["Sales",40,38,4],["Operations",25,24,3],["IT",20,22,2],["HR",10,10,1]];
@@ -421,7 +643,12 @@ html:()=>`<p class="lead">Real examples show these ideas at scale. <b>Verify the
 <div class="card try"><h3>Challenge 1: data quality scorecard</h3><p class="small muted">The raw Sunrise file, after removing 15 exact duplicates (1,000 rows), still contained:</p>
 ${table([{p:"Blank Units",n:12},{p:"'N/A' ratings",n:6},{p:"Dates stored as text",n:20},{p:"Region cells with spacing or case problems",n:268},{p:"Salesperson cells with case problems",n:86}],[["p","Problem"],["n","Count"]],{small:true})}<p class="small">That is how much work step 3 of the cycle can be.</p></div>
 <div class="card try"><h3>Challenge 2: privacy and adoption</h3><div id="ch"></div></div>
-${quiz("u5q11","A good analysis is ignored because staff do not trust it. This is a challenge of...",["Data privacy","Organizational adoption","Data quality only"],1,"Analytics only helps if people understand, trust and use it. Involve users early and explain the method.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">Large organisations use the methods of this unit at scale. A route-planning programme is an example of optimization. A recommendation system that suggests titles from viewing patterns is an example of data mining. These examples also show the main challenges. ${g("privacy","Data privacy")} concerns what personal information is collected and how it is used. Data quality concerns whether the data is complete and correct. Organizational adoption concerns whether staff use and trust the analysis.</p><p class="small">The case studies are given as outlines. Facts and figures in popular articles change and differ by source, so check them from a reliable source before you quote them in class.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The data quality scorecard shows the work behind the first Sunrise table. After the 15 exact duplicates were removed, the raw file still held 12 blank units, 6 "N/A" ratings, 20 dates stored as text, 268 region cells with spacing or case problems and 86 salesperson cells with case problems. This is what the cleaning step of the life cycle means in practice. Each problem would change a result if it were left in the data.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Check the facts of a case study from a reliable source.</li><li>Collect only the personal data that you need.</li><li>Count and report the data problems you found and how you fixed them.</li><li>Involve the people who will use the result from the start.</li></ul></div>
+${task(["Choose one case study and write which lesson of this unit it links to.","Write one data privacy risk for a shop that records customer phone numbers.","List two actions that make staff more willing to use an analysis."])}
+${quizSet(11)}`,
 mount(r){const C=[["Data privacy","Collect only what you need, get consent, anonymise, secure storage. In India, check the Digital Personal Data Protection Act, 2023."],["Data quality","Audit before you analyse. Garbage in, garbage out."],["Organizational adoption","Involve users early, explain the method, show quick wins, train people."]];
   $("#ch",r).innerHTML=C.map((c,i)=>`<details style="margin:6px 0"><summary><b>${c[0]}</b></summary><p class="small">${c[1]}</p></details>`).join("")}
 });
@@ -432,13 +659,25 @@ html:()=>`<p class="lead"><b>Trends:</b> <b>AI and machine learning</b> (compute
 <div class="card try"><h3>Ethics lab: is the commission rule fair?</h3><p class="small muted">Rule: 5% if the region is North or the order is Rs 1,500 or more; otherwise 2%. Compare what each region effectively earns.</p><div id="eo"></div><div class="callout k small" id="en"></div>
 <div class="row"><label class="chk"><input type="checkbox" data-e="0"> The rule is written down and staff can read it (transparency)</label><label class="chk"><input type="checkbox" data-e="1"> Someone is named as owner of the rule (accountability)</label><label class="chk"><input type="checkbox" data-e="2"> There is a business reason for treating North differently (no hidden bias)</label></div><p class="small" id="ee"></p></div>
 <div class="card try"><h3>Skills self-assessment</h3><p class="small muted">Rate yourself 1 to 5. The two lowest are your next learning goals.</p><div id="sk"></div><div class="callout i small" id="skn"></div></div>
-${quiz("u5q12","An automated rule treats groups differently and nobody can explain why. Which principle is broken?",["Transparency and accountability","Speed","Accuracy of arithmetic"],0,"People affected must be able to see and question how decisions are made, and someone must own the result.")}`,
+
+<div class="card sec"><h3>What the terms mean</h3><p class="small">Three trends shape the field. Artificial intelligence and machine learning use programs that learn patterns from data. Automation lets repeated tasks, such as formulas and scripts, run by themselves. Natural-language tools answer questions about data in ordinary words. Along with these come questions of ethics: ${g("bias","bias")} is unfair treatment of a group, ${g("transparency","transparency")} means that people can see how a result was produced, and ${g("accountability","accountability")} means that a named person owns the outcome.</p><p class="small">An analyst needs skills in spreadsheets, statistics, charts, a programming language such as Python, business knowledge, communication and ethics. Business knowledge and communication are as important as the technical skills, because a result that nobody understands changes nothing.</p></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The ethics lab tests a commission rule against three questions: is the rule written down, does it have an owner, and is there a business reason for treating one group differently? North earns 5 percent on every order, while the other regions earn 3.12 to 3.45 percent effective. A flat 2 percent would cost North Rs 3,168 instead of Rs 7,921. The rule is not unfair by itself, but it must be explained and owned. The skills self-assessment finds your two lowest scores and gives them as the next learning goals.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Write down the rules that affect people, and name an owner for each.</li><li>Ask who is treated differently by a rule and why.</li><li>Check the data for missing groups before you build a model.</li><li>Use the self-assessment to plan your learning.</li></ul></div>
+${task(["Complete the skills self-assessment and write your two lowest skills and one step for each.","Write the three questions of the ethics lab in your own words.","Write one example from daily life of a rule that lacks transparency."
+])}
+${quizSet(12)}`,
 mount(r){const eff=REGIONS.map(g=>{const rs=SALES.filter(x=>x.region===g),n=sum(rs.map(x=>x.net)),c=sum(rs.map(x=>((g==="North"||x.net>=1500)?.05:.02)*x.net));return {label:g,value:+(100*c/n).toFixed(2),color:g==="North"?"var(--c2)":"var(--c1)"}});
   $("#eo",r).innerHTML=chartBar(eff,{w:520,h:240,title:"Effective commission rate % by region",values:true,max:6});$("#en",r).innerHTML=`North earns <b>5.00%</b> on every order. Others earn <b>${Math.min(...eff.filter(x=>x.label!=="North").map(x=>x.value))}% to ${Math.max(...eff.filter(x=>x.label!=="North").map(x=>x.value))}%</b>. A flat 2% rule would cost North 3,168 instead of 7,921.`;
   const ch=[0,0,0];$$("[data-e]",r).forEach(c=>c.onchange=()=>{ch[+c.dataset.e]=c.checked?1:0;const n=sum(ch);$("#ee",r).textContent=n===3?"All three satisfied: the rule is defensible.":"Missing: "+["transparency","accountability","a business reason"].filter((_,i)=>!ch[i]).join(", ")+"."});
   const v=SKL.map(()=>3);function sk(){$("#sk",r).innerHTML=SKL.map((s,i)=>`<div class="row" style="margin:4px 0"><span style="min-width:240px">${s}</span><input type="range" min="1" max="5" value="${v[i]}" data-s="${i}"><b>${v[i]}</b></div>`).join("");
     const low=SKL.map((s,i)=>[s,v[i]]).sort((a,b)=>a[1]-b[1]).slice(0,2);$("#skn",r).innerHTML="Focus next on: <b>"+low.map(x=>x[0]).join("</b> and <b>")+"</b>.";
     $$("[data-s]",r).forEach(i=>i.onchange=()=>{v[+i.dataset.s]=+i.value;sk()})}sk();}
+});
+
+
+lesson({ref:true,nav:"Glossary",title:"Glossary of terms",syl:"Reference: terms used in this unit",
+html:()=>`<p class="lead">Every term below appears in the lessons. In a lesson, a dotted underline marks a term that is defined here.</p><div class="card"><h3>Your progress in this unit</h3><div class="tw sm"><table class="dt"><thead><tr><th>Lesson</th><th>Correct</th><th>First try</th></tr></thead><tbody id="unitsum"></tbody></table></div></div>`+GL.slice().sort((a,b)=>a[1].localeCompare(b[1])).map(x=>`<div class="card gl" id="gl-${x[0]}"><h3>${x[1]}</h3><p class="small" style="margin:0">${x[2]}</p></div>`).join(""),
+mount(r){}
 });
 
 renderLive();go(0);

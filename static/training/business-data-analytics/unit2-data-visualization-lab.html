@@ -100,7 +100,8 @@ td.ix{background:var(--bad-soft)} td.iy{background:var(--warn-soft)} td.iz{backg
 .kpi b{font-size:22px;display:block;font-variant-numeric:tabular-nums}
 .nextrow{display:flex;justify-content:space-between;margin-top:26px;gap:10px}
 svg.chart{width:100%;height:auto;display:block;max-height:420px}
-svg.chart text{fill:var(--fg);font:12px var(--body)}
+svg.chart{font-size:calc(12px*var(--zoom))}
+svg.chart text{fill:var(--fg);font-family:var(--body);font-size:1em}
 svg.chart .ax{stroke:var(--muted);stroke-width:1}
 svg.chart .gr{stroke:var(--grid);stroke-width:1}
 svg.chart .lbl{fill:var(--muted)}
@@ -113,6 +114,16 @@ svg.chart .lbl{fill:var(--muted)}
 @media (max-width:1180px){.app{grid-template-columns:220px minmax(0,1fr)}.live{grid-column:1/-1;position:static;height:auto;border-left:0;border-top:1px solid var(--line)}}
 @media (max-width:760px){.app{grid-template-columns:1fr}.nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav ol{display:flex;overflow:auto;gap:4px}.nav li{flex:none}.nav .t{display:none}main{padding:18px 16px 60px}.grid2,.grid3,.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
 
+.dt.wrap td,.dt.wrap th{white-space:normal}
+.card.task{border-left:5px solid var(--good)}
+.numt{margin:4px 0 10px}.numt .tw{margin-top:8px}
+a.g{color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted)} a.g:hover{border-bottom-style:solid}
+.gl.hl{outline:3px solid var(--pri)}
+.qq+.qq{border-top:1px solid var(--line2);margin-top:8px}
+.opt:disabled{cursor:default}
+#prog{margin-top:6px;font-size:12.5px;line-height:1.5}
+select{max-width:100%}
+.grid3>*{min-width:0}
 </style>
 </head>
 <body>
@@ -120,7 +131,7 @@ svg.chart .lbl{fill:var(--muted)}
   <nav class="nav" aria-label="Lessons">
     <h2 class="brand">Visualization Lab<small>Unit II, Data Visualization<br>BBA Sem I, Business Management Tools I</small></h2>
     <ol id="navlist"></ol>
-    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
+    <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><div id="prog" class="small"></div><button id="resetP" type="button">Reset my score</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
   </nav>
   <main id="stage" tabindex="-1"></main>
   <aside class="live" aria-label="Live data"><h3>Live data: Sunrise Retail</h3><div id="livebox"></div></aside>
@@ -130,7 +141,7 @@ svg.chart .lbl{fill:var(--muted)}
 /* ===== helpers ===== */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-US"):v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
+const fmt=(v,d=2)=>typeof v==="number"?(Number.isInteger(v)?v.toLocaleString("en-IN"):v.toLocaleString("en-IN",{minimumFractionDigits:d,maximumFractionDigits:d})):v;
 const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
 const sum=a=>a.reduce((x,y)=>x+y,0);
 const median=a=>{const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
@@ -148,39 +159,46 @@ function table(rows,cols,opts={}){
     return `<td class="${cls.trim()}">${v===""||v==null?'<span class="muted">(blank)</span>':esc(typeof v==="number"?fmt(v,c[2]!=null?c[2]:(Number.isInteger(v)?0:2)):v)}</td>`}).join("")+"</tr>").join("");
   return `<div class="tw${opts.small?' sm':''}"><table class="dt"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
-const QUIZ={};
-function quiz(id,q,opts,ans,why){QUIZ[id]={ans,why};
-  return `<div class="card"><h3>Quick check</h3><p style="margin:0 0 6px"><b>${q}</b></p>`+opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" style="margin-top:6px"></div></div>`;}
-function regQuiz(id,ans,why){QUIZ[id]={ans,why}}
+const IN=n=>Number(n).toLocaleString("en-IN",{maximumFractionDigits:0});
+const num=v=>Number(v).toLocaleString("en-IN",{maximumFractionDigits:2});
+const RS=v=>"Rs "+IN(v);
 function seg(id,items,cls=""){return `<div class="seg ${cls}" id="${id}" role="group">`+items.map((x,i)=>`<button type="button" data-v="${x[0]}" aria-pressed="${i===0}">${x[1]}</button>`).join("")+`</div>`}
 function bindSeg(root,id,fn){const g=$("#"+id,root);$$("button",g).forEach(b=>b.onclick=()=>{$$("button",g).forEach(x=>x.setAttribute("aria-pressed",x===b));fn(b.dataset.v)});return ()=>$$("[aria-pressed=true]",g)[0].dataset.v}
-const IN=n=>n.toLocaleString("en-US",{maximumFractionDigits:0});
 
-/* ===== SVG charts (colours come from CSS variables, so both themes work) ===== */
+/* ===== SVG charts: colours from CSS variables; text size follows the Text size control ===== */
 const PAL=["var(--c1)","var(--c2)","var(--c3)","var(--c4)","var(--c5)","var(--c6)"];
-const nice=(max)=>{const e=Math.pow(10,Math.floor(Math.log10(max||1))),f=max/e;const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*e};
-function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(lo+st*i);return out}
-const short=v=>Math.abs(v)>=100000?(v/100000).toFixed(1).replace(/\.0$/,"")+"L":Math.abs(v)>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"k":(Math.round(v*100)/100)+"";
-function chartBar(items,o={}){ // items:[{label,value,color}]
-  const W=o.w||640,H=o.h||320,m={l:56,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...items.map(i=>i.value))*1.08),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+const lakh=v=>v===0?"0":String(+(v/100000).toFixed(2))+"L";
+const fa=hi=>hi>=100000?lakh:num;                     /* one unit per axis: lakh or plain */
+const short=v=>Math.abs(v)>=100000?lakh(v):num(v);
+function niceStep(raw){const e=Math.pow(10,Math.floor(Math.log10(raw||1))),f=raw/e;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e}
+function axisFor(maxv){const step=niceStep((maxv||1)/5),n=Math.max(1,Math.ceil(maxv/step-1e-9));return {hi:step*n,n}}
+function ticks(lo,hi,n=5){const out=[],st=(hi-lo)/n;for(let i=0;i<=n;i++)out.push(+(lo+st*i).toFixed(6));return out}
+function tk(lo,hi,intOnly){let st=niceStep((hi-lo)/5||1);if(intOnly)st=Math.max(1,Math.round(st));const out=[];for(let v=Math.ceil(lo/st-1e-9)*st;v<=hi+1e-9;v+=st)out.push(+v.toFixed(6));return out}
+const TB=(h,rows,note)=>` data-tbl="${esc(JSON.stringify({h,rows,note:note||""}))}"`;
+const TS="font-weight:700;font-size:1.17em";
+function chartBar(items,o={}){
+  const W=o.w||640,H=o.h||320,m={l:58,r:14,t:o.title?34:16,b:o.rotate?70:42},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mn=o.min!=null?o.min:0,vmax=Math.max(...items.map(i=>i.value));
+  let mx,n=5;if(o.max){mx=o.max}else{const a=axisFor(vmax*1.04);mx=a.hi;n=a.n}
+  const fm=fa(mx),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih,bw=iw/items.length,step=(items.length>14&&!o.rotate)?Math.ceil(items.length/10):1;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"bar chart")}"${TB([o.cat||"Item",o.vlabel||"Value"],items.map(i=>[i.label,i.value]))}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  ticks(mn,mx,n).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fm(t)}</text>`);
   items.forEach((it,i)=>{const x=m.l+i*bw+bw*.15,w=bw*.7,y=sy(Math.max(it.value,mn));
     s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,sy(mn)-y)}" fill="${it.color||o.color||"var(--c1)"}" rx="2"><title>${esc(it.label)}: ${fmt(it.value)}</title></rect>`;
-    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:11px">${short(it.value)}</text>`;
-    const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`});
+    if(o.values!==false&&items.length<=14)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" style="font-size:.92em">${fm(it.value)}</text>`;
+    if(i%step===0){const lx=x+w/2,ly=H-m.b+16;s+=o.rotate?`<text x="${lx}" y="${ly}" text-anchor="end" transform="rotate(-35 ${lx} ${ly})">${esc(it.label)}</text>`:`<text x="${lx}" y="${ly}" text-anchor="middle">${esc(it.label)}</text>`}});
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
   if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
   return s+"</svg>";}
-function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
-  const W=o.w||640,H=o.h||320,m={l:56,r:o.legendRight?110:16,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0,mx=o.max||nice(Math.max(...all)*1.08);
-  const sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(mn,mx).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
+function chartLine(series,labels,o={}){
+  const W=o.w||640,H=o.h||320,m={l:58,r:o.legendRight?110:26,t:o.title?34:16,b:44},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const all=series.flatMap(s=>s.vals.filter(v=>v!=null)),mn=o.min!=null?o.min:0;
+  let mx,n=5;if(o.max){mx=o.max}else{const a=axisFor(Math.max(...all)*1.08);mx=a.hi;n=a.n}
+  const fm=fa(mx),sx=i=>m.l+(labels.length===1?iw/2:i*iw/(labels.length-1)),sy=v=>m.t+ih-(v-mn)/(mx-mn)*ih;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"line chart")}"${TB([o.cat||"Period"].concat(series.map(x=>x.name)),labels.map((l,i)=>[l].concat(series.map(x=>x.vals[i]==null?"":Math.round(x.vals[i]*100)/100))))}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  ticks(mn,mx,n).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fm(t)}</text>`);
   const step=Math.ceil(labels.length/(o.maxLabels||12));labels.forEach((l,i)=>{if(i%step===0)s+=`<text class="lbl" x="${sx(i)}" y="${H-m.b+16}" text-anchor="middle">${esc(l)}</text>`});
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(mn)}" y2="${sy(mn)}"/>`;
   series.forEach((se,k)=>{const c=se.color||PAL[k%6];let d="";se.vals.forEach((v,i)=>{if(v!=null)d+=(d?"L":"M")+sx(i).toFixed(1)+" "+sy(v).toFixed(1)});
@@ -189,62 +207,99 @@ function chartLine(series,labels,o={}){ // series:[{name,vals,color,dash}]
     if(o.dots!==false&&!se.dash)se.vals.forEach((v,i)=>{if(v!=null)s+=`<circle cx="${sx(i)}" cy="${sy(v)}" r="3.5" fill="${c}"><title>${esc(labels[i])}: ${fmt(v)}</title></circle>`});
     if(o.legendRight)s+=`<text x="${W-m.r+8}" y="${m.t+14+k*16}" style="fill:${c};font-weight:600">${esc(se.name)}</text>`;
     else if(series.length>1)s+=`<text x="${m.l+8+k*150}" y="${H-6}" style="fill:${c};font-weight:600">&#9632; ${esc(se.name)}</text>`});
-  (o.marks||[]).forEach(mk=>{s+=`<text x="${sx(mk.i)}" y="${sy(mk.v)-10}" text-anchor="middle" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
+  (o.marks||[]).forEach(mk=>{const x=sx(mk.i),up=sy(mk.v)-10>m.t+12,anc=x<m.l+70?"start":x>W-m.r-70?"end":"middle",dx=anc==="start"?-4:anc==="end"?4:0;
+    s+=`<text x="${x+dx}" y="${up?sy(mk.v)-10:sy(mk.v)+30}" text-anchor="${anc}" style="font-weight:700;fill:${mk.color||"var(--sec)"}">${esc(mk.text)}</text>`});
   return s+"</svg>";}
-function chartScatter(pts,o={}){ // pts:[{x,y,r,color,label}]
-  const W=o.w||640,H=o.h||340,m={l:60,r:16,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
-  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||nice(Math.max(...ys)*1.05);
-  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}">`;
-  if(o.title)s+=`<text x="${m.l}" y="18" style="font-weight:700;font-size:14px">${esc(o.title)}</text>`;
-  ticks(y0,y1).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${short(t)}</text>`);
-  ticks(x0,x1).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${short(t)}</text>`);
+function chartScatter(pts,o={}){
+  const W=o.w||640,H=o.h||340,m={l:62,r:18,t:o.title?34:16,b:46},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x0=o.x0!=null?o.x0:Math.min(...xs),x1=o.x1!=null?o.x1:Math.max(...xs),y0=o.y0!=null?o.y0:0,y1=o.y1||axisFor(Math.max(...ys)*1.05).hi;
+  const sx=v=>m.l+(v-x0)/(x1-x0||1)*iw,sy=v=>m.t+ih-(v-y0)/(y1-y0)*ih,fy=fa(y1),fx=fa(x1);
+  const lab=pts.some(p=>p.label),rows=(lab?pts:pts.slice(0,25)).map(p=>lab?[p.label,Math.round(p.x*100)/100,Math.round(p.y*100)/100]:[Math.round(p.x*100)/100,Math.round(p.y*100)/100]);
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"scatter chart")}"${TB(lab?["Label",o.xlabel||"x",o.ylabel||"y"]:[o.xlabel||"x",o.ylabel||"y"],rows,lab?"":"First 25 of "+pts.length+" points (some jitter added to discrete values). Download the CSV for every row.")}>`;
+  if(o.title)s+=`<text x="${m.l}" y="18" style="${TS}">${esc(o.title)}</text>`;
+  tk(y0,y1,o.yint).forEach(t=>s+=`<line class="gr" x1="${m.l}" x2="${W-m.r}" y1="${sy(t)}" y2="${sy(t)}"/><text class="lbl" x="${m.l-6}" y="${sy(t)+4}" text-anchor="end">${fy(t)}</text>`);
+  tk(x0,x1,o.xint).forEach(t=>s+=`<text class="lbl" x="${sx(t)}" y="${H-m.b+16}" text-anchor="middle">${fx(t)}</text>`);
   s+=`<line class="ax" x1="${m.l}" x2="${W-m.r}" y1="${sy(y0)}" y2="${sy(y0)}"/><line class="ax" x1="${m.l}" x2="${m.l}" y1="${m.t}" y2="${sy(y0)}"/>`;
   if(o.xlabel)s+=`<text class="lbl" x="${m.l+iw/2}" y="${H-6}" text-anchor="middle">${esc(o.xlabel)}</text>`;
   if(o.ylabel)s+=`<text class="lbl" x="12" y="${m.t+ih/2}" transform="rotate(-90 12 ${m.t+ih/2})" text-anchor="middle">${esc(o.ylabel)}</text>`;
   if(o.fit){const f=o.fit;s+=`<line x1="${sx(x0)}" y1="${sy(f.m*x0+f.b)}" x2="${sx(x1)}" y2="${sy(f.m*x1+f.b)}" stroke="var(--sec)" stroke-width="2.5" stroke-dasharray="7 4"/>`}
   pts.forEach(p=>{s+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="${p.r||4}" fill="${p.color||"var(--c1)"}" fill-opacity="${o.alpha||.65}" stroke="${p.color||"var(--c1)"}"><title>${esc(p.label||"")} (${fmt(p.x)}, ${fmt(p.y)})</title></circle>`;
-    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:11px">${esc(p.label)}</text>`});
+    if(o.labels&&p.label)s+=`<text x="${sx(p.x)+(p.r||4)+3}" y="${sy(p.y)+4}" style="font-size:.92em">${esc(p.label)}</text>`});
   return s+"</svg>";}
-function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart">`;
+function chartPie(items,o={}){const W=o.w||420,H=o.h||300,cx=120,cy=H/2,R=100,tot=sum(items.map(i=>i.value));let a=-Math.PI/2,s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="pie chart"${TB(["Item","Value","Share"],items.map(i=>[i.label,Math.round(i.value),(100*i.value/tot).toFixed(1)+"%"]))}>`;
   items.forEach((it,k)=>{const ang=it.value/tot*2*Math.PI,x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(a+ang),y2=cy+R*Math.sin(a+ang);
     s+=`<path d="M${cx} ${cy}L${x1} ${y1}A${R} ${R} 0 ${ang>Math.PI?1:0} 1 ${x2} ${y2}Z" fill="${it.color||PAL[k%6]}" stroke="var(--surface)" stroke-width="2"><title>${esc(it.label)}: ${(100*it.value/tot).toFixed(1)}%</title></path>`;a+=ang;
     s+=`<text x="250" y="${40+k*22}" style="fill:${it.color||PAL[k%6]};font-weight:700">&#9632; <tspan style="fill:var(--fg);font-weight:400">${esc(it.label)} ${(100*it.value/tot).toFixed(1)}%</tspan></text>`});
   return s+"</svg>";}
-function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:short(lo+i*w),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+function histBins(vals,n,lo,hi){const w=(hi-lo)/n,b=Array(n).fill(0);vals.forEach(v=>{let i=Math.floor((v-lo)/w);if(i>=n)i=n-1;if(i<0)i=0;b[i]++});return b.map((c,i)=>({label:num(Math.round(lo+i*w)),value:c,lo:lo+i*w,hi:lo+(i+1)*w}))}
+
+/* "Show the numbers" toggle: every chart carries its data, so screen readers and students can read the values */
+let NTID=0;
+function tableHtml(d){const cell=v=>typeof v==="number"?`<td class="num">${num(v)}</td>`:`<td>${esc(v)}</td>`;
+  return `<div class="tw sm"><table class="dt"><thead><tr>${d.h.map(x=>`<th>${esc(x)}</th>`).join("")}</tr></thead><tbody>${d.rows.map(r=>"<tr>"+r.map(cell).join("")+"</tr>").join("")}</tbody></table></div>`+(d.note?`<p class="small muted">${esc(d.note)}</p>`:"")}
+function addNumToggles(root){$$("svg.chart[data-tbl]",root).forEach(s=>{if(s.dataset.nt)return;s.dataset.nt="1";let d;try{d=JSON.parse(s.getAttribute("data-tbl"))}catch(e){return}
+  const id="nt"+(++NTID),w=document.createElement("div");w.className="numt";w.innerHTML=`<button type="button" class="btn sm" aria-expanded="false" aria-controls="${id}">Show the numbers</button><div id="${id}" hidden>${tableHtml(d)}</div>`;
+  s.insertAdjacentElement("afterend",w);const b=$("button",w),box=$("div",w);b.onclick=()=>{const open=box.hidden;box.hidden=!open;b.setAttribute("aria-expanded",String(open));b.textContent=open?"Hide the numbers":"Show the numbers"}})}
+
+/* ===== quiz set per lesson, score kept in localStorage ===== */
+const QZ={},QBY={};let QS={};
+try{QS=JSON.parse(localStorage.getItem("dalab2_q")||"{}")}catch(e){}
+const saveQ=()=>{try{localStorage.setItem("dalab2_q",JSON.stringify(QS))}catch(e){}};
+function shufQ(opts,ans,seed){const idx=opts.map((_,i)=>i);let h=(Math.imul(seed+1,2654435761)>>>0)^0x9e3779b9;const rnd=()=>{h^=h<<13;h>>>=0;h^=h>>>17;h^=h<<5;h>>>=0;return h/4294967296};for(let k=0;k<8;k++)rnd();for(let i=idx.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]]}return {opts:idx.map(i=>opts[i]),ans:idx.indexOf(ans)}}
+function defQ(n,list){QBY[n]=list.map((x,i)=>{const id="u2l"+n+"q"+(i+1);const sh=shufQ(x[1],x[2],n*97+i*31+7);QZ[id]={n,q:x[0],opts:sh.opts,ans:sh.ans,why:x[3]};return id})}
+function quizSet(n){return `<div class="card"><h3>Quick check: ${QBY[n].length} questions</h3>`+QBY[n].map((id,k)=>{const z=QZ[id];return `<div class="qq"><p style="margin:12px 0 6px"><b>${k+1}. ${z.q}</b></p>`+z.opts.map((o,i)=>`<button class="opt" type="button" data-q="${id}" data-i="${i}">${o}</button>`).join("")+`<div class="small muted" id="why-${id}" aria-live="polite" style="margin-top:6px"></div></div>`}).join("")+`</div>`}
+const lessonDone=n=>QBY[n]&&QBY[n].every(id=>QS[id]&&QS[id].c);
+function showQ(id){const s=QS[id],z=QZ[id];if(!s||!s.c)return;$$(`[data-q="${id}"]`).forEach(b=>{b.disabled=true;if(+b.dataset.i===z.ans)b.classList.add("ok")});$("#why-"+id).textContent="Correct. "+z.why}
+function answerQ(b){const id=b.dataset.q,z=QZ[id],s=QS[id]||(QS[id]={t:0,c:false,f:false});if(s.c)return;s.t++;const ok=+b.dataset.i===z.ans;
+  $$(`[data-q="${id}"]`).forEach(x=>x.classList.remove("no"));
+  if(ok){s.c=true;s.f=s.t===1;showQ(id)}else{b.classList.add("no");$("#why-"+id).textContent="Not quite. Read the lesson again and try another answer."}
+  saveQ();drawNav();updateProg()}
+function updateProg(){const ids=Object.keys(QZ),tot=ids.length,c=ids.filter(i=>QS[i]&&QS[i].c).length,f=ids.filter(i=>QS[i]&&QS[i].f).length,nl=Object.keys(QBY).length,ld=Object.keys(QBY).filter(n=>lessonDone(+n)).length,box=$("#prog");
+  if(box)box.innerHTML=`<b>Your score</b><br>Questions correct: ${c} of ${tot}<br>Correct on first try: ${f}<br>Lessons complete: ${ld} of ${nl}<div class="bar" style="margin-top:6px"><i style="width:${tot?100*c/tot:0}%"></i></div>`;
+  const sm=$("#unitsum");if(sm)sm.innerHTML=Object.keys(QBY).map(n=>{const a=QBY[n],k=a.filter(i=>QS[i]&&QS[i].c).length,ft=a.filter(i=>QS[i]&&QS[i].f).length;return `<tr><td>${n}. ${L[n-1].nav}</td><td class="num">${k} of ${a.length}</td><td class="num">${ft}</td></tr>`}).join("")+`<tr><td><b>Unit total</b></td><td class="num"><b>${c} of ${tot}</b></td><td class="num"><b>${f}</b></td></tr>`}
+
+/* ===== glossary links ===== */
+const GLBACK={i:null};
+function g(k,label){const a=GL.find(x=>x[0]===k)||GL.find(x=>x[0]===ALIAS[k]);const key=a?a[0]:k;return `<a class="g" href="#gl-${key}" data-gl="${key}">${label||a[1]}</a>`}
+function openGloss(k){GLBACK.i=cur;go(L.length-1);const el=$("#gl-"+k);if(el){el.scrollIntoView({block:"center"});el.classList.add("hl")}}
 
 /* ===== lesson framework ===== */
 const L=[];
 function lesson(o){L.push(o)}
-let cur=0, done=new Set();
-const UKEY="dalab_"+(document.title||"x");
-try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e){}
+let cur=0;
 function go(i){
   cur=Math.max(0,Math.min(L.length-1,i));
-  const l=L[cur],st=$("#stage");
-  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
-    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
-  $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
+  const l=L[cur],st=$("#stage"),nl=L.filter(x=>!x.ref).length;
+  st.innerHTML=`<div class="crumb">${l.ref?"Reference":"Lesson "+(cur+1)+" of "+nl}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+    `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button>${l.ref&&GLBACK.i!=null?`<button class="btn" type="button" id="backB">Back to lesson ${GLBACK.i+1}</button>`:""}<button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
+  $("#prevB").onclick=()=>go(cur-1);$("#nextB").onclick=()=>go(cur+1);const bb=$("#backB");if(bb)bb.onclick=()=>go(GLBACK.i);
   l.mount&&l.mount(st);
-  $$("[data-q]",st).forEach(b=>b.onclick=()=>{
-    const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
-    $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
-    b.classList.add(ok?"ok":"no");
-    $("#why-"+id,st).textContent=(ok?"Correct. ":"Not quite. ")+k.why;
-    if(ok){done.add(cur);try{localStorage.setItem(UKEY,JSON.stringify([...done]))}catch(e){}drawNav()}
-  });
-  drawNav(); window.scrollTo(0,0); st.focus({preventScroll:true});
+  if(!l.ref)QBY[cur+1].forEach(showQ);
+  addNumToggles(st);fitChartText(st);drawNav();updateProg();
+  window.scrollTo(0,0);st.focus({preventScroll:true});
 }
 function drawNav(){
-  $("#navlist").innerHTML=L.map((l,i)=>`<li class="${done.has(i)?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${done.has(i)?"&#10003;":i+1}</span><span class="t">${l.nav}</span></button></li>`).join("");
+  $("#navlist").innerHTML=L.map((l,i)=>{const dn=!l.ref&&lessonDone(i+1);return `<li class="${dn?"done":""}${l.hero?" hero":""}"><button type="button" data-go="${i}" ${i===cur?'aria-current="true"':""}><span class="n">${dn?"&#10003;":l.ref?"G":i+1}</span><span class="t">${l.nav}</span></button></li>`}).join("");
   $$("[data-go]").forEach(b=>b.onclick=()=>go(+b.dataset.go));
 }
+window.addEventListener("DOMContentLoaded",()=>{
+  $("#stage").addEventListener("click",e=>{const q=e.target.closest("[data-q]");if(q&&!q.disabled){answerQ(q);return}
+    const a=e.target.closest("[data-gl]");if(a){e.preventDefault();openGloss(a.dataset.gl)}});
+  new MutationObserver(()=>{addNumToggles($("#stage"));fitChartText($("#stage"))}).observe($("#stage"),{childList:true,subtree:true});
+  const rp=$("#resetP");if(rp)rp.onclick=()=>{if(confirm("Clear your quiz progress on this device?")){QS={};saveQ();if(!L[cur].ref)go(cur);else{drawNav();updateProg()}}};
+});
+
+/* chart text grows with the Text size control: size it in screen pixels, not in chart units */
+function fitChartText(root){const z=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--zoom"))||1;
+  $$("svg.chart",root||document).forEach(s=>{try{const k=s.getScreenCTM();if(k&&k.a>0)s.style.fontSize=(14*z/k.a).toFixed(2)+"px"}catch(e){}})}
+window.addEventListener("resize",()=>fitChartText(document));
+
 /* theme + text size (for projectors) */
 (function(){
   const R=document.documentElement;let theme=null,zi=0;const Z=[1,1.15,1.3];
   try{theme=localStorage.getItem("dalab_theme")}catch(e){}
   if(!theme)theme=(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
-  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);
+  function apply(){R.setAttribute("data-theme",theme);R.style.setProperty("--zoom",Z[zi]);typeof fitChartText==="function"&&fitChartText(document);
     const b=$("#themeBtn"),z=$("#zoomBtn");if(b)b.innerHTML=theme==="dark"?"&#9728; Switch to LIGHT mode":"&#9790; Switch to DARK mode";if(z)z.textContent="Text size: "+Math.round(Z[zi]*100)+"%";}
   window.addEventListener("DOMContentLoaded",()=>{
     $("#themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("dalab_theme",theme)}catch(e){}apply()};
@@ -264,30 +319,147 @@ const monthly=(rows=SALES)=>{const g=sumBy(rows,r=>r.month);return MONTHS.map(m=
 const REGIONS=["Central","East","North","South","West"],CATS=["Accessories","Electronics","Home","Stationery"];
 const sample=(arr,n)=>{const a=arr.slice();for(let i=0;i<n;i++){const j=i+Math.floor(Math.random()*(a.length-i));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,n)};
 
+function csvDownload(){const H=["OrderID","OrderDate","Region","Product","Salesperson","Units","MRP","DiscountPct","CustomerID","Rating","PaymentMode","Category","NetSales","City","Segment","Month","CostPrice","Profit"];
+  const q=v=>{if(v==null)return "";const t=String(v);return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t};
+  const rows=[H.join(",")].concat(SALES.map(r=>KEYS.map(k=>q(r[k])).join(",")));
+  const blob=new Blob(["\ufeff"+rows.join("\r\n")],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="sunrise-retail-sales.csv";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function renderLive(){
   const tot=sum(SALES.map(r=>r.net));
-  $("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">The Sunrise Retail data (1 Apr 2025 to 31 Mar 2026), already cleaned. Same numbers as your Notion pages.</p><div class="grid2"><div class="kpi"><span class="small muted">Orders</span><b>${SALES.length}</b></div><div class="kpi"><span class="small muted">Net sales</span><b>${fmt(tot)}</b></div></div><div style="height:8px"></div>`+
-  table(SALES.slice(0,14),[["order","Order"],["region","Region"],["product","Product"],["units","Units"],["net","Net sales"]],{small:true})+`<p class="small muted">First 14 of ${SALES.length} rows. Net Sales = Units x MRP x (1 - Discount/100).</p>`;
+  $("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">The Sunrise Retail data (1 Apr 2025 to 31 Mar 2026), already cleaned. Every chart in this unit uses these ${SALES.length} orders.</p><button class="btn pri sm" type="button" id="csvB">Download the data (CSV)</button><div style="height:8px"></div><div class="grid2"><div class="kpi"><span class="small muted">Orders</span><b>${SALES.length}</b></div><div class="kpi"><span class="small muted">Net sales (Rs)</span><b>${IN(tot)}</b></div></div><div style="height:8px"></div>`+
+  table(SALES.slice(0,14),[["order","Order"],["region","Region"],["product","Product"],["units","Units"],["cost","Cost price (Rs)"],["net","Net sales (Rs)"]],{small:true})+`<p class="small muted">First 14 of ${SALES.length} rows. Net sales = Units x MRP x (1 - Discount / 100). Profit margin = (Net sales - Units x Cost price) / Net sales.</p>`;
+  $("#csvB").onclick=csvDownload;
 }
 
 /* ===== Unit II: Data Visualization ===== */
 const regionItems=(rows=SALES,sorted=false,colorf)=>{const g=sumBy(rows,r=>r.region);let it=REGIONS.map(k=>({label:k,value:Math.round(g[k]||0)}));if(sorted)it.sort((a,b)=>b.value-a.value);return it.map((x,i)=>({...x,color:colorf?colorf(x,i):"var(--c1)"}))};
+/* ===== shared facts, all computed from the data ===== */
+const NV=SALES.map(x=>x.net),M12=monthly(),AVGM=mean(M12),PK=M12.indexOf(Math.max(...M12)),LW=M12.indexOf(Math.min(...M12)),BELOW=M12.filter(v=>v<AVGM).length;
+const BYREG=sumBy(SALES,x=>x.region),CEN=BYREG.Central,EAS=BYREG.East,RATIO=CEN/EAS,TOPR=REGIONS.slice().sort((a,b)=>BYREG[b]-BYREG[a]);
+const MARGIN=100*sum(SALES.map(x=>x.profit))/sum(NV),QN=[quant(NV,.25),quant(NV,.5),quant(NV,.75)],FENCE=QN[2]+1.5*(QN[2]-QN[0]),NOUT=NV.filter(v=>v>FENCE).length;
+const LK=v=>"Rs "+(v/100000).toFixed(2)+" lakh";
+const task=items=>`<div class="card task"><h3>Your task</h3><ol class="small">${items.map(x=>`<li>${x}</li>`).join("")}</ol></div>`;
 
-/* 1 Anscombe */
+/* ===== glossary ===== */
+const GL=[
+["quartet","Anscombe's quartet","Four small datasets built by the statistician Francis Anscombe in 1973. Each has 11 pairs of numbers (x, y). They share almost the same mean, fit line and correlation, but their scatter plots look completely different."],
+["bubble","Bubble chart","A scatter plot in which the size of each dot shows a third number."],
+["bin","Bin","A range of values, such as 0 to 280. A histogram counts how many values fall in each bin."],
+["correlation","Correlation (r)","A score from -1 to +1 that says how tightly the points hug a straight line. Near +1 or -1 means tight, near 0 means no straight-line pattern. It does not show what causes what."],
+["costprice","Cost price","What the shop pays for one unit. Each product has one cost price, listed in the Products sheet of the practice workbook."],
+["crossfilter","Cross-filtering","Clicking one part of a chart (for example the Electronics bar) filters the other charts on the same page to match."],
+["dashboard","Dashboard","One screen that shows the few numbers and charts a person needs for one decision."],
+["dataink","Data-ink","The part of a chart that shows data: bars, lines, dots. Everything else, such as 3D effects, heavy gridlines and a legend that repeats the title, is non-data ink. Remove what carries no information."],
+["distribution","Distribution","How the values of one column are spread: where most of them lie, how far they extend and whether there are outliers."],
+["fitline","Fit line (trend line)","The straight line that comes closest to all the points. A spreadsheet draws it when you add a trendline. It is found by regression."],
+["fence","Fence (upper and lower)","Upper fence = Q3 + 1.5 x IQR. Lower fence = Q1 - 1.5 x IQR. A box plot draws a value beyond a fence as a separate dot."],
+["histogram","Histogram","A chart that cuts the number line into bins and draws one bar per bin, with the height showing how many values fall in it."],
+["iqr","IQR (interquartile range)","Q3 minus Q1. It measures the spread of the middle half of the data."],
+["kpi","KPI (key performance indicator)","One number that tells you how the business is doing, for example net sales, number of orders or profit margin."],
+["lakh","Lakh","1,00,000 (one hundred thousand). On the charts, 1.5L means Rs 1,50,000."],
+["margin","Profit margin","(Net sales - Units x Cost price) / Net sales, shown as a percentage. For all 988 orders it is "+MARGIN.toFixed(1)+" percent."],
+["mean","Mean (average)","The sum of the values divided by how many values there are."],
+["median","Median","The middle value when the data is sorted. Half of the values lie below it and half above."],
+["movavg","Moving average","The average of the latest n periods. A 3-month moving average smooths short-term ups and downs so the pattern is easier to see."],
+["mrp","MRP","Maximum retail price: the printed price of one unit, before any discount."],
+["netsales","Net sales","Units x MRP x (1 - Discount / 100). The money the shop receives from an order after the discount, in rupees."],
+["outlier","Outlier","A value far from most of the others. It may be an error or a real, unusual case, so check the source before removing it."],
+["pivot","PivotTable","A spreadsheet tool that groups the rows by one column (for example Region) and totals another column for each group."],
+["quartile","Quartile","Quartiles split sorted data into four equal parts. Q1 has 25 percent of the values below it, Q2 is the median and Q3 has 75 percent below it."],
+["regression","Regression","The method of fitting a line to data so that one value can be estimated from another. The line chosen makes the total of the squared vertical gaps between points and line as small as possible."],
+["rsquared","R-squared","The share of the variation in y that the fit line explains, from 0 to 1. For a straight line it equals r x r. A value of 0.0085 means less than 1 percent."],
+["skew","Skewed data","Data with a long tail on one side. Right-skewed data has a few large values and a long right tail, so the mean is above the median."],
+["slicer","Slicer","A button or list on a report that filters every linked chart at once, for example by region."],
+["timeseries","Time series","Values recorded in time order, such as net sales for each month."],
+["trunc","Truncated axis","A value axis that does not start at zero. On a bar chart it exaggerates differences."],
+["whisker","Whisker","The line from the box of a box plot to the furthest value that is still inside the fences."]
+];
+const ALIAS={r:"correlation",trendline:"fitline",q1:"quartile",q3:"quartile"};
+/* ===== questions: wrong answers are the mistakes students actually make ===== */
+defQ(1,[
+["What does Anscombe's quartet show?",["Four datasets can have the same mean, fit line and correlation while their shapes differ completely","Small datasets give unreliable averages","A fit line is always more reliable than a table of numbers","A correlation above 0.8 proves the points lie on a straight line"],0,"Summary numbers describe the data only if the shape is what you expect. The scatter plot shows the shape."],
+["A dataset has correlation r = 0.82. What can you say from r alone?",["The points follow a straight line","The points tend to rise together, but you must plot them to see whether a straight line describes them","Four out of five points lie on the line","A rise in x causes a rise in y"],1,"r measures straight-line tightness only. A curve, an outlier or stacked points can give the same r."],
+["In Set III, ten points lie almost exactly on a line and one point is far away. What do you do first?",["Delete the far point, because it spoils the correlation","Check that point against the source record, because it may be an error or a real case","Replace it with the mean of y","Ignore it and report r"],1,"An outlier is checked before it is kept or removed. Deleting it just to improve r is not honest."],
+["You receive a new table of numbers. Which step comes first?",["Calculate the mean and the correlation","Plot the data","Remove the largest values","Fit a trend line"],1,"Plot first. Then decide which summary numbers are appropriate."]]);
+defQ(2,[
+["You have 12 monthly sales figures. Which chart fits?",["A pie chart with one slice per month","A line chart with the months in order on the x-axis","A bar chart sorted from highest to lowest month","A scatter plot of sales against product code"],1,"Time has an order. A line keeps the months in order, and its slope shows direction."],
+["A manager asks what share of sales each category contributes. Which chart answers it?",["A line chart across the categories","A scatter plot of category against sales","A pie or stacked bar, if there are only a few categories","A histogram of the category names"],2,"A share of a whole is a parts-of-a-whole question. Use a pie only with few slices."],
+["You want to know whether higher discounts go with more units sold. Which chart answers it?",["A pie chart of discount levels","A scatter plot with discount on one axis and units on the other","A line chart of discount by month","A bar chart of sales by region"],1,"Two numbers, one dot per order: a scatter plot shows whether they move together."],
+["Why is a line chart a poor choice for comparing five regions?",["Lines cannot show five values","A line joins the points as if they follow an order, but regions have no order","Line charts need at least twelve points","Lines hide the highest value"],1,"A line implies that the points are connected in sequence. Use bars for unordered categories."]]);
+defQ(3,[
+["Why must a bar chart start at zero?",["Not always: when regions are close, a zoomed axis shows the differences more clearly","The eye reads bar length as the value, so cutting the axis exaggerates differences","Excel and Power BI do not allow anything else","Zero makes the chart look balanced"],1,"The first answer sounds reasonable in a meeting, but it is the argument for a misleading chart. If the difference is small, say so in the title instead of stretching the bars."],
+["Five regions each hold 17 to 22 percent of sales. Which chart ranks them best?",["A pie chart, because the topic is shares","A sorted bar chart","A 3D pie chart so the slices stand out","A line chart in alphabetical order of region"],1,"Similar-sized slices are hard to rank by angle. Sorted bars make the order obvious."],
+["In the demo, the cut axis makes the largest region look about "+((CEN-120000)/(EAS-120000)).toFixed(1)+" times the smallest. The true ratio is "+RATIO.toFixed(2)+". What does this tell you?",["The data changed when the axis changed","A cut axis changes the apparent size of a gap, so the chart misleads even though every number is correct","The chart is honest because the axis labels are shown","Pie charts have the same problem"],1,"Labels do not undo the visual impression. The reader compares bar lengths first."],
+["Sorting a bar chart from highest to lowest helps because...",["The reader can rank the categories at a glance","It makes the total larger","It removes the need for axis labels","It is required for the axis to start at zero"],0,"Sorting is a design choice that shortens the time the reader needs to find the largest and smallest."]]);
+defQ(4,[
+["The median line sits near Q1 inside the box and a long tail runs to the right. This means...",["The data is right-skewed: a few large values stretch the tail","The data is symmetric","The data is left-skewed","The data has no outliers"],0,"A long right tail means a few large values. The mean is then above the median."],
+["In a box plot, what do the whiskers show?",["The minimum and maximum of all the values","The furthest values that still lie inside the fences; anything beyond is a separate dot","The mean plus and minus one standard deviation","The 5th and 95th percentiles"],1,"Once outliers are drawn as dots, the whiskers stop at the fences, not at the extremes."],
+["Order value has mean Rs "+IN(mean(NV))+" and median Rs "+IN(QN[1])+". Which statement is best?",["The typical order is about Rs "+IN(mean(NV)),"A few large orders pull the mean above the median, so the median describes the typical order better","The data must contain an error because mean and median differ","The mean is lower than the median"],1,"In right-skewed data the mean is pulled up by large values."],
+["A histogram of 988 orders is drawn with only 3 bins. What happens?",["It shows every detail of the distribution","It hides the shape, including the long right tail","It shows the outliers more clearly","It becomes the same as a box plot"],1,"Too few bins merge different parts of the distribution into one bar."]]);
+defQ(5,[
+["A trend line has R-squared 0.0085. What does that mean?",["A strong upward trend","Time explains less than 1 percent of the variation, so there is no real trend","The data has an error","Sales rise by 0.85 percent each month"],1,"R-squared is the share of variation the line explains. Here it is almost nothing."],
+["Monthly sales peak in March and are lowest in July. What do you tell the manager?",["Sales are growing steadily","March is the peak month, but sales move up and down around a flat average, so growth is not supported","July is a data entry error","Sales fall every second month"],1,"A peak and a low do not make a trend. The trend line and R-squared test the claim."],
+["An area chart is most suitable when...",["You want to stress the volume of one series over time and the axis starts at zero","You compare five regions","You need to read exact values","You want to hide the trend"],0,"The filled area suggests total volume, so the baseline must be zero."],
+["What does a 3-month moving average do?",["It replaces each month with the average of that month and the two before it, so short-term ups and downs are smoothed","It predicts the next three months","It removes outliers permanently","It adds three months of data"],0,"It is a smoothing tool for seeing the pattern, not a forecast."]]);
+defQ(6,[
+["Two columns have correlation 0.9. Does one cause the other?",["Yes, a value near 1 proves cause","Not necessarily: it shows that they move together, not why; a third factor may drive both","Only if the points lie exactly on the fit line","Yes, if the sample has more than 30 points"],1,"Correlation describes a pattern. Cause needs a reason that the data alone cannot supply."],
+["Discount % against net sales gives r = "+corr(SALES.map(x=>x.disc),NV).toFixed(2)+". What does this say?",["Higher discounts strongly reduce sales","There is practically no straight-line relationship between discount and net sales in this data","Discounts are harmful","The data contains a mistake"],1,"An r this close to zero means no straight-line pattern."],
+["A scatter plot of discount (0, 5, 10, 15) against net sales shows vertical stripes. Why?",["Discount takes only four values, so many dots share the same x position","The chart software is faulty","Net sales also takes only four values","Stripes mean strong correlation"],0,"Discrete variables put dots in columns. Use jitter or a box plot per group."],
+["In a bubble chart of products, x is MRP, y is units sold and bubble size is net sales. What does a large bubble show?",["A large net sales figure for that product","A high MRP","A high number of units","A high cost price"],0,"The size encodes the third variable, here net sales."]]);
+defQ(7,[
+["What is the best use of colour in a business chart?",["Give every bar its own colour so categories are easy to tell apart","Draw attention to the one thing that matters and keep the rest grey","Match the company logo","Use red and green so good and bad are obvious"],1,"Colour is for emphasis. When every bar has a colour, none stands out."],
+["A chart has one data series and a legend that repeats the axis title. What does the data-ink idea say?",["Remove the legend, because it adds no information","Move the legend to the top","Make the legend larger","Add a second legend"],0,"If a mark carries no information, remove it."],
+["A bubble chart sets the radius in proportion to the value. A value twice as large then...",["Has about four times the area, so the difference looks exaggerated","Looks twice as large, which is correct","Looks half as large","Looks the same"],0,"Area grows with the square of the radius. Scale the area, not the radius."],
+["A chart uses only red for losses and green for gains. What is the risk?",["Some readers cannot tell red from green, so add labels or use position as well","Red and green are too bright","Colour should never be used","There is no risk"],0,"About 1 in 12 men has red-green colour blindness. Do not rely on colour alone."]]);
+defQ(8,[
+["Which mistake changes the viewer's conclusion the most?",["A missing title","A cut axis on a bar chart","Grey bars instead of blue bars","An unsorted bar order"],1,"A cut axis can turn a small difference into an apparent doubling."],
+["A colleague says: 'The regions are close, so I zoomed the axis to show the differences.' What is the best reply?",["Good idea, zooming always makes charts clearer","A zoomed bar axis makes a small gap look large. Keep the axis at zero and state the real difference in the title","Zoom further so the gap is obvious","Remove the axis labels"],1,"The honest way to show a small gap is to say that it is small."],
+["Which of these is a labelling fix and not a scale fix?",["Starting the axis at zero","Replacing 'Chart 1' with 'Central leads net sales by "+RS(CEN-EAS)+" over East'","Sorting the bars","Removing the rainbow colours"],1,"A title that states the finding is a labelling fix."],
+["A 3D bar chart is chosen because it 'looks professional'. What is wrong?",["Perspective distorts the bar heights, so values are harder to read","3D charts cannot show numbers","Nothing, 3D charts are more accurate","It uses too little colour"],0,"3D adds ink without adding information and distorts the comparison."]]);
+defQ(9,[
+["Which title is best for a chart of monthly net sales?",["Net sales by month","The finding in one sentence, such as 'March is our biggest month'","Sales chart for 2025-26","The name of the software used"],1,"The title should let the slide be understood on its own."],
+["Which order gives a data story?",["Insight, context, action","Context, insight, action","Action, context, insight","Data, data, data"],1,"Context says what is normal, the insight says what is different, and the action says what to do."],
+["March is "+Math.round(100*(M12[PK]/AVGM-1))+" percent above the monthly average. Which action does the data alone support?",["Plan stock and staff for March, and find out why March is high before copying it elsewhere","Double the marketing budget in every month","Close the shop in July","Report that sales are growing"],0,"The data shows a peak. It does not show growth or the reason for the peak."],
+["Which headline is best for a chart of net sales by region?",["Net sales by region","Central leads and East trails by about "+Math.round(100*(1-1/RATIO))+" percent: find what Central does differently","Regions chart","Sales (Rs)"],1,"A good headline states the finding and points to an action."]]);
+defQ(10,[
+["What is the main job of a slicer?",["Filter all the linked charts at once","Delete rows from the data","Change the colour theme","Sort the data"],0,"A slicer applies one filter across every linked visual."],
+["Filtering the demo to East changes the profit margin from "+MARGIN.toFixed(1)+"% to "+(100*sum(SALES.filter(x=>x.region==="East").map(x=>x.profit))/sum(SALES.filter(x=>x.region==="East").map(x=>x.net))).toFixed(1)+"%. How is profit margin calculated?",["(Net sales - Units x Cost price) / Net sales","Net sales / Units","Units x Cost price / MRP","Net sales minus discount"],0,"Margin is profit as a share of net sales."],
+["A dashboard has 14 charts and 9 KPI cards on one screen. What is the likely problem?",["Readers cannot see which number matters; a dashboard should support one decision with a few visuals","There are too few colours","There are not enough slicers","The page loads too fast"],0,"A dashboard that shows everything shows nothing."],
+["In Power BI, clicking the Electronics bar also highlights Electronics in the other charts. This is called...",["Cross-filtering","Truncating","Binning","Jittering"],0,"Cross-filtering links the visuals on one page."]]);
+defQ(11,[
+["A manager asks you to cut the axis so the growth 'looks better'. What do you do?",["Do it, because the manager decides how data is shown","Show the honest chart and explain the real size of the change","Remove the axis labels so nobody notices","Use a pie chart instead"],1,"Honest charts protect your credibility and the decision."],
+["Central is 25 percent larger than East, and East is 20 percent smaller than Central. Which statement is correct?",["Both are correct; they use different bases","Only the first","Only the second","Neither, because they must be equal"],0,"A percentage depends on which number is the base."],
+["A classroom needs free, shareable, collaborative charts that run in a browser. Which tool fits?",["Power BI Desktop","Python (matplotlib)","Google Sheets","Tableau"],2,"Google Sheets runs in a browser and several people can edit one file."],
+["Which check matters most for honesty before you export a chart?",["The axis starts at zero (for bars), units and source are shown, and the title says only what the data supports","The colours match the template","The file name is short","The chart is 3D"],0,"Honesty is about scale, labels and claims, not styling."]]);
+/* ===== Unit II lessons ===== */
 const AN={x:[10,8,13,9,11,14,6,4,12,7,5],y1:[8.04,6.95,7.58,8.81,8.33,9.96,7.24,4.26,10.84,4.82,5.68],y2:[9.14,8.14,8.74,8.77,9.26,8.10,6.13,3.10,9.13,7.26,4.74],y3:[7.46,6.77,12.74,7.11,7.81,8.84,6.08,5.39,8.15,6.42,5.73],x4:[8,8,8,8,8,8,8,19,8,8,8],y4:[6.58,5.76,7.71,8.84,8.47,7.04,5.25,12.50,5.56,7.91,6.89]};
+/* 1 Anscombe */
 lesson({nav:"Why we visualize (Anscombe)",title:"Why we visualize data",syl:"Introduction to Data Visualization, importance of visualization",
-html:()=>`<p class="lead">Numbers summarise. Pictures <b>reveal</b>. In 1973 the statistician Francis Anscombe built four small datasets with <b>almost identical statistics</b> but completely different shapes.</p>
+html:()=>`<p class="lead">A summary statistic turns many numbers into one. That is useful, but one number cannot show the shape of the data. In 1973 the statistician Francis Anscombe built four small datasets to prove this point. They are called ${g("quartet")}. Each set has 11 pairs of numbers (x, y). All four sets give almost the same summary numbers, and their pictures are completely different.</p>
+<div class="card"><h3>Four terms used in the table</h3><ul class="small">
+<li><b>Mean</b>: the sum of the values divided by how many there are. Every set has a mean of x of 9.00 and a mean of y of about 7.50.</li>
+<li><b>${g("correlation","Correlation (r)")}</b>: a score from -1 to +1 that says how tightly the points hug a straight line. Near +1 or -1 means tight. Near 0 means no straight-line pattern.</li>
+<li><b>${g("fitline","Fit line")}</b>: the straight line that comes closest to all the points. It is the line a spreadsheet draws when you add a trendline. The method that finds it is called ${g("regression")}.</li>
+<li><b>${g("outlier")}</b>: a point far away from the others.</li></ul></div>
 <div class="card try"><h3>Try it: compare four datasets</h3>
 <div class="row">${seg("anv",[["stats","1. Statistics only"],["plots","2. Now draw them"]])}</div>
 <div id="anout"></div><div class="callout k small" id="annote"></div></div>
-<div class="card"><h3>Why this matters for business</h3><p class="small">An average order of Rs 761 hides a skewed distribution (lesson 4). A flat yearly total hides a March spike (lesson 5). <b>Always plot before you trust a summary.</b></p></div>
-${quiz("u2q1","What is the lesson of Anscombe's quartet?",["Mean and correlation can be identical while the data looks totally different","Scatter plots are always better than tables","Small datasets are useless"],0,"Identical summary statistics can hide very different patterns, so look at the picture.")}`,
+<div class="card"><h3>What the demo shows</h3><p class="small">The table says that all four sets have the same mean, the same fit line (y = 3.00 + 0.50x) and a correlation of 0.816 or 0.817. The pictures show why the numbers cannot be trusted alone:</p>
+<ul class="small"><li><b>Set I</b> is a scatter around a straight line. The summary describes it well. This is the case most people assume for every dataset.</li>
+<li><b>Set II</b> follows a smooth curve. y rises and then falls, so a straight line is the wrong shape, even though r is high.</li>
+<li><b>Set III</b> has ten points almost exactly on one line and one outlier. The outlier tilts the fit line. Without it the correlation is close to 1.00.</li>
+<li><b>Set IV</b> has ten points at the same x value, 8, and one point at x = 19. That single point alone decides the fit line. Without it, no line can be drawn.</li></ul></div>
+<div class="card sec"><h3>What to do</h3><p class="small">Draw the scatter plot before you read r or the fit line. Look for a curve, an outlier, or points stacked at one x value. Check every outlier against the source record before you keep or remove it. Then report the summary and the picture together.</p></div>
+<div class="card"><h3>Why this matters for business</h3><p class="small">The average order in the Sunrise Retail data is Rs ${IN(mean(NV))}. That number hides a skewed distribution (lesson 4). A flat yearly total hides a March peak (lesson 5). In this unit, every chart is drawn from the same 988 orders, so you can check each claim against the data.</p></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Check that identical numbers can hide different pictures.</p><ol class="small"><li>Type two columns of numbers in A1:B11 (for example the X and Y values of one Anscombe set).</li><li>In D1 enter <code>=AVERAGE(B1:B11)</code>, in D2 <code>=STDEV.S(B1:B11)</code>, in D3 <code>=CORREL(A1:A11,B1:B11)</code>. Repeat for the next set.</li><li>Select the two columns and choose Insert &gt; Scatter. Compare the pictures: the numbers match, the shapes do not.</li></ol></div>
+${task(["Download the data with the button in the right-hand panel and open it in Excel or Google Sheets.","Select <b>Units</b> (column F) and <b>NetSales</b> (column M) and insert a scatter plot.","Write one sentence: do orders with more units have a higher net sales? Then calculate <code>=CORREL(F2:F989,M2:M989)</code> and compare the number with what you see."])}
+${quizSet(1)}`,
 mount(r){
   const sets=[["I",AN.x,AN.y1],["II",AN.x,AN.y2],["III",AN.x,AN.y3],["IV",AN.x4,AN.y4]];
   function draw(v){
-    if(v==="stats"){$("#anout",r).innerHTML=`<table class="dt"><thead><tr><th>Set</th><th>Mean of x</th><th>Mean of y</th><th>Fit line</th><th>Correlation</th></tr></thead><tbody>`+sets.map(s=>{const f=linfit(s[1],s[2]);return `<tr><td>${s[0]}</td><td>${mean(s[1]).toFixed(2)}</td><td>${mean(s[2]).toFixed(2)}</td><td>y = ${f.b.toFixed(2)} + ${f.m.toFixed(2)}x</td><td>${f.r.toFixed(3)}</td></tr>`}).join("")+`</tbody></table>`;
+    if(v==="stats"){$("#anout",r).innerHTML=`<div class="tw sm"><table class="dt"><thead><tr><th>Set</th><th>Mean of x</th><th>Mean of y</th><th>Fit line</th><th>Correlation</th></tr></thead><tbody>`+sets.map(s=>{const f=linfit(s[1],s[2]);return `<tr><td>${s[0]}</td><td>${mean(s[1]).toFixed(2)}</td><td>${mean(s[2]).toFixed(2)}</td><td>y = ${f.b.toFixed(2)} + ${f.m.toFixed(2)}x</td><td>${f.r.toFixed(3)}</td></tr>`}).join("")+`</tbody></table></div>`;
       $("#annote",r).textContent="All four rows look the same. Would you say these datasets are alike? Now press 'Now draw them'."}
-    else{$("#anout",r).innerHTML=`<div class="grid2">`+sets.map(s=>{const f=linfit(s[1],s[2]);return chartScatter(s[1].map((x,i)=>({x,y:s[2][i],r:5})),{w:360,h:240,title:"Set "+s[0],fit:f,x0:2,x1:20,y0:2,y1:14})}).join("")+`</div>`;
+    else{$("#anout",r).innerHTML=`<div class="grid2">`+sets.map(s=>{const f=linfit(s[1],s[2]);return chartScatter(s[1].map((x,i)=>({x,y:s[2][i],r:5})),{w:360,h:240,title:"Set "+s[0],fit:f,x0:2,x1:20,y0:2,y1:14,xint:true,yint:true,xlabel:"x",ylabel:"y"})}).join("")+`</div>`;
       $("#annote",r).textContent="I: a clean line. II: a curve. III: a line with one outlier. IV: all points at one x except one. Same statistics, four different stories."}}
   draw("stats");bindSeg(r,"anv",draw);}
 });
@@ -295,177 +467,253 @@ mount(r){
 const QMAP={compare:["Compare categories (which region is biggest?)","Bar chart","Bars are the easiest shape for the eye to compare. Sort them.","Pie chart with many slices"],
  part:["Show parts of a whole (share of sales by category)","Pie chart (max 5 slices) or a stacked bar","Use only if parts add to 100 percent and there are few of them.","3D pie, or more than 6 slices"],
  trend:["See change over time (monthly sales)","Line chart","A line joins points in time order, so slope shows direction.","Bar chart for 100+ dates, or unordered lines"],
- rel:["See if two numbers move together (discount vs units)","Scatter plot","Each dot is one case. Add a trend line and report the correlation.","Two separate bar charts"],
+ rel:["See if two numbers move together (units vs net sales)","Scatter plot","Each dot is one case. Add a trend line and report the correlation.","Two separate bar charts"],
  dist:["See how values are spread (order sizes)","Histogram or box plot","Shows the typical value, the spread and the outliers at once.","A bar chart of averages"]};
 lesson({nav:"Choosing the right chart",title:"Choosing the right chart for the question",syl:"Choosing the right visualization, types of charts",
-html:()=>`<p class="lead">Pick the chart from the <b>question</b>, not from what looks nice. Five questions cover most business charts.</p>
+html:()=>`<p class="lead">A chart type is a tool for one kind of question. Write the question first, then choose the chart. If you choose the chart first, you will answer the question the chart happens to be good at, which may not be the one the reader asked.</p>
+<div class="card"><h3>Five questions cover most business charts</h3><div class="tw sm"><table class="dt wrap"><thead><tr><th>You want to know</th><th>Chart</th><th>Why</th></tr></thead><tbody>
+<tr><td>Which category is bigger?</td><td>Sorted bar chart</td><td>Bar length is easy to compare.</td></tr>
+<tr><td>What share does each part hold?</td><td>Pie (up to 5 slices) or stacked bar</td><td>The parts add to one whole.</td></tr>
+<tr><td>How did it change over time?</td><td>Line chart</td><td>The line follows the time order.</td></tr>
+<tr><td>Do two numbers move together?</td><td>Scatter plot</td><td>One dot per case shows the pattern.</td></tr>
+<tr><td>How are the values spread?</td><td>Histogram or box plot</td><td>Shows the typical value, the spread and the outliers.</td></tr></tbody></table></div></div>
 <div class="card try"><h3>Try it: what do you want to know?</h3>
-<div class="row"><select id="qsel">${Object.entries(QMAP).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join("")}</select></div>
+<div class="row"><select id="qsel" aria-label="Question">${Object.entries(QMAP).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join("")}</select></div>
 <div class="grid2"><div id="qchart"></div><div><p><span class="tag g">Use</span> <b id="qbest"></b></p><p class="small" id="qwhy"></p><p><span class="tag b">Avoid</span> <span class="small" id="qavoid"></span></p></div></div></div>
-${quiz("u2q2","Monthly sales for 12 months: which chart?",["Pie chart","Line chart","Scatter plot of month vs month"],1,"Time on the x-axis, one value per month: a line chart.")}`,
+<div class="card"><h3>What the demo shows</h3><p class="small">The same 988 orders appear in five different charts. Each chart answers a different question. The bar chart ranks the regions, the pie shows how the four categories share the total, the line follows the months, the scatter plot compares units with net sales, and the histogram shows how order values are spread. None of these charts can answer the other four questions well.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Write the question as a sentence before you open the chart menu.</li><li>Look at the data types first: categories (region) need bars or a pie, numbers over time need a line, two numbers need a scatter plot.</li><li>A line implies order. Do not use it for regions, products or any categories without a natural order.</li><li>A pie works only when the slices add up to one whole and there are few of them.</li><li>If two charts could answer the question, choose the one the reader can read fastest.</li></ul></div>
+<div class="card"><h3>Why the question comes first</h3><p class="small">A request such as "show me sales" is not yet a question. "Which region sold the least, and by how much?" is a question, and it points to a sorted bar chart. "Did sales grow this year?" points to a line chart. A vague request gives a vague chart, so ask what decision the chart will support before you choose anything. After you choose, run two checks. Can the reader answer the question in five seconds? Would a table be clearer? A table is the better choice when readers need exact values, not a pattern.</p></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales</b> of bmt-sales-clean-reference.xlsx (988 orders in rows 2 to 989; Region is column C, Units F, PaymentMode K, NetSales M, Month P).</p><ol class="small"><li>Click any cell in the data and choose Insert &gt; Recommended Charts. Excel suggests charts for the columns you selected.</li><li>Do not accept the first suggestion. Ask the question first (compare, share, trend, distribution, relationship) and then pick the chart type from the table above.</li><li>To change the type later, click the chart and choose Chart Design &gt; Change Chart Type.</li></ol></div>
+${task(["Write five questions that a store manager could ask about the Sunrise Retail data.","Choose the chart type for each question, using the table above.","Draw one of them from the CSV and check that the chart answers the question in one look."])}
+${quizSet(2)}`,
 mount(r){function draw(){const k=$("#qsel",r).value,q=QMAP[k];let c="";
-    if(k==="compare")c=chartBar(regionItems(SALES,true),{w:420,h:260,title:"Net sales by region"});
+    if(k==="compare")c=chartBar(regionItems(SALES,true),{w:420,h:260,title:"Net sales by region (Rs)"});
     else if(k==="part"){const g=sumBy(SALES,x=>x.cat);c=chartPie(CATS.map((n,i)=>({label:n,value:g[n]})),{})}
-    else if(k==="trend")c=chartLine([{name:"Net sales",vals:monthly()}],MLAB,{w:420,h:260,title:"Net sales by month",maxLabels:6});
-    else if(k==="rel"){const s=SALES.filter((_,i)=>i%2===0);c=chartScatter(s.map(x=>({x:x.disc,y:x.units+(Math.random()-.5)*.5,r:3})),{w:420,h:260,title:"Discount % vs units (jittered)",x0:-1,x1:16,y0:0})}
-    else{const b=histBins(SALES.map(x=>x.net),20,0,5600);c=chartBar(b,{w:420,h:260,title:"Order value (histogram)",rotate:false,values:false})}
+    else if(k==="trend")c=chartLine([{name:"Net sales",vals:monthly()}],MLAB,{w:420,h:260,title:"Net sales by month (Rs)",maxLabels:6});
+    else if(k==="rel"){const s=SALES.filter((_,i)=>i%2===0);c=chartScatter(s.map(x=>({x:x.units,y:x.net,r:3})),{w:420,h:260,title:"Units vs net sales (Rs)",x0:0,x1:12,y0:0,xint:true,xlabel:"Units",alpha:.4})}
+    else{const b=histBins(SALES.map(x=>x.net),20,0,5600);c=chartBar(b,{w:420,h:260,title:"Order value (histogram)",rotate:false,values:false,cat:"Bin start (Rs)",vlabel:"Orders"})}
     $("#qchart",r).innerHTML=c;$("#qbest",r).textContent=q[1];$("#qwhy",r).textContent=q[2];$("#qavoid",r).textContent=q[3]}
-  $("#qsel",r).onchange=draw;draw();regQuiz("u2q2",1,"Time on the x-axis, one value per month: a line chart.")}
+  $("#qsel",r).onchange=draw;draw();}
 });
 /* 3 Bar and pie */
 lesson({nav:"Bar and pie charts",title:"Bar charts and pie charts",syl:"Bar charts, pie charts",
-html:()=>`<p class="lead"><b>Bar charts</b> compare amounts. <b>Pie charts</b> show shares of one whole. Same data, different job.</p>
+html:()=>`<p class="lead">A <b>bar chart</b> shows one value per category as the length of a bar. A <b>pie chart</b> shows each category as a slice of one whole. The two charts do different jobs: bars compare amounts, a pie shows shares.</p>
 <div class="card try"><h3>Try it: region sales</h3>
-<div class="row">${seg("bpt",[["bar","Bar"],["pie","Pie"]])} <label class="chk"><input type="checkbox" id="bps" checked> Sort high to low</label><label class="chk"><input type="checkbox" id="bpz"> Start axis at 120,000 (truncated)</label></div>
+<div class="row">${seg("bpt",[["bar","Bar"],["pie","Pie"]])} <label class="chk"><input type="checkbox" id="bps" checked> Sort high to low</label><label class="chk"><input type="checkbox" id="bpz"> Start axis at Rs 1,20,000 (cut axis)</label></div>
 <div id="bpc"></div><div class="callout k small" id="bpn"></div></div>
-<div class="card"><h3>Rules</h3><p class="small">Bars must start at <b>zero</b>, because the eye reads bar length as quantity. A pie works only for a few slices that add to 100 percent; with five regions that are all near 20 percent, a pie is hard to read, and a sorted bar is clearer.</p></div>
-${quiz("u2q3","Why must a bar chart start at zero?",["Because Excel requires it","Because bar length is read as the value, so cutting the axis exaggerates differences","Because zero looks neat"],1,"A truncated axis makes a small gap look huge. That is the most common misleading chart.")}`,
-mount(r){let t="bar";const gt=bindSeg(r,"bpt",v=>{t=v;draw()});
+<div class="card"><h3>What the demo shows</h3><p class="small">The five regions have net sales between ${LK(EAS)} (East) and ${LK(CEN)} (Central). The true ratio of the largest to the smallest is <b>${RATIO.toFixed(2)}</b>. When you tick the cut axis, the tallest bar looks <b>${((CEN-120000)/(EAS-120000)).toFixed(1)} times</b> the shortest. Every number on the chart is still correct, but the picture now gives a wrong impression, because the eye compares bar lengths and not the numbers on the axis. Switch to the pie: five slices of 17 to 22 percent are almost the same angle, so you cannot rank them without reading the labels.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>The value axis of a bar chart starts at <b>zero</b> (a ${g("trunc","cut axis")} exaggerates differences).</li><li>Sort the bars from largest to smallest unless the categories have a natural order, such as months.</li><li>Use a pie only for a few slices (up to five) that add up to one whole. Otherwise use sorted bars.</li><li>Use horizontal bars when the labels are long.</li><li>Do not use 3D. It distorts the lengths and adds nothing.</li></ul><p class="small">The same gap between East and Central is described in three different ways in lessons 3, 7 and 11. Lesson 11 explains why all three are correct.</p></div>
+<div class="card"><h3>Build the region chart in three steps</h3><ol class="small"><li>Choose the category column (Region) and the measure to add up (NetSales).</li><li>Total the measure for each category. A PivotTable does this in one step.</li><li>Draw the bars, sort them from largest to smallest, start the axis at zero, and write a title that says what the chart shows.</li></ol><p class="small">The same three steps work for products, categories or salespeople.</p></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales</b> of bmt-sales-clean-reference.xlsx (988 orders in rows 2 to 989; Region is column C, Units F, PaymentMode K, NetSales M, Month P).</p><ol class="small"><li>Click a cell in the data and choose Insert &gt; PivotTable &gt; OK.</li><li>Drag <b>Region</b> to Rows and <b>NetSales</b> to Values (it shows Sum of NetSales).</li><li>Right-click a value, choose Sort &gt; Sort Largest to Smallest.</li><li>Click inside the pivot and choose Insert &gt; Column or Bar Chart &gt; Clustered Column. For a pie choose Insert &gt; Pie instead.</li><li>To keep the axis honest, right-click the vertical axis, choose Format Axis and set Minimum to 0. Try 120000 to see the exaggeration.</li></ol></div>
+${task(["Build a PivotTable of net sales by Region from the CSV and draw a sorted column chart with the axis starting at zero.","Copy the chart and set the axis minimum to 120000. Put the two charts side by side.","Write one sentence that tells a reader what changed between the two and which one is honest."])}
+${quizSet(3)}`,
+mount(r){let t="bar";bindSeg(r,"bpt",v=>{t=v;draw()});
   function draw(){const so=$("#bps",r).checked,tr=$("#bpz",r).checked,it=regionItems(SALES,so);
     if(t==="pie")$("#bpc",r).innerHTML=chartPie(it.map(x=>({label:x.label,value:x.value})));
-    else $("#bpc",r).innerHTML=chartBar(it,{w:620,h:300,title:"Net sales by region",min:tr?120000:0,max:tr?170000:undefined});
+    else $("#bpc",r).innerHTML=chartBar(it,{w:620,h:300,title:"Net sales by region (Rs)",min:tr?120000:0,max:tr?170000:undefined,cat:"Region",vlabel:"Net sales (Rs)"});
     const mx=Math.max(...it.map(x=>x.value)),mn=Math.min(...it.map(x=>x.value));
-    $("#bpn",r).innerHTML=t==="pie"?"Five slices of about 17 to 22 percent are hard to rank by eye. Use a bar.":tr?`<b>Misleading:</b> the true ratio of biggest to smallest region is ${(mx/mn).toFixed(2)} times, but the truncated bars make the tallest look ${((mx-120000)/(mn-120000)).toFixed(1)} times the smallest.`:`True picture: Central ${fmt(mx)} vs East ${fmt(mn)}, a ratio of ${(mx/mn).toFixed(2)}.`}
+    $("#bpn",r).innerHTML=t==="pie"?"Five slices of about 17 to 22 percent are hard to rank by eye. Use a bar.":tr?`<b>Misleading:</b> the true ratio of biggest to smallest region is ${(mx/mn).toFixed(2)} times, but the cut axis makes the tallest look ${((mx-120000)/(mn-120000)).toFixed(1)} times the smallest.`:`True picture: Central ${RS(mx)} vs East ${RS(mn)}, a ratio of ${(mx/mn).toFixed(2)}.`}
   $("#bps",r).onchange=draw;$("#bpz",r).onchange=draw;draw();}
 });
 /* 4 Histogram and box plot */
 function boxSvg(vals,o={}){const q1=quant(vals,.25),q2=quant(vals,.5),q3=quant(vals,.75),iqr=q3-q1,lo=q1-1.5*iqr,hi=q3+1.5*iqr,mn=Math.min(...vals),mx=Math.max(...vals);
   const inside=vals.filter(v=>v>=lo&&v<=hi),wl=Math.min(...inside),wh=Math.max(...inside),out=vals.filter(v=>v>hi||v<lo);
-  const W=640,H=130,m=30,sx=v=>m+(v-0)/(Math.ceil(mx/500)*500)*(W-2*m),y=64;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="box plot">`;
-  ticks(0,Math.ceil(mx/500)*500,8).forEach(t=>s+=`<line class="gr" x1="${sx(t)}" x2="${sx(t)}" y1="30" y2="100"/><text class="lbl" x="${sx(t)}" y="118" text-anchor="middle">${short(t)}</text>`);
+  const W=640,H=130,m=30,top=Math.ceil(mx/500)*500,sx=v=>m+(v-0)/top*(W-2*m),y=64;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="box plot of order value"${TB(["Statistic","Rs"],[["Lowest whisker end",Math.round(wl*100)/100],["Q1",q1],["Median",q2],["Q3",q3],["Upper whisker end",Math.round(wh*100)/100],["Upper fence",hi],["Largest value",mx],["Values beyond the fence",out.length]])}>`;
+  ticks(0,top,8).forEach(t=>s+=`<line class="gr" x1="${sx(t)}" x2="${sx(t)}" y1="30" y2="100"/><text class="lbl" x="${sx(t)}" y="118" text-anchor="middle">${num(t)}</text>`);
   s+=`<line x1="${sx(wl)}" x2="${sx(q1)}" y1="${y}" y2="${y}" stroke="var(--fg)" stroke-width="2"/><line x1="${sx(q3)}" x2="${sx(wh)}" y1="${y}" y2="${y}" stroke="var(--fg)" stroke-width="2"/>`;
   s+=`<rect x="${sx(q1)}" y="${y-18}" width="${sx(q3)-sx(q1)}" height="36" fill="var(--pri-soft)" stroke="var(--pri)" stroke-width="2"/><line x1="${sx(q2)}" x2="${sx(q2)}" y1="${y-18}" y2="${y+18}" stroke="var(--sec)" stroke-width="3"/>`;
   out.forEach(v=>s+=`<circle cx="${sx(v)}" cy="${y}" r="3" fill="var(--bad)" fill-opacity=".6"/>`);
   return {svg:s+"</svg>",q1,q2,q3,iqr,hi,lo,out:out.length};}
 lesson({nav:"Histogram and box plot",title:"Histograms and box plots: seeing the distribution",syl:"Histograms, box plots (distribution of data)",
-html:()=>`<p class="lead">A <b>histogram</b> cuts the number line into bins and counts how many values fall in each. A <b>box plot</b> draws five numbers: minimum, Q1, median, Q3, maximum, and marks outliers.</p>
+html:()=>`<p class="lead">The ${g("distribution")} of a column tells you where most values lie and how far they extend. Two charts show it. A <b>${g("histogram")}</b> cuts the number line into ${g("bin","bins")} and counts how many values fall in each. A <b>box plot</b> shows the middle half of the data as a box and marks the unusual values separately.</p>
 <div class="card try"><h3>Try it: order value (NetSales, 988 orders)</h3>
-<div class="row">Number of bins: <input type="range" id="hb" min="5" max="60" value="20"> <b id="hbv">20</b></div>
+<div class="row">Number of bins: <input type="range" id="hb" min="5" max="60" value="20" aria-label="Number of bins"> <b id="hbv">20</b></div>
 <div id="hc"></div><div class="callout k small" id="hn"></div></div>
 <div class="card try"><h3>Box plot of the same data</h3><div id="bc"></div><div id="bn" class="small"></div>
-<div class="code">In a sheet:  =QUARTILE(M2:M989,1)   =MEDIAN(M2:M989)   =QUARTILE(M2:M989,3)\nUpper fence = Q3 + 1.5 x (Q3 - Q1)   then   =COUNTIF(M2:M989,"&gt;"&amp;fence)</div></div>
-${quiz("u2q4","The box plot's median line sits left of centre inside the box and a long tail runs right. This means...",["Right-skewed data","Symmetric data","Left-skewed data"],0,"A long right tail means a few large values: right-skewed, like order values here.")}`,
-mount(r){const v=SALES.map(x=>x.net);
-  function h(){const n=+$("#hb",r).value;$("#hbv",r).textContent=n;const b=histBins(v,n,0,5600);$("#hc",r).innerHTML=chartBar(b,{w:640,h:300,title:"Order value histogram, "+n+" bins",values:false,ylabel:"Orders"});
+<div class="code">In a sheet:  =QUARTILE.INC(M2:M989,1)   =MEDIAN(M2:M989)   =QUARTILE.INC(M2:M989,3)\nUpper fence = Q3 + 1.5 x (Q3 - Q1)   then   =COUNTIF(M2:M989,"&gt;"&amp;fence)</div></div>
+<div class="card"><h3>How to read a box plot</h3><ul class="small"><li>The <b>box</b> runs from ${g("quartile","Q1")} to Q3. It holds the middle half of the values. Its length is the ${g("iqr")}.</li><li>The <b>line</b> inside the box is the ${g("median")}.</li><li>The <b>whiskers</b> reach the furthest values that are still inside the ${g("fence","fences")}.</li><li>The <b>dots</b> are values beyond a fence. They are the ${g("outlier","outliers")}.</li></ul></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Half of all orders are below Rs ${IN(QN[1])} (the median) and three quarters are below Rs ${IN(QN[2])}. The mean is Rs ${IN(mean(NV))}, well above the median. The upper fence is Rs ${num(FENCE)}, and ${NOUT} orders lie beyond it. The data is ${g("skew","right-skewed")}: most orders are small and a few are large. Move the bin slider. With 5 bins the shape disappears, and with 60 bins the bars become jagged. Between 15 and 25 bins shows the shape clearly for about a thousand values.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>For skewed data report the median, and give the mean only with a note.</li><li>Choose a bin count that shows the shape without noise. Try several.</li><li>Check an outlier against the source before you delete it. Here the large orders are real purchases, not errors.</li><li>Use a box plot to compare several groups side by side. Use a histogram to see one distribution in detail.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales</b> of bmt-sales-clean-reference.xlsx (988 orders in rows 2 to 989; Region is column C, Units F, PaymentMode K, NetSales M, Month P).</p><ol class="small"><li>Select the NetSales column, M2:M989.</li><li>Choose Insert &gt; Insert Statistic Chart &gt; Histogram. Right-click the horizontal axis, choose Format Axis and set Bin width (for example 500).</li><li>For the box plot choose Insert &gt; Insert Statistic Chart &gt; Box and Whisker.</li><li>Check the picture with numbers: <code>=MEDIAN(M2:M989)</code>, <code>=AVERAGE(M2:M989)</code>, <code>=QUARTILE.INC(M2:M989,1)</code> and <code>=QUARTILE.INC(M2:M989,3)</code>. If the average is above the median, the data is right-skewed.</li></ol></div>
+${task(["Select <b>NetSales</b> (M2:M989) in the CSV and insert a histogram. Try bin widths of 250 and 1000.","Write one sentence about the shape of the distribution.","Calculate Q1, the median, Q3 and the upper fence, and count how many orders lie above the fence."])}
+${quizSet(4)}`,
+mount(r){const v=NV;
+  function h(){const n=+$("#hb",r).value;$("#hbv",r).textContent=n;const b=histBins(v,n,0,5600);$("#hc",r).innerHTML=chartBar(b,{w:640,h:300,title:"Order value histogram, "+n+" bins",values:false,ylabel:"Orders",cat:"Bin start (Rs)",vlabel:"Orders"});
     $("#hn",r).textContent=n<=8?"Too few bins hide the shape.":n>=45?"Too many bins make it jagged and noisy.":"Most orders are small, and a long tail of large orders stretches to the right. Mean "+fmt(mean(v))+" is above median "+fmt(median(v))+"."}
   $("#hb",r).oninput=h;h();
-  const b=boxSvg(v);$("#bc",r).innerHTML=b.svg;$("#bn",r).innerHTML=`Q1 <b>${fmt(b.q1)}</b>, median <b>${fmt(b.q2)}</b>, Q3 <b>${fmt(b.q3)}</b>, IQR ${fmt(b.iqr)}. Upper fence <b>${fmt(b.hi)}</b>, so <b>${b.out} orders</b> are outliers (red dots). They are real big orders, not errors: check before deleting.`;}
+  const b=boxSvg(v);$("#bc",r).innerHTML=b.svg;$("#bn",r).innerHTML=`Q1 <b>${fmt(b.q1)}</b>, median <b>${fmt(b.q2)}</b>, Q3 <b>${fmt(b.q3)}</b>, IQR ${fmt(b.iqr)}. Upper fence <b>${fmt(b.hi)}</b>, so <b>${b.out} orders</b> lie beyond it (red dots). They are real big orders, not errors: check before deleting.`;}
 });
 /* 5 Line, area, trend */
 lesson({nav:"Line, area and trend",title:"Line charts, area charts and trend lines",syl:"Line charts, area charts, trend analysis",
-html:()=>`<p class="lead">A <b>line chart</b> shows change over time. An <b>area chart</b> fills under the line to stress volume. A <b>trend line</b> fits a straight line to see the direction, and a <b>moving average</b> smooths noise.</p>
+html:()=>`<p class="lead">A <b>line chart</b> shows how a value changes over time. It needs a ${g("timeseries")}: values in time order. An <b>area chart</b> fills the space under the line to stress volume. A <b>trend line</b> is the ${g("fitline")} through the points, and a ${g("movavg")} smooths short-term noise.</p>
 <div class="card try"><h3>Try it: monthly net sales</h3>
-<div class="row">${seg("lt",[["line","Line"],["area","Area"]])} <label class="chk"><input type="checkbox" id="lta"> Trend line</label><label class="chk"><input type="checkbox" id="ltm"> Moving average of <input type="range" id="ltw" min="2" max="6" value="3"> <b id="ltwv">3</b> months</label></div>
+<div class="row">${seg("lt",[["line","Line"],["area","Area"]])} <label class="chk"><input type="checkbox" id="lta"> Trend line</label><label class="chk"><input type="checkbox" id="ltm"> Moving average of <input type="range" id="ltw" min="2" max="6" value="3" aria-label="Moving average length"> <b id="ltwv">3</b> months</label></div>
 <div id="lc"></div><div class="callout k small" id="ln"></div></div>
-${quiz("u2q5","A trend line with R-squared 0.0085 means...",["A strong upward trend","Time explains almost none of the variation, so there is no real trend","The data is wrong"],1,"R-squared near 0 means the line explains nearly nothing. Sales here bounce around a flat average.")}`,
-mount(r){const m=monthly();let t="line";bindSeg(r,"lt",v=>{t=v;d()});
+<div class="card"><h3>What the demo shows</h3><p class="small">Average monthly net sales are ${RS(AVGM)}. The peak is <b>${MLAB[PK]}</b> at ${RS(M12[PK])} and the low is <b>${MLAB[LW]}</b> at ${RS(M12[LW])}. ${BELOW} of the 12 months fall below the average. Tick the trend line. It is almost flat, and its ${g("rsquared")} is only ${(()=>{const f=linfit(M12.map((_,i)=>i+1),M12);return (f.r*f.r).toFixed(4)})()}, which means that time explains less than 1 percent of the ups and downs. The data does not support a claim of growth. The moving average shows the same thing in another way: the smoothed line stays close to the average.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Put time on the x-axis, in order, and join the points with a line.</li><li>Use an area chart for one series (a total) and start the axis at zero. Do not stack many areas.</li><li>Add a trend line only to test a claim, and report R-squared next to it. An R-squared near 0 means there is no trend to report.</li><li>Use a moving average to see the pattern, not to predict the future.</li><li>Label the peak and the low directly, so the reader does not need to search.</li></ul></div>
+<div class="card"><h3>How to read a line chart</h3><p class="small">Check four things in this order: the direction (up, down or flat), the size of the swings compared with the average, any month far from the others, and whether a pattern repeats. With only 12 months you cannot test whether a pattern repeats every year, so say "in this year" and do not generalise. When the peak month is the finding, name it in the title.</p></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales</b> of bmt-sales-clean-reference.xlsx (988 orders in rows 2 to 989; Region is column C, Units F, PaymentMode K, NetSales M, Month P).</p><ol class="small"><li>Build a PivotTable with <b>Month</b> (column P) in Rows and <b>NetSales</b> in Values.</li><li>Click inside it and choose Insert &gt; Line (or Area).</li><li>Click the line, then the + button next to the chart &gt; Trendline &gt; More Options, and tick Display R-squared value on chart.</li><li>Check by formula: <code>=RSQ(B2:B13,A2:A13)</code> where A holds month numbers 1 to 12 and B the monthly totals. A value near 0 means no real trend.</li></ol></div>
+${task(["Build a PivotTable of net sales by <b>Month</b> (column P) from the CSV and draw a line chart.","Add a trend line and display R-squared on the chart.","Write one sentence that says whether sales are growing, and use the R-squared value as your evidence."])}
+${quizSet(5)}`,
+mount(r){const m=M12;let t="line";bindSeg(r,"lt",v=>{t=v;d()});
   function d(){const w=+$("#ltw",r).value;$("#ltwv",r).textContent=w;const s=[{name:"Net sales",vals:m,color:"var(--c1)"}];
     const xs=m.map((_,i)=>i+1),f=linfit(xs,m),r2=f.r*f.r;
     if($("#lta",r).checked)s.push({name:"Trend",vals:xs.map(x=>f.m*x+f.b),color:"var(--c2)",dash:true});
     if($("#ltm",r).checked)s.push({name:w+"-month average",vals:m.map((_,i)=>i+1<w?null:mean(m.slice(i-w+1,i+1))),color:"var(--c3)",dash:true});
-    const pk=m.indexOf(Math.max(...m)),lw=m.indexOf(Math.min(...m));
-    $("#lc",r).innerHTML=chartLine(s,MLAB,{w:640,h:320,title:"Net sales by month",area:t==="area",min:0,marks:[{i:pk,v:m[pk],text:"Peak "+short(m[pk])},{i:lw,v:m[lw],text:"Low "+short(m[lw]),color:"var(--bad)"}]});
-    $("#ln",r).innerHTML=`Peak: <b>${MLAB[pk]}</b> (${fmt(m[pk])}). Low: <b>${MLAB[lw]}</b> (${fmt(m[lw])}). Trend slope ${f.m.toFixed(2)} per month, R&sup2; <b>${r2.toFixed(4)}</b>: ${r2<.1?"practically no trend. Do not claim growth.":"some trend."}`}
+    $("#lc",r).innerHTML=chartLine(s,MLAB,{w:640,h:320,title:"Net sales by month (Rs)",area:t==="area",min:0,cat:"Month",marks:[{i:PK,v:m[PK],text:"Peak "+lakh(m[PK])},{i:LW,v:m[LW],text:"Low "+lakh(m[LW]),color:"var(--bad)"}]});
+    $("#ln",r).innerHTML=`Peak: <b>${MLAB[PK]}</b> (${RS(m[PK])}). Low: <b>${MLAB[LW]}</b> (${RS(m[LW])}). Trend slope ${f.m.toFixed(0)} rupees per month, R-squared <b>${r2.toFixed(4)}</b>: ${r2<.1?"practically no trend. Do not claim growth.":"some trend."}`}
   $("#lta",r).onchange=d;$("#ltm",r).onchange=d;$("#ltw",r).oninput=d;d();}
 });
 /* 6 Scatter and bubble */
-const NF={units:"Units",mrp:"MRP",disc:"Discount %",net:"Net sales",rating:"Rating"};
+const NF={units:"Units",mrp:"MRP (Rs)",disc:"Discount %",net:"Net sales (Rs)",rating:"Rating"};
+const DISCRETE=["units","disc","rating"];
 lesson({nav:"Scatter and bubble charts",title:"Scatter plots and bubble charts: relationships",syl:"Scatter plots, bubble charts, correlation",
-html:()=>`<p class="lead">A <b>scatter plot</b> puts one number on each axis, one dot per case. A <b>bubble chart</b> adds a third number as the dot size. The <b>correlation r</b> (from -1 to +1) summarises the straight-line relationship.</p>
+html:()=>`<p class="lead">A <b>scatter plot</b> puts one number on each axis and draws one dot per case. It answers the question: do these two numbers move together? A <b>${g("bubble")}</b> adds a third number as the size of the dot. The ${g("correlation","correlation r")} summarises the straight-line pattern in one number from -1 to +1.</p>
 <div class="card try"><h3>Try it: pick two columns (orders)</h3>
-<div class="row">x: <select id="sx">${Object.entries(NF).map(([k,v])=>`<option value="${k}" ${k==="disc"?"selected":""}>${v}</option>`).join("")}</select> y: <select id="sy">${Object.entries(NF).map(([k,v])=>`<option value="${k}" ${k==="net"?"selected":""}>${v}</option>`).join("")}</select> <label class="chk"><input type="checkbox" id="sf" checked> Trend line</label></div>
-<div id="sc"></div><div class="callout k small" id="sn"></div></div>
-<div class="card try"><h3>Bubble chart: products</h3><p class="small muted">x = MRP, y = units sold, bubble size = net sales.</p><div id="bub"></div></div>
-${quiz("u2q6","Two columns have correlation 0.9. Does one cause the other?",["Yes, strongly","Not necessarily: correlation shows they move together, not why","Only if r is negative"],1,"Correlation is not causation. A third factor may drive both.")}`,
-mount(r){function d(){const a=$("#sx",r).value,b=$("#sy",r).value,rows=SALES.filter(x=>x[a]!=null&&x[b]!=null),xs=rows.map(x=>x[a]),ys=rows.map(x=>x[b]),f=linfit(xs,ys),jit=(k)=>["units","disc","rating"].includes(k)?(Math.random()-.5)*.35:0;
-    $("#sc",r).innerHTML=chartScatter(rows.map(x=>({x:x[a]+jit(a),y:x[b]+jit(b),r:2.8})),{w:640,h:330,title:NF[a]+" vs "+NF[b],xlabel:NF[a],ylabel:NF[b],fit:$("#sf",r).checked?f:null,y0:Math.min(0,Math.min(...ys)),x0:Math.min(...xs)-.5,x1:Math.max(...xs)+.5,alpha:.35});
-    const R=f.r,ab=Math.abs(R);$("#sn",r).innerHTML=`Correlation r = <b>${R.toFixed(3)}</b> (${ab<.1?"no linear relationship":ab<.3?"very weak":ab<.5?"weak":ab<.7?"moderate":"strong"}${R>0?", positive":R<0?", negative":""}). ${a==="units"&&b==="net"?"Net sales grow with units, as they must (it is units x price).":a==="disc"&&b==="units"?"Discounts do not visibly lift units here.":"Check whether the pattern makes business sense."}`}
+<div class="row">x: <select id="sx" aria-label="x column">${Object.entries(NF).map(([k,v])=>`<option value="${k}" ${k==="units"?"selected":""}>${v}</option>`).join("")}</select> y: <select id="sy" aria-label="y column">${Object.entries(NF).map(([k,v])=>`<option value="${k}" ${k==="net"?"selected":""}>${v}</option>`).join("")}</select> <label class="chk"><input type="checkbox" id="sf" checked> Trend line</label></div>
+<div id="sc"></div><div class="callout k small" id="sn"></div><p class="small muted" id="sd"></p></div>
+<div class="card try"><h3>Bubble chart: products</h3><p class="small muted">x = MRP (Rs), y = units sold, bubble size = net sales (Rs).</p><div id="bub"></div></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">Units against net sales gives a cloud of dots that rises to the right, with r = <b>${corr(SALES.map(x=>x.units),NV).toFixed(2)}</b>. That is expected, because net sales are units times price. Now choose Discount % against Units. The dots form four vertical stripes, because discount takes only four values (0, 5, 10 and 15), and r is close to zero (${corr(SALES.map(x=>x.disc),SALES.map(x=>x.units)).toFixed(2)}). The discounts in this shop do not visibly lift the units sold. A scatter plot works best when both columns have many different values. When a column has only a few values, the dots stack in stripes and several dots hide behind each other. The chart adds a small random shift (jitter) to separate them.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Read the picture first, then r. A high r is a summary of a picture that you have already looked at.</li><li>Correlation does not show cause. Two columns can move together because a third one drives both.</li><li>A trend line only helps when the dots roughly follow a line.</li><li>Choose a bubble chart only when a third number matters, and scale the <b>area</b> of the bubble, not the radius.</li></ul></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales</b> of bmt-sales-clean-reference.xlsx (988 orders in rows 2 to 989; Region is column C, Units F, PaymentMode K, NetSales M, Month P).</p><ol class="small"><li>Select Units (F2:F989), then hold Ctrl and select NetSales (M2:M989).</li><li>Choose Insert &gt; Scatter. Click the + button next to the chart and add a Trendline.</li><li>Find the correlation: <code>=CORREL(F2:F989,M2:M989)</code>. A high value shows the columns move together; it does not show that one causes the other.</li><li>For a bubble chart choose Insert &gt; Scatter or Bubble Chart &gt; Bubble. Put one measure on X, one on Y and a third (such as total units) as the bubble size.</li></ol></div>
+${task(["Plot <b>Units</b> (x) against <b>NetSales</b> (y) from the CSV, add a trend line and calculate <code>=CORREL(F2:F989,M2:M989)</code>.","Plot <b>DiscountPct</b> (column H) against <b>NetSales</b>. Explain in one sentence why the dots form stripes.","Write one sentence about whether discounts help sales in this data."])}
+${quizSet(6)}`,
+mount(r){function d(){const a=$("#sx",r).value,b=$("#sy",r).value,rows=SALES.filter(x=>x[a]!=null&&x[b]!=null),xs=rows.map(x=>x[a]),ys=rows.map(x=>x[b]),f=linfit(xs,ys),jit=(k)=>DISCRETE.includes(k)?(Math.random()-.5)*.35:0;
+    const ints=k=>DISCRETE.includes(k);
+    $("#sc",r).innerHTML=chartScatter(rows.map(x=>({x:Math.max(0,x[a]+jit(a)),y:Math.max(0,x[b]+jit(b)),r:2.8})),{w:640,h:330,title:NF[a]+" vs "+NF[b],xlabel:NF[a],ylabel:NF[b],fit:$("#sf",r).checked?f:null,y0:0,x0:0,x1:Math.ceil(Math.max(...xs)*1.04),xint:ints(a),yint:ints(b),alpha:.35});
+    const R=f.r,ab=Math.abs(R);$("#sn",r).innerHTML=ab<.1?`Correlation r = <b>${R.toFixed(3)}</b>: no linear relationship.`:`Correlation r = <b>${R.toFixed(3)}</b> (${ab<.3?"very weak":ab<.5?"weak":ab<.7?"moderate":"strong"}, ${R>0?"positive":"negative"}). ${a==="units"&&b==="net"?"Net sales grow with units, as they must (it is units x price).":a==="disc"&&b==="units"?"Discounts do not visibly lift units here.":"Check whether the pattern makes business sense."}`;
+    const dis=[a,b].filter(ints).map(k=>`${NF[k]} has only ${new Set(rows.map(x=>x[k])).size} different values`);
+    $("#sd",r).textContent=dis.length?dis.join(" and ")+", so many dots share one position and form stripes. A small random shift (jitter) has been added so that they do not hide each other.":"Both columns have many different values, so the dots form a cloud."}
   ["sx","sy","sf"].forEach(i=>$("#"+i,r).onchange=d);d();
-  const g=groupBy(SALES,x=>x.product),pts=Object.entries(g).map(([p,rs],i)=>({x:rs[0].mrp,y:sum(rs.map(z=>z.units)),r:Math.max(6,Math.sqrt(sum(rs.map(z=>z.net)))/6),label:p,color:PAL[i%6]}));
-  $("#bub",r).innerHTML=chartScatter(pts,{w:640,h:340,xlabel:"MRP (Rs)",ylabel:"Units sold",labels:true,x0:0,x1:900,alpha:.5});}
+  const g=groupBy(SALES,x=>x.product),pts=Object.entries(g).map(([p,rs],i)=>({x:rs[0].mrp,y:sum(rs.map(z=>z.units)),r:Math.max(5,Math.sqrt(sum(rs.map(z=>z.net)))/9),label:p,color:PAL[i%6]}));
+  $("#bub",r).innerHTML=chartScatter(pts,{w:640,h:340,xlabel:"MRP (Rs)",ylabel:"Units sold",labels:true,x0:0,x1:1000,alpha:.5});}
 });
 /* 7 Colour, shape, size, labels, data-ink */
 lesson({nav:"Colour, labels and data-ink",title:"Colour, shape, size, labelling and data-ink",syl:"Design principles: colour, shape, size, labelling, data-ink ratio",
-html:()=>`<p class="lead">Every mark on a chart should earn its place. Edward Tufte called the useful part the <b>data-ink</b>. Remove decoration, keep the message. Use <b>colour to highlight</b>, not to decorate.</p>
+html:()=>`<p class="lead">Every mark on a chart should carry information. The statistician Edward Tufte called the part of a chart that shows data the ${g("dataink")}. The rest is decoration. A good chart keeps the data-ink, removes the decoration, and uses colour only to point at the finding.</p>
 <div class="card try"><h3>Try it: tidy the chart</h3>
 <div class="row"><label class="chk"><input type="checkbox" id="c1"> Rainbow colours</label><label class="chk"><input type="checkbox" id="c2" checked> Highlight the top region only</label><label class="chk"><input type="checkbox" id="c3" checked> Value labels on bars</label><label class="chk"><input type="checkbox" id="c4" checked> Sort bars</label></div>
 <div id="cc"></div><div class="callout k small" id="cn"></div></div>
-<div class="card"><h3>Checklist</h3><span class="pill"><b>Colour</b>: one highlight, others grey; keep contrast</span><span class="pill"><b>Shape</b>: bars compare, lines connect</span><span class="pill"><b>Size</b>: area must match value</span><span class="pill"><b>Labels</b>: title says the insight; label directly</span><span class="pill"><b>Accessibility</b>: do not rely on red vs green alone</span></div>
-${quiz("u2q7","The best use of colour in a business chart is to...",["Make every bar different","Draw attention to the one thing that matters","Match the company logo"],1,"Colour is a spotlight. Use one accent colour on the finding and keep the rest quiet.")}`,
+<div class="card"><h3>What the demo shows</h3><p class="small">Tick rainbow colours. Each region gets its own colour, but the colours mean nothing, so the reader looks for a legend that is not there. Now tick the highlight. Central is blue and the other four regions are grey. The eye goes straight to Central, and the title says what to notice: Central leads, and East is about ${Math.round(100*(1-1/RATIO))} percent below it. Value labels let the reader see exact numbers without the gridlines. The title, the highlight and the labels together carry the message in a few seconds. (Lesson 11 shows why this percentage depends on the base you choose.)</p></div>
+<div class="card sec"><h3>Rules to follow</h3><div class="grid2"><div><span class="pill"><b>Colour</b>: one highlight colour, the rest grey. Keep strong contrast with the background.</span><span class="pill"><b>Shape</b>: bars compare, lines connect, dots show relationships.</span><span class="pill"><b>Size</b>: the area must match the value. Scale the area of a bubble, not its radius.</span></div><div><span class="pill"><b>Labels</b>: the title states the finding. Label bars and lines directly. Show units (Rs) and the source.</span><span class="pill"><b>Data-ink</b>: delete the 3D effect, heavy gridlines, borders and a legend that repeats the title.</span><span class="pill"><b>Accessibility</b>: do not rely on red against green alone. About 1 in 12 men cannot tell them apart.</span></div></div></div>
+<div class="card"><h3>Worked example</h3><p class="small">Start with the region chart drawn with five colours, a legend, heavy gridlines and the title "Chart". Make four bars grey and Central blue. Delete the legend and the gridlines. Add value labels. Replace the title with the finding. The chart now has fewer marks and a clearer message. That is the data-ink idea at work: take away what carries no information, and what is left is easier to read.</p></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Use the pivot chart from lesson 3.</p><ol class="small"><li>Click the chart, then choose Chart Design &gt; Change Colors, or click one bar twice and use Format Data Point &gt; Fill to colour only the bar that matters.</li><li>Colour the other bars grey. One accent colour is enough.</li><li>Click the gridlines and press Delete. Delete the legend if there is one series.</li><li>Choose Chart Design &gt; Add Chart Element &gt; Data Labels, so readers do not need the axis.</li></ol></div>
+${task(["Take the sorted region chart from lesson 3 in your spreadsheet.","Colour only the Central bar and make the others grey. Delete the gridlines and add data labels.","Replace the title with a sentence that states the finding."])}
+${quizSet(7)}`,
 mount(r){function d(){const rb=$("#c1",r).checked,hi=$("#c2",r).checked,vl=$("#c3",r).checked,so=$("#c4",r).checked;
     const it=regionItems(SALES,so,(x,i)=>rb?PAL[i%5]:hi?(x.label==="Central"?"var(--c1)":"var(--muted)"):"var(--c1)");
-    $("#cc",r).innerHTML=chartBar(it,{w:620,h:300,title:hi?"Central leads net sales; East trails by 20%":"Net sales by region",values:vl});
+    $("#cc",r).innerHTML=chartBar(it,{w:620,h:300,title:hi?"Central leads net sales; East is about "+Math.round(100*(1-1/RATIO))+"% below it":"Net sales by region (Rs)",values:vl,cat:"Region",vlabel:"Net sales (Rs)"});
     $("#cn",r).textContent=rb?"Rainbow colours carry no meaning here: the eye hunts for a legend that does not exist.":hi?"Grey for context, one colour for the finding. The title states the message.":"Plain single colour is fine, but nothing tells the viewer where to look."}
   ["c1","c2","c3","c4"].forEach(i=>$("#"+i,r).onchange=d);d();}
 });
 /* 8 Fix a bad chart */
-const BAD=[["Starts at zero (not truncated)","The axis starts at 120,000, so differences look huge."],["Sorted","Bars are in random order."],["Title states the insight","The title is missing or only a topic."],["One calm colour (plus a highlight)","Rainbow colours with no meaning."],["Value labels instead of a busy grid","Readers cannot read exact values."]];
+const BAD=[["Starts at zero (not cut)","The axis starts at Rs 1,20,000, so differences look huge."],["Sorted","Bars are in random order."],["Title states the insight","The title is missing or only a topic."],["One calm colour (plus a highlight)","Rainbow colours with no meaning."],["Value labels instead of a busy grid","Readers cannot read exact values."]];
 lesson({nav:"Fix a bad chart",title:"Common visualization mistakes: fix a bad chart",syl:"Common mistakes in data visualization, best practices",
-html:()=>`<p class="lead">Start from a chart with five classic mistakes. Fix them one by one and watch it improve.</p>
+html:()=>`<p class="lead">Most bad charts repeat the same few mistakes. They are easy to name and easy to fix. This lesson starts from a chart that contains five of them. Tick each fix and watch the chart improve.</p>
 <div class="card try"><h3>Try it: tick each fix</h3><div class="row">${BAD.map((b,i)=>`<label class="chk"><input type="checkbox" id="f${i}"> ${b[0]}</label>`).join("")}</div>
 <div id="fc"></div><div class="callout k small" id="fn"></div><p class="small" id="fs"></p></div>
-${quiz("u2q8","Which mistake changes the viewer's conclusion the most?",["A missing title","A truncated axis","Using grey instead of blue"],1,"A truncated axis can turn a 5 percent difference into a 'doubling'.")}`,
+<div class="card"><h3>What the demo shows</h3><p class="small">The starting chart uses a ${g("trunc","cut axis")}, random order, a title that says only "Chart 1", rainbow colours and no value labels. Fix the axis first: the gap between the largest and smallest bar shrinks from about ${((CEN-120000)/(EAS-120000)).toFixed(1)} times to the true ${RATIO.toFixed(2)} times. That one change alters the conclusion a reader draws. The other four fixes make the chart faster to read, but they do not change what it says. When you fix a chart, work in this order: first anything that distorts the data (axis, scale, 3D), then anything that hides the message (title, order, colour), then anything that adds clutter (gridlines, borders, repeated legends).</p></div>
+<div class="card sec"><h3>Checklist before you show a chart</h3><ul class="small"><li>Do the bars start at zero? Is any 3D effect or second axis distorting the values?</li><li>Are the categories sorted, or in their natural order?</li><li>Does the title state the finding? Are units (Rs), source and period shown?</li><li>Does colour mean something, or is it decoration?</li><li>Can a reader find an exact value without guessing?</li></ul><p class="small">Other common mistakes: a pie with many slices, a line chart for unordered categories, two vertical axes with different scales, and comparing sizes by the radius of a circle.</p></div>
+<div class="card"><h3>A five-second test</h3><p class="small">Show the chart to someone for five seconds, then hide it and ask what it said. If the answer is not your finding, the problem is in the labels, the order or the colour, and you should fix those first.</p></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Open a bad chart (3D, truncated axis, unsorted, no title) and repair it.</p><ol class="small"><li>Click the chart and choose Chart Design &gt; Change Chart Type. Pick a flat 2D type.</li><li>Right-click the vertical axis &gt; Format Axis &gt; set Minimum to 0.</li><li>Sort the data from largest to smallest in the pivot.</li><li>Click the chart title and replace it with a title that states the finding. Add axis titles with Chart Design &gt; Add Chart Element &gt; Axis Titles.</li></ol></div>
+${task(["Make a bad chart on purpose from the CSV: 3D columns, unsorted, axis cut at 120000, rainbow colours, title 'Chart 1'.","Fix it one problem at a time and save a copy after each fix.","List the five changes and say which one altered the message most."])}
+${quizSet(8)}`,
 mount(r){function d(){const f=BAD.map((_,i)=>$("#f"+i,r).checked);
     let it=regionItems(SALES,f[1],(x,i)=>f[3]?(x.label==="Central"?"var(--c1)":"var(--muted)"):PAL[i%5]);
-    $("#fc",r).innerHTML=chartBar(it,{w:620,h:300,title:f[2]?"Central region leads net sales (Rs 1.64 lakh)":"Chart 1",min:f[0]?0:120000,max:f[0]?undefined:170000,values:f[4]});
+    $("#fc",r).innerHTML=chartBar(it,{w:620,h:300,title:f[2]?"Central region leads net sales ("+LK(CEN)+")":"Chart 1",min:f[0]?0:120000,max:f[0]?undefined:170000,values:f[4],cat:"Region",vlabel:"Net sales (Rs)"});
     const n=f.filter(Boolean).length;$("#fs",r).innerHTML=`Fixes applied: <b>${n} of 5</b>`;
     const first=f.findIndex(x=>!x);$("#fn",r).textContent=first<0?"A clean chart: honest axis, ordered, clear message, calm colour, direct labels.":"Still wrong: "+BAD[first][1]}
   BAD.forEach((_,i)=>$("#f"+i,r).onchange=d);d();}
 });
 /* 9 Storytelling */
 lesson({nav:"Storytelling with data",title:"Data storytelling",syl:"Storytelling with data, communicating insights",
-html:()=>`<p class="lead">A chart is not a story. A story has <b>context</b> (what is normal), an <b>insight</b> (what changed), and an <b>action</b> (what to do). Three charts, three sentences.</p>
+html:()=>`<p class="lead">A chart is not yet a story. A story has three parts: the <b>context</b> (what is normal), the <b>insight</b> (what is different or has changed) and the <b>action</b> (what the reader should do). Each part gets one chart and one sentence.</p>
 <div class="card try"><h3>Try it: build a story from the data</h3><div class="row">${seg("stv",[["1","1. Context"],["2","2. Insight"],["3","3. Action"]],"s")}</div>
-<div class="grid2"><div id="stc"></div><div><h2 id="sth"></h2><p id="stt"></p><p class="small muted">Edit the headline to say what <i>you</i> would present:</p><input type="text" id="sti" style="width:100%"></div></div></div>
-<div class="card"><h3>A good story title says the insight</h3><p class="small"><b>Weak:</b> "Sales by month". <b>Strong:</b> "March is our biggest month, and six months fall below the average." Test: could someone read only the titles and get your message?</p></div>
-${quiz("u2q9","The best chart title is...",["Net sales by month","The finding, in a sentence","The date the chart was made"],1,"Titles should state the insight so the slide works on its own.")}`,
-mount(r){const m=monthly(),avg=mean(m),pk=m.indexOf(Math.max(...m)),below=m.filter(v=>v<avg).length;const g=sumBy(SALES,x=>x.region);const top=REGIONS.slice().sort((a,b)=>g[b]-g[a]);
-  const S={1:["Context: a typical month is about Rs "+IN(avg),`Over 12 months, average net sales are ${fmt(avg)} per month. Sales are flat, with ups and downs.`,()=>chartLine([{name:"Net sales",vals:m},{name:"Average",vals:m.map(()=>avg),dash:true,color:"var(--c2)"}],MLAB,{w:420,h:260,maxLabels:6})],
-   2:["Insight: "+MLAB[pk]+" is "+Math.round(100*(m[pk]/avg-1))+"% above average",`${MLAB[pk]} sold ${fmt(m[pk])}. ${below} of 12 months fell below the average.`,()=>chartBar(MLAB.map((l,i)=>({label:l,value:Math.round(m[i]),color:i===pk?"var(--c2)":"var(--muted)"})),{w:420,h:260,rotate:true,values:false})],
-   3:["Action: learn from "+top[0]+" and lift "+top[4],`${top[0]} leads (${fmt(g[top[0]])}). ${top[4]} trails by ${Math.round(100*(1-g[top[4]]/g[top[0]]))}%. Find what ${top[0]} does differently, then test it in ${top[4]}.`,()=>chartBar(regionItems(SALES,true,(x)=>x.label===top[0]?"var(--c1)":x.label===top[4]?"var(--c2)":"var(--muted)"),{w:420,h:260})]};
+<div class="grid2"><div id="stc"></div><div><h2 id="sth"></h2><p id="stt"></p><p class="small muted">Edit the headline to say what <i>you</i> would present:</p><input type="text" id="sti" style="width:100%" aria-label="Your headline"></div></div></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">The context chart shows an ordinary month, about ${RS(AVGM)}, with the average drawn as a dashed line. The insight chart colours one bar: ${MLAB[PK]} is ${Math.round(100*(M12[PK]/AVGM-1))} percent above the average, and ${BELOW} of the 12 months are below it. The action chart compares the best region, ${TOPR[0]}, with the weakest, ${TOPR[4]}, and the headline names the next step. Each headline is a full sentence. If someone reads only the three headlines, they still get the message.</p></div>
+<div class="card sec"><h3>A good title says the insight</h3><p class="small"><b>Weak:</b> "Sales by month". <b>Strong:</b> "March is our biggest month, and ${BELOW} of the 12 months fall below the average." Test: could someone read only the titles and get your message?</p><ul class="small"><li>Know the audience and the decision they must make before you draw anything.</li><li>Give one message per chart.</li><li>Claim only what the data supports. A peak month is not growth (lesson 5), and a high correlation is not cause (lesson 6).</li><li>End with an action that someone can take.</li></ul></div>
+<div class="card"><h3>How to write the action</h3><p class="small">An action is something a named person can do. "Improve East" is a wish. "Ask the East store manager to compare the product mix with Central for one month" is an action. If you cannot write an action, you may not have an insight yet. Return to the data and ask a more specific question.</p></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Turn a chart into a story slide.</p><ol class="small"><li>Replace the chart title with the finding, for example "March is our biggest month, and six months fall below the average".</li><li>Add the average line: in a helper column enter <code>=AVERAGE($B$2:$B$13)</code> in every row and add it to the chart as a second series.</li><li>Colour the peak month with the accent colour and the rest grey. Add one text box with Insert &gt; Text Box for the action the reader should take.</li></ol></div>
+${task(["Choose three charts from this unit and write a context headline, an insight headline and an action headline for them.","Present the three headlines to a partner in 60 seconds, without reading the numbers aloud.","Ask your partner what they would do next. If it is not your action, rewrite the headlines."])}
+${quizSet(9)}`,
+mount(r){const m=M12,avg=AVGM,pk=PK,below=BELOW;const g=BYREG;const top=TOPR;
+  const S={1:["Context: a typical month is about Rs "+IN(avg),`Over 12 months, average net sales are ${RS(avg)} per month. Sales are flat, with ups and downs.`,()=>chartLine([{name:"Net sales",vals:m},{name:"Average",vals:m.map(()=>avg),dash:true,color:"var(--c2)"}],MLAB,{w:420,h:260,maxLabels:6,cat:"Month"})],
+   2:["Insight: "+MLAB[pk]+" is "+Math.round(100*(m[pk]/avg-1))+"% above average",`${MLAB[pk]} sold ${RS(m[pk])}. ${below} of 12 months fell below the average.`,()=>chartBar(MLAB.map((l,i)=>({label:l,value:Math.round(m[i]),color:i===pk?"var(--c2)":"var(--muted)"})),{w:420,h:260,rotate:true,values:false,cat:"Month",vlabel:"Net sales (Rs)"})],
+   3:["Action: learn from "+top[0]+" and lift "+top[4],`${top[0]} leads (${RS(g[top[0]])}). ${top[4]} trails by ${Math.round(100*(1-g[top[4]]/g[top[0]]))}%. Find what ${top[0]} does differently, then test it in ${top[4]}.`,()=>chartBar(regionItems(SALES,true,(x)=>x.label===top[0]?"var(--c1)":x.label===top[4]?"var(--c2)":"var(--muted)"),{w:420,h:260,cat:"Region",vlabel:"Net sales (Rs)"})]};
   function d(v){const s=S[v];$("#stc",r).innerHTML=s[2]();$("#sth",r).textContent=s[0];$("#stt",r).textContent=s[1];$("#sti",r).value=s[0]}
   d("1");bindSeg(r,"stv",d);}
 });
 /* 10 Dashboards */
 lesson({hero:true,nav:"Dashboards and slicers",title:"Dashboards: one screen, one decision",syl:"Dashboards, interactive visualization (Power BI / Excel)",
-html:()=>`<p class="lead">A <b>dashboard</b> puts the few numbers and charts a decision-maker needs on <b>one screen</b>. <b>Slicers</b> (filters) let you change the view without rebuilding anything. This is what Power BI, Excel and Sheets dashboards do.</p>
+html:()=>`<p class="lead">A ${g("dashboard")} puts the few numbers and charts a decision-maker needs on <b>one screen</b>. The numbers at the top are ${g("kpi","KPIs")}. ${g("slicer","Slicers")} (filters) let the reader change the view without rebuilding anything. Power BI, Excel and Google Sheets can all build dashboards.</p>
 <div class="card try"><h3>Try it: slice the Sunrise dashboard</h3>
-<div class="row">Region <select id="dr"><option value="">All</option>${REGIONS.map(x=>`<option>${x}</option>`).join("")}</select> Category <select id="dc"><option value="">All</option>${CATS.map(x=>`<option>${x}</option>`).join("")}</select> Segment <select id="ds"><option value="">All</option><option>Corporate</option><option>Retail</option><option>Student</option></select></div>
-<div class="grid3" id="dk"></div><div class="grid2"><div id="d1"></div><div id="d2"></div></div><div id="d3"></div></div>
-<div class="card"><h3>Build it in your tool</h3><p class="small"><b>Google Sheets:</b> pivot tables + charts + Data, Add a slicer. <b>Excel:</b> PivotCharts + Insert Slicer. <b>Power BI Desktop:</b> Get data, drag fields onto visuals, add Slicer visuals, and clicking a bar filters the others (cross-filtering).</p></div>
-${quiz("u2q10","The main job of a slicer is to...",["Delete rows","Filter all linked visuals at once","Change the colour theme"],1,"A slicer applies a filter across the dashboard so you can explore without new charts.")}`,
+<div class="row">Region <select id="dr" aria-label="Region"><option value="">All</option>${REGIONS.map(x=>`<option>${x}</option>`).join("")}</select> Category <select id="dc" aria-label="Category"><option value="">All</option>${CATS.map(x=>`<option>${x}</option>`).join("")}</select> Segment <select id="ds" aria-label="Segment"><option value="">All</option><option>Corporate</option><option>Retail</option><option>Student</option></select></div>
+<div class="grid3" id="dk"></div><p class="small muted">Profit margin = (Net sales - Units x Cost price) / Net sales. Cost price is shown in the Live data panel.</p><div class="grid2"><div id="d1"></div><div id="d2"></div></div><div id="d3"></div></div>
+<div class="card"><h3>What the demo shows</h3><p class="small">With all filters on All, the dashboard shows 988 orders, net sales of ${RS(sum(NV))} and a profit margin of ${MARGIN.toFixed(1)} percent. Choose East in the region slicer. Every number and every chart changes at once: the margin becomes ${(100*sum(SALES.filter(x=>x.region==="East").map(x=>x.profit))/sum(SALES.filter(x=>x.region==="East").map(x=>x.net))).toFixed(1)} percent. You asked one question ("how is East doing?") and the whole page answered it. In Power BI the same effect comes from clicking a bar: the other charts filter to match, which is called ${g("crossfilter")}.</p></div>
+<div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Build the dashboard for one decision and one audience. Write the decision at the top before you add any chart.</li><li>Use three to five KPIs and no more than four charts. If everything is shown, nothing stands out.</li><li>Define every KPI. A number that a reader cannot reproduce from visible data should not be on the page.</li><li>Put the most important number at the top left, where the eye starts.</li><li>Use the same colour for the same thing on every chart.</li></ul></div>
+<div class="card"><h3>Order of work</h3><p class="small">Build a dashboard in this order: write the decision it supports, choose three to five KPIs, add the charts that explain those KPIs, add slicers for the groups the decision-maker cares about, and test every slicer combination. Some combinations return no rows. The dashboard should then say so clearly, as the demo does, and not show an empty chart.</p></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Data: sheet <b>Sales</b> of bmt-sales-clean-reference.xlsx (988 orders in rows 2 to 989; Region is column C, Units F, PaymentMode K, NetSales M, Month P).</p><ol class="small"><li>Insert a PivotTable and a PivotChart: Insert &gt; PivotChart.</li><li>Click the PivotChart and choose PivotChart Analyze &gt; Insert Slicer. Tick Region, Category and Segment.</li><li>For dates choose Insert &gt; Timeline and tick OrderDate.</li><li>To make one slicer control several charts, right-click the slicer, choose Report Connections and tick every PivotTable.</li><li>Place the KPI cells (<code>=SUM(M2:M989)</code> and <code>=COUNTA(A2:A989)</code>) and two or three charts on one sheet. That sheet is your dashboard.</li></ol></div>
+<div class="card"><h3>Build it in Power BI Desktop</h3><ol class="small"><li>Download the CSV with the button in the right-hand panel.</li><li>Open Power BI Desktop, choose Get data, Text/CSV, pick the file and choose Load.</li><li>Drag <b>NetSales</b> onto a Card visual. Drag <b>OrderID</b> onto another card and set it to Count.</li><li>Add a line chart (Month on the axis, NetSales as the value) and a clustered bar chart (Category and NetSales).</li><li>Add two Slicer visuals, one for Region and one for Segment.</li><li>Click a bar in one chart and watch the others filter.</li></ol></div>
+${task(["Build a one-page dashboard from the CSV in Excel or Power BI Desktop: three KPI cards (net sales, orders, profit margin), a monthly line, a category bar, and slicers for Region and Segment.","Calculate the profit margin with <code>=(SUM(M2:M989)-SUMPRODUCT(F2:F989,Q2:Q989))/SUM(M2:M989)</code>. It should match "+MARGIN.toFixed(1)+" percent. Filter to East and check that you get the East figure shown above.","Write the decision the dashboard supports in one line at the top."])}
+${quizSet(10)}`,
 mount(r){function d(){const R=$("#dr",r).value,C=$("#dc",r).value,S=$("#ds",r).value,rows=SALES.filter(x=>(!R||x.region===R)&&(!C||x.cat===C)&&(!S||x.seg===S));
     const n=sum(rows.map(x=>x.net)),p=sum(rows.map(x=>x.profit));
-    $("#dk",r).innerHTML=[["Net sales",fmt(n)],["Orders",rows.length],["Profit margin",rows.length?(100*p/n).toFixed(1)+"%":"-"]].map(k=>`<div class="kpi"><span class="small muted">${k[0]}</span><b>${k[1]}</b></div>`).join("");
+    $("#dk",r).innerHTML=[["Net sales (Rs)",rows.length?RS(n):"-"],["Orders",rows.length],["Profit margin",rows.length?(100*p/n).toFixed(1)+"%":"-"]].map(k=>`<div class="kpi"><span class="small muted">${k[0]}</span><b>${k[1]}</b></div>`).join("");
     if(!rows.length){$("#d1",r).innerHTML=$("#d2",r).innerHTML=$("#d3",r).innerHTML='<div class="callout">No rows for this combination.</div>';return}
-    $("#d1",r).innerHTML=chartLine([{name:"Net sales",vals:monthly(rows)}],MLAB,{w:420,h:240,title:"By month",maxLabels:6,min:0});
-    const g=sumBy(rows,x=>x.cat);$("#d2",r).innerHTML=chartBar(CATS.map(c=>({label:c,value:Math.round(g[c]||0),color:"var(--c2)"})),{w:420,h:240,title:"By category"});
-    const gp=sumBy(rows,x=>x.product),tp=Object.entries(gp).sort((a,b)=>b[1]-a[1]).slice(0,6);$("#d3",r).innerHTML=chartBar(tp.map(x=>({label:x[0],value:Math.round(x[1]),color:"var(--c3)"})),{w:640,h:240,title:"Top products"})}
+    $("#d1",r).innerHTML=chartLine([{name:"Net sales",vals:monthly(rows)}],MLAB,{w:420,h:240,title:"By month (Rs)",maxLabels:6,min:0,cat:"Month"});
+    const g=sumBy(rows,x=>x.cat);$("#d2",r).innerHTML=chartBar(CATS.map(c=>({label:c,value:Math.round(g[c]||0),color:"var(--c2)"})),{w:420,h:240,title:"By category (Rs)",cat:"Category",vlabel:"Net sales (Rs)"});
+    const gp=sumBy(rows,x=>x.product),tp=Object.entries(gp).sort((a,b)=>b[1]-a[1]).slice(0,6);$("#d3",r).innerHTML=chartBar(tp.map(x=>({label:x[0],value:Math.round(x[1]),color:"var(--c3)"})),{w:640,h:240,title:"Top products (Rs)",cat:"Product",vlabel:"Net sales (Rs)"})}
   ["dr","dc","ds"].forEach(i=>$("#"+i,r).onchange=d);d();}
 });
 /* 11 Tools, export, ethics */
 lesson({nav:"Tools, exporting and ethics",title:"Visualization tools, exporting and ethical visualization",syl:"Visualization tools (Excel, Power BI, Tableau, Python), exporting, ethics",
-html:()=>`<p class="lead">Different tools, same principles. Choose by audience, data size and budget.</p>
-<div class="card"><table class="dt"><thead><tr><th>Tool</th><th>Best for</th><th>Notes</th></tr></thead><tbody>
-<tr><td><b>Excel</b></td><td>Quick charts, small to medium data</td><td>Paid (MS Office). Pivot charts, slicers</td></tr>
-<tr><td><b>Google Sheets</b></td><td>Free, shareable, collaborative</td><td>Runs in a browser. Good for classroom</td></tr>
-<tr><td><b>Power BI Desktop</b></td><td>Dashboards and large data</td><td>Free desktop app (Windows). Cross-filtering visuals</td></tr>
-<tr><td><b>Tableau</b></td><td>Polished interactive dashboards</td><td>Check current licensing before recommending it</td></tr>
-<tr><td><b>Python (matplotlib)</b></td><td>Repeatable, automated charts</td><td>Needs coding; scripts are in your Notion page</td></tr></tbody></table></div>
-<div class="card try"><h3>Ethics: the same data, two stories</h3><p class="small muted">Sales for East vs Central. Which chart would you be proud to show?</p>
+html:()=>`<p class="lead">The tools differ, but the principles in lessons 1 to 10 are the same in all of them. Choose a tool by the audience, the size of the data and the budget. After the chart is made, you still have to export it and present it honestly.</p>
+<div class="card"><div class="tw sm"><table class="dt wrap"><thead><tr><th>Tool</th><th>Best for</th><th>Notes</th></tr></thead><tbody>
+<tr><td><b>Excel</b></td><td>Quick charts, small to medium data</td><td>Paid (Microsoft Office). Pivot charts and slicers.</td></tr>
+<tr><td><b>Google Sheets</b></td><td>Free, shareable, collaborative</td><td>Runs in a browser. Good for a classroom.</td></tr>
+<tr><td><b>Power BI Desktop</b></td><td>Dashboards and large data</td><td>Free desktop app (Windows). Cross-filtering visuals.</td></tr>
+<tr><td><b>Tableau</b></td><td>Polished interactive dashboards</td><td>Check the current licensing before you recommend it.</td></tr>
+<tr><td><b>Python (matplotlib)</b></td><td>Repeatable, automated charts</td><td>Needs coding. A short example is given below.</td></tr></tbody></table></div></div>
+<div class="card try"><h3>Ethics: the same data, two stories</h3><p class="small muted">Sales for East and Central. Which chart would you be proud to show?</p>
 <div class="row">${seg("et",[["h","Honest"],["m","Misleading"]],"s")}</div><div id="ec"></div><div class="callout k small" id="en"></div></div>
-<div class="card"><h3>Exporting checklist</h3><p class="small">Export as PNG for slides, PDF for reports, and keep the source file. Check: readable at slide size, title says the insight, source and date in a footnote, colours readable in grayscale.</p></div>
-${quiz("u2q11","A manager asks you to cut the axis so the growth 'looks better'. What do you do?",["Do it, they are the boss","Show the honest chart and explain the real size of the change","Remove the axis labels"],1,"Honest charts protect your credibility and your decisions. You can emphasise a real finding without distorting it.")}`,
+<div class="card"><h3>What the demo shows</h3><p class="small">Both charts use the same two numbers: Central ${RS(CEN)} and East ${RS(EAS)}. The honest chart starts at zero and shows a gap you can see is real but moderate. The misleading chart cuts the axis and shouts "Central DOUBLES East". Nothing in it is false arithmetic, and it is still a lie, because the reader leaves with a wrong picture. A chart is ethical when a reader who looks at it for five seconds takes away what the data says. If the honest chart is not exciting, change the message, not the axis.</p></div>
+<div class="card sec"><h3>One gap, three true statements</h3><p class="small">The gap between Central and East is described in three places in this unit.</p>
+<div class="tw sm"><table class="dt wrap"><thead><tr><th>Statement</th><th>Where</th><th>Base</th><th>Calculation</th></tr></thead><tbody>
+<tr><td>The ratio is ${RATIO.toFixed(2)}</td><td>Lesson 3</td><td>East</td><td>${IN(CEN)} / ${IN(EAS)}</td></tr>
+<tr><td>East trails Central by about ${Math.round(100*(1-1/RATIO))} percent</td><td>Lesson 7</td><td>Central</td><td>1 - ${IN(EAS)} / ${IN(CEN)}</td></tr>
+<tr><td>Central is about ${Math.round(100*(RATIO-1))} percent larger than East</td><td>This lesson</td><td>East</td><td>${IN(CEN)} / ${IN(EAS)} - 1</td></tr></tbody></table></div>
+<p class="small">All three are correct. They differ because each uses a different base. The gap in rupees is the same, ${RS(CEN-EAS)}. The choice of base is also a choice about how big the gap looks: 20 percent sounds smaller than 25 percent. Choose the base that matches your question ("how far behind is East?" uses Central as the base), say which base you used, and keep it the same across slides.</p></div>
+<div class="card"><h3>Exporting checklist</h3><p class="small">Export as PNG for slides, PDF for reports, and keep the source file. Check: readable at slide size, title says the insight, source and date in a footnote, and colours readable in grayscale.</p></div>
+<div class="card"><h3>A chart in Python</h3><p class="small muted">Optional. Save the CSV from the right-hand panel in the same folder as the script.</p><div class="code">import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("sunrise-retail-sales.csv")
+by_region = df.groupby("Region")["NetSales"].sum().sort_values(ascending=False)
+ax = by_region.plot(kind="bar", color="#9a9a9a")
+ax.patches[0].set_facecolor("#1f3fb5")   # highlight the largest bar
+ax.set_ylim(0)                           # honest axis
+ax.set_title("Central leads net sales by Rs ${IN(CEN-EAS)} over East")
+ax.set_ylabel("Net sales (Rs)")
+plt.tight_layout()
+plt.savefig("region-sales.png", dpi=200)</div></div>
+<div class="card"><h3>Do it in Excel</h3><p class="small muted">Share the result.</p><ol class="small"><li>Right-click a chart and choose Save as Picture to export a PNG for slides.</li><li>Choose File &gt; Export &gt; Create PDF/XPS to export the sheet as PDF.</li><li>To paste into PowerPoint use Copy, then Paste Special &gt; Picture, so the chart cannot be edited by mistake. Always keep the source workbook.</li></ol></div>
+${task(["Export the dashboard from lesson 10 as a PDF and as a PNG.","Add a footnote with the source (Sunrise Retail, 1 Apr 2025 to 31 Mar 2026) and today's date.","Write one sentence, in your own words, that says what a reader should take away."])}
+${quizSet(11)}
+<div class="card"><h3>Your progress in this unit</h3><div class="tw sm"><table class="dt"><thead><tr><th>Lesson</th><th>Correct</th><th>First try</th></tr></thead><tbody id="unitsum"></tbody></table></div><p class="small muted">Saved on this device only.</p></div>`,
 mount(r){const a=SALES.filter(x=>x.region==="Central"),b=SALES.filter(x=>x.region==="East");const va=sum(a.map(x=>x.net)),vb=sum(b.map(x=>x.net));
   function d(v){const it=[{label:"East",value:Math.round(vb),color:"var(--c2)"},{label:"Central",value:Math.round(va),color:"var(--c1)"}];
-    $("#ec",r).innerHTML=v==="h"?chartBar(it,{w:420,h:240,title:"Net sales: East vs Central"}):chartBar(it,{w:420,h:240,title:"Central DOUBLES East!",min:125000,max:166000});
-    $("#en",r).textContent=v==="h"?`Central is ${(100*(va/vb-1)).toFixed(0)}% larger than East. A real gap, honestly drawn.`:`Truncated axis plus a loud title makes a ${(100*(va/vb-1)).toFixed(0)}% gap look like 'doubles'. Never do this.`}
-  d("h");bindSeg(r,"et",d);}
+    $("#ec",r).innerHTML=v==="h"?chartBar(it,{w:420,h:240,title:"Net sales: East vs Central (Rs)",cat:"Region",vlabel:"Net sales (Rs)"}):chartBar(it,{w:420,h:240,title:"Central DOUBLES East!",min:120000,max:170000,cat:"Region",vlabel:"Net sales (Rs)"});
+    $("#en",r).textContent=v==="h"?`Central is ${(100*(va/vb-1)).toFixed(0)}% larger than East. A real gap, honestly drawn.`:`A cut axis plus a loud title makes a ${(100*(va/vb-1)).toFixed(0)}% gap look like 'doubles'. Never do this.`}
+  d("h");bindSeg(r,"et",d);updateProg();}
+});
+/* Glossary */
+lesson({ref:true,nav:"Glossary",title:"Glossary of terms",syl:"Reference: terms used in this unit",
+html:()=>`<p class="lead">Every term below appears in the lessons. In a lesson, a dotted underline marks a term that is defined here.</p>`+GL.slice().sort((a,b)=>a[1].localeCompare(b[1])).map(x=>`<div class="card gl" id="gl-${x[0]}"><h3>${x[1]}</h3><p class="small" style="margin:0">${x[2]}</p></div>`).join(""),
+mount(r){}
 });
 
 renderLive();go(0);
-
 </script>
 </body>
 </html>
