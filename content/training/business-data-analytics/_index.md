@@ -1,9 +1,9 @@
 ---
-title: "Business Data Analytics (BBA)"
+title: "Business Analytics (BBA)"
 date: 2026-10-22
 draft: false
-tags: ["training", "data", "excel"]
-summary: "Data handling, visualization, sampling, and Excel for business students, with labs, decks, and a practice dataset."
+tags: ["training", "data", "excel", "analytics"]
+summary: "Business analytics for business students in nine units: data, visualization, sampling, Excel, analytics, advanced Excel functions, dashboards and time series, big data, and Google Sheets."
 weight: 30
 ---
 
@@ -16,11 +16,15 @@ Written for business students with no programming background. Everything runs in
 - [Unit III: Probability and sampling](/training/business-data-analytics/unit3-probability-sampling-lab.html)
 - [Unit IV: Excel skills](/training/business-data-analytics/unit4-excel-skills-lab.html)
 - [Unit V: Business analytics](/training/business-data-analytics/unit5-business-analytics-lab.html)
+- [Unit VI: Advanced Excel functions](/training/business-data-analytics/unit6-advanced-excel-functions-lab.html)
+- [Unit VII: Dashboards and time series](/training/business-data-analytics/unit7-dashboards-time-series-lab.html)
+- [Unit VIII: Big data analytics](/training/business-data-analytics/unit8-big-data-analytics-lab.html)
+- [Unit IX: Google Sheets](/training/business-data-analytics/unit9-google-sheets-lab.html)
 
 ## Practice dataset
 
-- [BMT sales dataset (raw)](/training/business-data-analytics/bmt-sales-dataset.xlsx): starting point for the cleaning exercises
-- [BMT sales dataset (clean reference)](/training/business-data-analytics/bmt-sales-clean-reference.xlsx): what the cleaned version should look like
+- [Sample sales dataset (raw)](/training/business-data-analytics/bmt-sales-dataset.xlsx): starting point for the cleaning exercises
+- [Sample sales dataset (clean reference)](/training/business-data-analytics/bmt-sales-clean-reference.xlsx): what the cleaned version should look like
 
 ## Slide decks
 

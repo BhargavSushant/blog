@@ -132,7 +132,7 @@ code{overflow-wrap:anywhere}
 <body>
 <div class="app">
   <nav class="nav" aria-label="Lessons">
-    <h2 class="brand">Probability Lab<small>Unit III, Probability and Sampling<br>BBA Sem I, Business Management Tools I</small></h2>
+    <h2 class="brand">Probability Lab<small>Unit III, Probability and Sampling<br>Business Analytics lab series</small></h2>
     <ol id="navlist"></ol>
     <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><div id="prog" class="small"></div><button id="resetP" type="button">Reset my score</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
   </nav>
@@ -273,7 +273,7 @@ let cur=0;
 function go(i){
   cur=Math.max(0,Math.min(L.length-1,i));
   const l=L[cur],st=$("#stage"),nl=L.filter(x=>!x.ref).length;
-  st.innerHTML=`<div class="crumb">${l.ref?"Reference":"Lesson "+(cur+1)+" of "+nl}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+  st.innerHTML=`<div class="crumb">${l.ref?"Reference":"Lesson "+(cur+1)+" of "+nl}</div><h1>${l.title}</h1><div class="syl">Topic: ${l.syl}</div>`+l.html()+
     `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button>${l.ref&&GLBACK.i!=null?`<button class="btn" type="button" id="backB">Back to lesson ${GLBACK.i+1}</button>`:""}<button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
   $("#prevB").onclick=()=>go(cur-1);$("#nextB").onclick=()=>go(cur+1);const bb=$("#backB");if(bb)bb.onclick=()=>go(GLBACK.i);
   l.mount&&l.mount(st);

@@ -132,7 +132,7 @@ code{overflow-wrap:anywhere}
 <body>
 <div class="app">
   <nav class="nav" aria-label="Lessons">
-    <h2 class="brand">Data Analysis Lab<small>Unit I, Introduction to Data Analysis<br>BBA Sem I, Business Management Tools I</small></h2>
+    <h2 class="brand">Data Analysis Lab<small>Unit I, Introduction to Data Analysis<br>Business Analytics lab series</small></h2>
     <ol id="navlist"></ol>
     <div class="tools"><button id="themeBtn" type="button">Theme</button><button id="zoomBtn" type="button">Text size</button><div id="prog" class="small"></div><button id="resetP" type="button">Reset my score</button><span class="hint">Projector tip: if text is hard to see, switch theme (or press Alt+D) and raise the text size.</span></div>
   </nav>
@@ -273,7 +273,7 @@ let cur=0;
 function go(i){
   cur=Math.max(0,Math.min(L.length-1,i));
   const l=L[cur],st=$("#stage"),nl=L.filter(x=>!x.ref).length;
-  st.innerHTML=`<div class="crumb">${l.ref?"Reference":"Lesson "+(cur+1)+" of "+nl}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+  st.innerHTML=`<div class="crumb">${l.ref?"Reference":"Lesson "+(cur+1)+" of "+nl}</div><h1>${l.title}</h1><div class="syl">Topic: ${l.syl}</div>`+l.html()+
     `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button>${l.ref&&GLBACK.i!=null?`<button class="btn" type="button" id="backB">Back to lesson ${GLBACK.i+1}</button>`:""}<button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
   $("#prevB").onclick=()=>go(cur-1);$("#nextB").onclick=()=>go(cur+1);const bb=$("#backB");if(bb)bb.onclick=()=>go(GLBACK.i);
   l.mount&&l.mount(st);
@@ -681,7 +681,7 @@ html:()=>`<p class="lead">No method is best. Pick by your <b>question</b>, then 
 <label>Budget<br><select id="w4"><option value="3">Almost none</option><option value="2">Small</option><option value="1">Comfortable</option></select></label></div>
 <div class="row"><label class="chk"><input type="checkbox" id="w5"> Good data on this topic may already exist</label></div>
 <div id="wout"></div></div>
-<div class="card"><h3>Case: BBA students want to know if hostel students spend more on food</h3><p class="small">Numbers to compare two groups, dozens of people, days, small budget. A <b>short survey</b> fits. If the college already publishes mess billing, <b>existing records</b> are quicker, but check they cover day scholars too.</p></div>
+<div class="card"><h3>Case: Students want to know if hostel students spend more on food</h3><p class="small">Numbers to compare two groups, dozens of people, days, small budget. A <b>short survey</b> fits. If the college already publishes mess billing, <b>existing records</b> are quicker, but check they cover day scholars too.</p></div>
 <div class="card sec"><h3>What the terms mean</h3><p class="small">No method is best for every question. Start with the question and then check the time, the money and the number of people. A survey gives numbers that you can compare across many people. An interview gives reasons and detail from a few people. Observation shows what people really do, which may differ from what they say. An experiment shows the effect of changing one thing. Existing records are the cheapest source when they cover the people and the period you need.</p><p class="small">A good choice often combines methods: a few interviews to find the right questions, then a survey to count how common each answer is.</p></div>
 <div class="card"><h3>What the demo shows</h3><p class="small">The adviser asks what you need, how many people you can reach, how much time and money you have, and whether good data may already exist. It then ranks the five methods. The ranking is a teaching model, not a law, so change the answers and watch the order move. In the hostel case, numbers for two groups of dozens of students within days and on a small budget point to a short survey. If the college already publishes mess billing, the records are quicker, but you must check that they cover day scholars too.</p></div>
 <div class="card sec"><h3>Rules to follow</h3><ul class="small"><li>Choose the method from the question, not from habit.</li><li>Check whether usable data already exists.</li><li>Use interviews to find reasons and surveys to measure how common they are.</li><li>Write down the limits of the method you chose.</li></ul></div>
@@ -725,14 +725,14 @@ mount(r){regQuiz("q7",0,"Removing direct identifiers and avoiding unique combina
   $$("#sc [data-a]",r).forEach(b=>b.onclick=()=>{const row=b.closest("[data-i]"),ok=b.dataset.a===SCEN[+row.dataset.i][1];$(".fb",row).innerHTML=ok?'<span class="tag g">Correct</span>':'<span class="tag b">Think again</span>'});}
 });
 /* ---------- 8. Basic operations ---------- */
-lesson({nav:"Basic data operations",title:"Basic data operations: sort, filter, summarise",syl:"Basic Data Operations (also: central tendency and variability, course objective)",
+lesson({nav:"Basic data operations",title:"Basic data operations: sort, filter, summarise",syl:"Basic Data Operations (also: central tendency and variability)",
 html:()=>`<p class="lead">Almost all analysis is four moves: <b>sort</b> the rows, <b>filter</b> some rows, <b>calculate</b> a number, <b>group</b> and compare.</p>
 <div class="card try"><h3>Try it: operate on the survey</h3>
 <div class="row">Filter city <select id="bc"><option value="">All</option>${CITIES.map(c=>`<option>${c}</option>`).join("")}</select>
 Sort by <select id="bs"><option value="id">Order entered</option><option value="pocket">Pocket money</option><option value="study">Study hours</option><option value="age">Age</option></select>
 <select id="bd"><option value="1">low to high</option><option value="-1">high to low</option></select></div>
 <div id="btab"></div></div>
-<div class="card try"><h3>Central tendency and variability (course objective)</h3>
+<div class="card try"><h3>Central tendency and variability</h3>
 <div class="row">Column <select id="nc"><option value="pocket">Pocket money</option><option value="study">Study hours</option><option value="age">Age</option><option value="sat">Satisfaction</option></select> (uses the filter above)</div>
 <div class="grid3" id="stats"></div><div id="sform" class="code" style="margin-top:10px"></div></div>
 <div class="callout k small"><b>Mean vs median:</b> if one very rich student joins, the mean jumps and the median hardly moves. Try adding a row in lesson 4 with pocket money 90000 and come back.</div>
