@@ -1,13 +1,13 @@
 ---
-title: "Business Analytics (BBA)"
+title: "Business Analytics"
 date: 2026-10-22
 draft: false
 tags: ["training", "data", "excel", "analytics"]
-summary: "Business analytics for business students in nine units: data, visualization, sampling, Excel, analytics, advanced Excel functions, dashboards and time series, big data, and Google Sheets."
+summary: "Business analytics in nine units: data, visualization, sampling, Excel, analytics, advanced Excel functions, dashboards and time series, big data, and Google Sheets."
 weight: 30
 ---
 
-Written for business students with no programming background. Everything runs in a browser or in Excel.
+Written for students with no programming background. Everything runs in a browser or in Excel.
 
 ## Labs
 
