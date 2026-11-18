@@ -15,9 +15,23 @@ Five units, each with an interactive browser lab and a matching Jupyter notebook
 |------|-------------|----------|
 | 1. Python basics | [Open](/training/ipsr/unit1-python-basics-lab.html) | [Download](/training/ipsr/notebooks/unit1-lab.ipynb) |
 | 2. Introduction to AI | [Open](/training/ipsr/unit2-intro-to-ai-lab.html) | [Download](/training/ipsr/notebooks/unit2-lab.ipynb) |
-| 3. Agents and search | [Open](/training/ipsr/unit3-agents-and-search-lab.html) | [Download](/training/ipsr/notebooks/unit3-lab.ipynb) |
+| 3. Agents, data structures and search | [Open](/training/ipsr/unit3-agents-and-search-lab.html) | [Download](/training/ipsr/notebooks/unit3-lab.ipynb) |
 | 4. Knowledge and reasoning | [Open](/training/ipsr/unit4-knowledge-reasoning-lab.html) | [Download](/training/ipsr/notebooks/unit4-lab.ipynb) |
 | 5. Probabilistic reasoning | [Open](/training/ipsr/unit5-probability-reasoning-lab.html) | [Download](/training/ipsr/notebooks/unit5-lab.ipynb) |
+
+## Unit 3 lessons
+
+The Unit 3 lab covers agents and breadth-first search. Three background lessons come before BFS, because BFS needs a graph and a queue.
+
+1. Description of an agent
+2. Simple reflex agent
+3. Model-based reflex agent
+4. Goal-based and utility-based agents
+5. Linear and non-linear data structures (background)
+6. Stacks and queues (background)
+7. Graphs and trees (background)
+8. Breadth-first search, with a step-by-step worked example that shows the queue at every step
+9. Learning agents
 
 ## Unit 1 topic notebooks
 
