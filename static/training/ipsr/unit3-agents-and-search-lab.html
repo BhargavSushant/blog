@@ -167,6 +167,43 @@ table.tt td.T{background:var(--good-soft)} table.tt td.F{background:var(--bad-so
 .opt2.no{background:var(--bad-soft);border-color:var(--bad)}
 .opt2[aria-pressed=true]{background:var(--pri);color:var(--on);border-color:var(--pri)}
 
+.edge.tree{stroke:var(--good);stroke-width:5}
+.edge.look{stroke:var(--sec);stroke-width:4;stroke-dasharray:7 5}
+.edge.skip{stroke:var(--sec);stroke-width:3;stroke-dasharray:3 5}
+.edge.sel{stroke:var(--pri);stroke-width:4.5}
+.edge.off{stroke:var(--line);stroke-width:2;stroke-dasharray:4 6;opacity:.8}
+.edge.on{stroke:var(--fg);stroke-width:4}
+.edge.hit{stroke:transparent;stroke-width:20;cursor:pointer;stroke-dasharray:none}
+svg.g circle.fnode.click{cursor:pointer}
+svg.g circle.fnode.sel{fill:var(--pri);stroke:var(--pri)}
+svg.g rect.sb{fill:var(--surface);stroke:var(--fg);stroke-width:2}
+svg.g rect.sb.p{fill:var(--pri-soft)} svg.g rect.sb.w{fill:var(--warn-soft);stroke:var(--warn)}
+svg.g line.sl{stroke:var(--fg);stroke-width:2}
+svg.g text.sm{font:500 12px var(--body);fill:var(--muted)}
+.qrow{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0 24px}
+.qs{width:38px;height:38px;border:2px dashed var(--line);border-radius:8px;display:grid;place-items:center;font:700 16px var(--mono);color:var(--fg);position:relative}
+.qs.f{border:2px solid var(--warn);background:var(--warn-soft)}
+.qs.cur{border:2px solid var(--pri);background:var(--pri-soft)}
+.qs small{position:absolute;top:40px;left:50%;transform:translateX(-50%);font:700 10.5px var(--body);color:var(--muted);white-space:nowrap;letter-spacing:.04em;text-transform:uppercase}
+.vis{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 12px}
+.vis span{min-width:30px;text-align:center;border:1px solid var(--line2);border-radius:6px;padding:2px 6px;font:600 14px var(--mono);color:var(--muted)}
+.vis span.on{background:var(--good-soft);border-color:var(--good);color:var(--fg)}
+.vis small{font:500 10px var(--body);color:var(--muted);margin-left:2px}
+.opbadge{display:inline-block;font:700 12px var(--body);letter-spacing:.05em;text-transform:uppercase;border-radius:5px;padding:3px 9px;margin-right:8px}
+.opbadge.deq{background:var(--pri-soft);color:var(--pri)} .opbadge.enq{background:var(--warn-soft);color:var(--warn)} .opbadge.ini,.opbadge.end{background:var(--good-soft);color:var(--good)}
+.lg{display:inline-block;width:14px;height:14px;border:2px solid var(--fg);border-radius:50%;vertical-align:-2px;margin:0 4px 0 10px;background:var(--surface)}
+.lgl{display:inline-block;width:26px;height:0;border-top:4px solid var(--good);vertical-align:middle;margin:0 4px 0 10px}
+.lgl.d{border-top:3px dashed var(--sec)}
+.sqbox{min-height:262px;display:flex;align-items:flex-end;justify-content:center}
+.stackw{display:flex;flex-direction:column-reverse;align-items:center;min-width:120px;border-bottom:5px solid var(--fg);padding:0 14px}
+.sqlog{font:13px/1.5 var(--mono);background:var(--code);border:1px solid var(--line2);border-radius:8px;padding:6px 10px;min-height:60px;max-height:150px;overflow:auto;overflow-wrap:anywhere}
+.gw{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px}
+@media (max-width:1100px){.gw{grid-template-columns:minmax(0,1fr)}}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px}
+.legend span{white-space:nowrap}
+.lg{margin:0 5px 0 0}
+.lgl{margin:0 5px 0 0}
+.gw .cmark{font-size:12.5px;overflow-x:auto}
 </style>
 <style id="nvbar-css">
 .nvbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0;padding:8px 14px;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--surface,#f6f8fb);color:var(--fg,#1b2430);border-bottom:1px solid var(--line,#d7dee8);zoom:1}
@@ -290,10 +327,10 @@ try{JSON.parse(localStorage.getItem(UKEY)||"[]").forEach(x=>done.add(x))}catch(e
 function go(i){
   cur=Math.max(0,Math.min(L.length-1,i));
   const l=L[cur],st=$("#stage");
-  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">Syllabus: ${l.syl}</div>`+l.html()+
+  st.innerHTML=`<div class="crumb">Lesson ${cur+1} of ${L.length}</div><h1>${l.title}</h1><div class="syl">${l.pre?"Background for the next topic":"Syllabus"}: ${l.syl}</div>`+l.html()+
     `<div class="nextrow"><button class="btn" type="button" id="prevB" ${cur?"":"disabled"}>Previous</button><button class="btn pri" type="button" id="nextB" ${cur<L.length-1?"":"disabled"}>Next lesson</button></div>`;
   $("#prevB").onclick=()=>go(cur-1); $("#nextB").onclick=()=>go(cur+1);
-  l.mount&&l.mount(st);
+  l.mount&&l.mount(st);setLive(l);
   $$("[data-q]",st).forEach(b=>b.onclick=()=>{
     const id=b.dataset.q,k=QUIZ[id],ok=+b.dataset.i===k.ans;
     $$(`[data-q="${id}"]`,st).forEach(x=>x.classList.remove("ok","no"));
@@ -571,6 +608,209 @@ mount(r){let k="goal";const dg=()=>$("#gd",r).innerHTML=`<h3>${k==="goal"?"Goal-
     <div class="grid2" style="margin-top:8px"><div class="callout i"><b>Goal-based picks:</b> ${goalPick?goalPick.n:"nothing (goal cannot be reached)"}<br><span class="small">the first route that meets the goal</span></div><div class="callout k"><b>Utility-based picks:</b> ${utilPick.n}<br><span class="small">the highest utility with your weights</span></div></div>`+(()=>{const mx=Math.max(...sc.map(x=>Math.abs(x.u)),1);return`<div class="small" style="margin:10px 0 4px"><b>Utility of each route</b> (bars grow right for good, left for bad; the line is zero)</div>`+sc.map(x=>{const w=Math.abs(x.u)/mx*50,best=x===utilPick;return`<div style="display:grid;grid-template-columns:110px 1fr 56px;gap:8px;align-items:center;margin:4px 0"><span class="small">${x.n}</span><span style="position:relative;height:20px;background:var(--surface2);border-radius:4px;border-left:0"><span style="position:absolute;left:50%;top:-2px;bottom:-2px;border-left:2px solid var(--fg)"></span><span style="position:absolute;top:2px;bottom:2px;border-radius:3px;background:${best?"var(--c2)":"var(--c1)"};${x.u>=0?`left:50%;width:${w}%`:`left:${50-w}%;width:${w}%`}"></span></span><b class="small" style="text-align:right">${x.u.toFixed(1)}</b></div>`}).join("")})()}
   ["lim","wt","wc","wr","wf"].forEach(i=>$("#"+i,r).oninput=rt);rt()}});
 
+/* ===== Background for BFS: data structures, stacks and queues, graphs and trees ===== */
+const J=a=>a.join(", ");
+let _sid=0;
+const mk=()=>{const id="ar"+(++_sid);return{id,defs:`<defs><marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--fg)"/></marker></defs>`}};
+const sbox=(x,y,w,h,t,c="")=>`<rect class="sb ${c}" x="${x}" y="${y}" width="${w}" height="${h}" rx="5"/><text x="${x+w/2}" y="${y+h/2}">${esc(t)}</text>`;
+const sline=(x1,y1,x2,y2,id)=>`<line class="sl" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"${id?` marker-end="url(#${id})"`:""}/>`;
+const stxt=(x,y,t)=>`<text class="sm" x="${x}" y="${y}">${esc(t)}</text>`;
+const svgOpen=(w,h,label,max)=>`<svg class="g chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)}" style="max-width:${max||520}px">`;
+const miniNode=(x,y,t)=>`<circle class="fnode" cx="${x}" cy="${y}" r="16"/><text x="${x}" y="${y}">${t}</text>`;
+const miniEdge=(a,b)=>`<line class="edge" x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`;
+
+/* the example graph used in the stack/queue, graph and BFS lessons (same as the textbook figure) */
+const IMG={pos:{A:[70,52],B:[215,52],C:[360,52],G:[448,122],D:[70,196],E:[215,196],F:[360,196]},
+ adj:{A:["D","E","B"],B:["A","C","E"],C:["B","E","F","G"],D:["A","E"],E:["A","B","C","D","F"],F:["C","E"],G:["C"]}};
+const ekey=(a,b)=>[a,b].sort().join("");
+const edgesOf=g=>{const s=new Set(),o=[];for(const a in g.adj)for(const b of g.adj[a]){const k=ekey(a,b);if(!s.has(k)){s.add(k);o.push([a,b])}}return o};
+function ugSvg(g,o={}){
+  const W=o.w||480,H=o.h||250,R=o.r||22;
+  let s=svgOpen(W,H,o.label||"graph",o.max||560);
+  (o.edges||edgesOf(g)).forEach(([a,b])=>{const[x1,y1]=g.pos[a],[x2,y2]=g.pos[b];s+=`<line class="edge ${o.edge?o.edge(a,b):""}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`});
+  if(o.hit)(o.edges||[]).forEach(([a,b])=>{const[x1,y1]=g.pos[a],[x2,y2]=g.pos[b];s+=`<line class="edge hit" data-e="${a}${b}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"><title>Click to add or remove edge ${a}-${b}</title></line>`});
+  for(const n in g.pos){const[x,y]=g.pos[n],c=o.node?o.node(n):"";s+=`<circle class="fnode ${c} ${o.click?"click":""}" data-n="${n}" cx="${x}" cy="${y}" r="${R}"/><text class="${c==="cur"||c==="sel"?"cur":""}" style="font-size:${o.fs||17}px" x="${x}" y="${y}">${n}</text>`}
+  return s+"</svg>"}
+
+/* ---------- lesson: linear and non-linear data structures ---------- */
+const DSD={
+ list:()=>{const m=mk();let s=svgOpen(460,120,"array drawing")+m.defs;[10,20,30,40,50].forEach((v,i)=>{s+=sbox(36+i*78,26,70,40,v,"p")+stxt(71+i*78,86,"index "+i)});return s+stxt(230,108,"elements sit side by side; each has a position number (index)")+"</svg>"},
+ linked:()=>{const m=mk();let s=svgOpen(460,120,"linked list drawing")+m.defs;const xs=[20,130,240,350];[10,20,30,40].forEach((v,i)=>{s+=sbox(xs[i],34,56,40,v,"p");if(i<3)s+=sline(xs[i]+56,54,xs[i+1],54,m.id)});s+=sline(406,54,424,54,m.id)+stxt(442,54,"None")+stxt(48,20,"head")+stxt(230,106,"each node holds a value and a link to the next node");return s+"</svg>"},
+ stack:()=>{const m=mk();let s=svgOpen(460,140,"stack drawing")+m.defs;["C","B","A"].forEach((v,i)=>{s+=sbox(190,14+i*34,80,30,v,i?"p":"w")});s+=sline(170,116,290,116)+sline(125,29,184,29,m.id)+stxt(100,29,"top")+stxt(350,29,"push and pop")+stxt(350,47,"happen only here")+stxt(230,132,"bottom");return s+"</svg>"},
+ queue:()=>{const m=mk();let s=svgOpen(460,120,"queue drawing")+m.defs;["A","B","C","D"].forEach((v,i)=>{s+=sbox(100+i*66,30,58,40,v,i?"p":"w")});s+=sline(96,50,50,50,m.id)+stxt(30,50,"out")+sline(412,50,368,50,m.id)+stxt(436,50,"in")+stxt(129,90,"front")+stxt(327,90,"rear");return s+"</svg>"},
+ tree:()=>{let s=svgOpen(460,150,"tree drawing");const P={A:[230,24],B:[130,74],C:[330,74],D:[80,124],E:[180,124],F:[280,124],G:[380,124]};[["A","B"],["A","C"],["B","D"],["B","E"],["C","F"],["C","G"]].forEach(([a,b])=>s+=miniEdge(P[a],P[b]));for(const n in P)s+=miniNode(P[n][0],P[n][1],n);return s+"</svg>"},
+ graph:()=>{let s=svgOpen(460,150,"graph drawing");const P={A:[80,76],B:[190,28],C:[300,76],D:[250,128],E:[130,128]};[["A","B"],["B","C"],["C","D"],["D","E"],["E","A"],["B","D"]].forEach(([a,b])=>s+=miniEdge(P[a],P[b]));for(const n in P)s+=miniNode(P[n][0],P[n][1],n);return s+"</svg>"}};
+const DSI={
+ list:{name:"Array / list",lin:true,facts:[["Each element has","exactly one next element (the last has none)"],["How you reach an element","by its index: marks[0], marks[1], ..."],["Everyday example","a row of numbered lockers"],["In Python","a list, for example marks = [10, 20, 30, 40, 50]"]],ord:"There is only one way to visit every element: 10, 20, 30, 40, 50."},
+ linked:{name:"Linked list",lin:true,facts:[["Each element has","exactly one next element, reached through a link"],["How you reach an element","start at the head and follow the links"],["Everyday example","railway coaches joined one after another"],["In Python","built from objects that hold a value and a reference to the next object"]],ord:"Only one way to visit every node: follow the links from the head."},
+ stack:{name:"Stack",lin:true,facts:[["Each element has","one element below it; you may only touch the top"],["Rule","Last In, First Out (LIFO)"],["Everyday example","a pile of plates, the undo button of an editor"],["In Python","a list with append() to push and pop() to remove"]],ord:"Items come out in the reverse of the order they went in."},
+ queue:{name:"Queue",lin:true,facts:[["Each element has","one element behind it; insert at the rear, remove at the front"],["Rule","First In, First Out (FIFO)"],["Everyday example","people waiting at a ticket counter, a printer queue"],["In Python","collections.deque with append() and popleft()"]],ord:"Items come out in the same order they went in."},
+ tree:{name:"Tree",lin:false,facts:[["Each element has","one parent above it and any number of children below it"],["How you reach an element","start at the root and choose a child at every step"],["Everyday example","folders inside folders, a family tree, an organisation chart"],["In Python","nested lists or dictionaries, or objects that hold a list of children"]],ord:"From A you can go to B or to C. There is no single next element, so we need a rule for the order (BFS or DFS)."},
+ graph:{name:"Graph",lin:false,facts:[["Each element has","any number of neighbours, and the links may form loops"],["How you reach an element","follow edges from one vertex to a neighbour"],["Everyday example","a road map, friends on a social network, links between web pages"],["In Python","a dictionary: each vertex maps to the list of its neighbours"]],ord:"From B you can go to A, C or D, and you can come back to where you started. We need a rule for the order, and a way to avoid repeating vertices."}};
+lesson({pre:true,nav:"Linear and non-linear structures",title:"Data structures: linear and non-linear",syl:"Linear and non-linear data structures (needed before graphs, trees and BFS)",
+live:()=>`<table class="dt"><thead><tr><th>Linear</th><th>Non-linear</th></tr></thead><tbody><tr><td class="small" style="white-space:normal">list, linked list, stack, queue</td><td class="small" style="white-space:normal">tree, graph</td></tr><tr><td class="small" style="white-space:normal">one next element</td><td class="small" style="white-space:normal">many next elements</td></tr><tr><td class="small" style="white-space:normal">one way to visit all</td><td class="small" style="white-space:normal">needs a rule (BFS or DFS)</td></tr></tbody></table>`,liveT:"Quick reference: two families",
+html:()=>`<div class="callout i small"><b>In this lesson:</b> what a data structure is, and the difference between linear and non-linear structures. <b>Why now:</b> BFS searches a graph (non-linear) and keeps its waiting list in a queue (linear). We learn those two ideas first, in lessons 5, 6 and 7.</div>
+<p class="lead">A <b>data structure</b> is a way of arranging data in memory so that a program can store it, find it and change it easily. Different problems need different arrangements. The structures fall into two families: <b>linear</b> and <b>non-linear</b>.</p>
+<div class="grid2"><div class="card"><h3>Linear</h3><p class="small">The elements form a single line. Every element has one next element, except the last one. To visit all the elements we start at the first and move forward. Examples: list, linked list, stack, queue.</p></div>
+<div class="card"><h3>Non-linear</h3><p class="small">An element can be joined to many other elements. There is no single "next". So to visit all the elements we need a rule that says which one to take first. Examples: tree, graph.</p></div></div>
+<div class="card try"><h3>Pick a structure</h3><div class="row">${chips("dsel",Object.values(DSI).map(x=>x.name),0)}</div><div id="dsout"></div></div>
+<div class="card"><h3>Comparison</h3>${table([{s:"Array / list",l:"Linear",n:"one",e:"row of numbered lockers"},{s:"Linked list",l:"Linear",n:"one",e:"railway coaches joined together"},{s:"Stack",l:"Linear",n:"one (access only at the top)",e:"pile of plates"},{s:"Queue",l:"Linear",n:"one (insert at rear, remove at front)",e:"line at a ticket counter"},{s:"Tree",l:"Non-linear",n:"many children",e:"folders inside folders"},{s:"Graph",l:"Non-linear",n:"many neighbours",e:"road map"}],[["s","Structure"],["l","Family"],["n","Next elements"],["e","Everyday example"]],{small:true})}</div>
+<div class="callout k"><b>The idea to carry forward:</b> in a linear structure the order of visiting is fixed by the structure itself. In a non-linear structure it is not, so searching a graph or a tree needs a rule. BFS is one such rule. It needs a queue, which we meet next.</div>
+${quiz("i3s1","Which of these is a non-linear data structure?",["Queue","Stack","Tree"],2,"A tree element can have many children, so there is no single next element. Stack and queue are linear.")}
+${quiz("i3s2","Why does visiting every element of a graph need a rule, but visiting a list does not?",["A list is smaller","In a list each element has one next element, in a graph it may have many","Graphs cannot be stored in memory"],1,"With many possible next elements we must decide the order. BFS and DFS are two different rules.")}`,
+mount(r){let k="Array / list";function show(){const d=Object.values(DSI).find(x=>x.name===k),key=Object.keys(DSI).find(x=>DSI[x].name===k);
+    $("#dsout",r).innerHTML=`<div class="grid2"><div>${DSD[key]()}</div><div><span class="tag ${d.lin?"p":"s"} big">${d.lin?"Linear":"Non-linear"}</span><table class="dt" style="margin-top:8px"><tbody>${d.facts.map(f=>`<tr><th style="text-align:left">${f[0]}</th><td style="white-space:normal">${esc(f[1])}</td></tr>`).join("")}</tbody></table><div class="callout ${d.lin?"i":"k"} small"><b>Order of visiting:</b> ${esc(d.ord)}</div></div></div>`}
+  bindChips(r,"dsel",v=>{k=v;show()});show()}});
+
+/* ---------- lesson: stacks and queues ---------- */
+lesson({pre:true,nav:"Stacks and queues",title:"Stacks and queues",syl:"Stack (LIFO) and queue (FIFO), their operations (needed before BFS)",
+live:()=>`<table class="dt"><thead><tr><th></th><th>Stack</th><th>Queue</th></tr></thead><tbody><tr><td>Rule</td><td>LIFO</td><td>FIFO</td></tr><tr><td>Add</td><td>push (top)</td><td>enqueue (rear)</td></tr><tr><td>Remove</td><td>pop (top)</td><td>dequeue (front)</td></tr><tr><td>Search uses it for</td><td>DFS</td><td>BFS</td></tr></tbody></table><div class="code" style="margin-top:8px">stack = []
+stack.append("A")   # push
+stack.pop()         # pop
+
+from collections import deque
+q = deque()
+q.append("A")       # enqueue
+q.popleft()         # dequeue</div>`,liveT:"Quick reference: stack and queue",
+html:()=>`<div class="callout i small"><b>In this lesson:</b> the two simplest linear structures, their rules and their operations. You will push and pop a stack, enqueue and dequeue a queue, and see the same input come out in a different order. <b>Why now:</b> the waiting list inside BFS is a queue.</div>
+<p class="lead">A <b>stack</b> and a <b>queue</b> both hold items in a line, but they have strict rules about where an item goes in and where it comes out.</p>
+<div class="grid2"><div class="card"><h3>Stack: Last In, First Out (LIFO)</h3><p class="small">Items are added and removed at one end only, the <b>top</b>. The last item pushed is the first one popped. Like a pile of plates: you take the top plate.</p><ul class="small"><li><b>push(x)</b>: put x on the top</li><li><b>pop()</b>: remove and return the top item</li><li><b>peek()</b>: look at the top item without removing it</li><li><b>is_empty()</b>: is the stack empty?</li></ul><p class="small muted">Used for: undo, the back button, function calls, depth-first search.</p></div>
+<div class="card"><h3>Queue: First In, First Out (FIFO)</h3><p class="small">Items are added at the <b>rear</b> and removed from the <b>front</b>. The first item to arrive is the first to leave. Like people at a ticket counter.</p><ul class="small"><li><b>enqueue(x)</b>: add x at the rear</li><li><b>dequeue()</b>: remove and return the front item</li><li><b>front()</b>: look at the front item without removing it</li><li><b>is_empty()</b>: is the queue empty?</li></ul><p class="small muted">Used for: print jobs, call centres, breadth-first search.</p></div></div>
+<div class="card try"><h3>Try it: push, pop, enqueue, dequeue</h3><p class="small muted">Type a value (or leave the suggestion) and use the buttons. Both structures hold at most 6 items. "Load A B C D" puts the same four items into both so you can compare what comes out.</p>
+<div class="row">Value <input type="text" id="sqv" maxlength="3" style="width:70px" aria-label="value to insert"> <button class="btn pri sm" type="button" id="sqload">Load A B C D into both</button> <button class="btn sm" type="button" id="sqclr">Clear both</button></div>
+<div class="grid2"><div><div class="row"><b>Stack</b> <button class="btn sm" type="button" id="spush">push</button><button class="btn sm" type="button" id="spop">pop</button></div><div class="sqbox"><div class="stackw" id="sbox"></div></div><div class="small" id="smsg" style="margin-top:6px"></div><div class="small"><b>Popped so far:</b> <span class="t" id="sout"></span></div></div>
+<div><div class="row"><b>Queue</b> <button class="btn sm" type="button" id="qenq">enqueue</button><button class="btn sm" type="button" id="qdeq">dequeue</button></div><div class="qrow" id="qbox" style="margin-top:14px"></div><div class="small" id="qmsg"></div><div class="small"><b>Dequeued so far:</b> <span class="t" id="qout"></span></div></div></div>
+<div class="small" style="margin:10px 0 4px"><b>Operation log</b></div><div class="sqlog" id="sqlog"></div></div>
+<div class="card"><h3>In Python</h3><div class="grid2"><div><div class="small"><b>Stack: a list</b></div>${CODE(`stack = []
+stack.append("A")    # push A
+stack.append("B")    # push B
+stack.pop()          # returns "B"
+print(stack)         # ['A']`)}</div><div><div class="small"><b>Queue: a deque</b></div>${CODE(`from collections import deque
+queue = deque()
+queue.append("A")    # enqueue A
+queue.append("B")    # enqueue B
+queue.popleft()      # returns "A"
+print(queue)         # deque(['B'])`)}</div></div><p class="small muted">A plain list can also act as a queue with pop(0), but every pop(0) shifts all the other items. A deque removes from the front in constant time, so it is the right tool when the queue is long.</p></div>
+<div class="callout k"><b>Link to search:</b> a search keeps a <b>frontier</b>, the vertices that are found but not yet explored. If the frontier is a <b>queue</b> the search is breadth-first. If it is a <b>stack</b> the search is depth-first. That one choice is the whole difference.</div>
+${quiz("i3s3","Items A, B, C are inserted in this order. Which item is removed first from a stack?",["A","B","C"],2,"A stack is LIFO: the last item inserted, C, is removed first. A queue would give A.")}
+${quiz("i3s4","The undo button of an editor works like which structure?",["Queue","Stack","Tree"],1,"The most recent action is undone first: last in, first out.")}`,
+mount(r){const CAP=6,LET="ABCDEFGHIJKLMNOPQRSTUVWXYZ";let S=[],Q=[],oS=[],oQ=[],log=[],nx=0;
+  const inp=$("#sqv",r);inp.value=LET[0];
+  const val=()=>{const v=inp.value.trim()||LET[nx%26];return v.slice(0,3)};
+  const bump=()=>{nx++;inp.value=LET[nx%26]};
+  const note=(id,t,bad)=>{const e=$("#"+id,r);e.innerHTML=t?`<div class="callout ${bad?"k":"i"} small" style="margin:6px 0">${t}</div>`:""};
+  function draw(){
+    $("#sbox",r).innerHTML=S.map((v,i)=>`<div class="blk ${i===S.length-1?"held":""}">${esc(v)}</div>`).join("")||'<span class="muted small" style="padding:6px">(empty)</span>';
+    $("#qbox",r).innerHTML=Array.from({length:CAP},(_,k)=>k<Q.length?`<div class="qs f">${esc(Q[k])}${Q.length===1?"<small>front / rear</small>":k===0?"<small>front</small>":k===Q.length-1?"<small>rear</small>":""}</div>`:'<div class="qs"></div>').join("");
+    $("#sout",r).textContent=oS.join("  ")||"(nothing yet)";$("#qout",r).textContent=oQ.join("  ")||"(nothing yet)";
+    $("#sqlog",r).innerHTML=log.slice(-12).map(esc).join("<br>")||'<span class="muted">(no operations yet)</span>'}
+  const add=s=>log.push(s);
+  $("#spush",r).onclick=()=>{const v=val();if(S.length>=CAP){note("smsg","The stack is full (6 items). A push now would be an <b>overflow</b>.",1);return}S.push(v);add(`push(${v})   stack top is now ${v}`);note("smsg","");bump();draw()};
+  $("#spop",r).onclick=()=>{if(!S.length){note("smsg","The stack is empty. A pop now would be an <b>underflow</b>.",1);return}const v=S.pop();oS.push(v);add(`pop()      returned ${v}`);note("smsg",`Popped <b>${esc(v)}</b>, the most recent item.`);draw()};
+  $("#qenq",r).onclick=()=>{const v=val();if(Q.length>=CAP){note("qmsg","The queue is full (6 items). An enqueue now would be an <b>overflow</b>.",1);return}Q.push(v);add(`enqueue(${v}) rear is now ${v}`);note("qmsg","");bump();draw()};
+  $("#qdeq",r).onclick=()=>{if(!Q.length){note("qmsg","The queue is empty. A dequeue now would be an <b>underflow</b>.",1);return}const v=Q.shift();oQ.push(v);add(`dequeue()  returned ${v}`);note("qmsg",`Dequeued <b>${esc(v)}</b>, the oldest item.`);draw()};
+  $("#sqclr",r).onclick=()=>{S=[];Q=[];oS=[];oQ=[];log=[];nx=0;inp.value=LET[0];note("smsg","");note("qmsg","");draw()};
+  $("#sqload",r).onclick=()=>{S=["A","B","C","D"];Q=["A","B","C","D"];oS=[];oQ=[];log=["load: A, B, C, D inserted in this order into both"];nx=4;inp.value=LET[4];note("smsg","Now press <b>pop</b> four times.");note("qmsg","Now press <b>dequeue</b> four times.");draw()};
+  draw()}});
+
+/* ---------- lesson: graphs and trees ---------- */
+const TREE={pos:{A:[240,30],B:[110,100],C:[240,100],D:[370,100],E:[60,172],F:[160,172],G:[370,172],H:[160,236]},kids:{A:["B","C","D"],B:["E","F"],C:[],D:["G"],E:[],F:["H"],G:[],H:[]}};
+const TREE_E=Object.entries(TREE.kids).flatMap(([p,cs])=>cs.map(c=>[p,c]));
+const CHK={pos:{P:[70,50],Q:[210,50],R:[350,50],S:[70,175],T:[210,175],U:[350,175]},edges:[["P","Q"],["Q","R"],["P","S"],["Q","T"],["R","U"],["S","T"],["T","U"],["Q","S"],["R","T"]]};
+lesson({pre:true,nav:"Graphs and trees",title:"Graphs and trees",syl:"Graph and tree: vertices, edges, neighbours, paths, cycles, root, parent, child, leaf (needed before BFS)",
+live:()=>`<table class="dt"><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody><tr><td>vertex</td><td class="small" style="white-space:normal">a point (node)</td></tr><tr><td>edge</td><td class="small" style="white-space:normal">a link between two vertices</td></tr><tr><td>neighbour</td><td class="small" style="white-space:normal">joined by one edge</td></tr><tr><td>degree</td><td class="small" style="white-space:normal">number of neighbours</td></tr><tr><td>path</td><td class="small" style="white-space:normal">edges followed one after another</td></tr><tr><td>cycle</td><td class="small" style="white-space:normal">a path that returns to its start</td></tr><tr><td>tree</td><td class="small" style="white-space:normal">connected, no cycle, edges = vertices - 1</td></tr></tbody></table>`,liveT:"Quick reference: graph words",
+html:()=>`<div class="callout i small"><b>In this lesson:</b> the words used for graphs and trees, how a graph is stored, and how to tell a tree from a graph. <b>Why now:</b> BFS walks over a graph, and the search it produces is a tree.</div>
+<p class="lead">A <b>graph</b> is a set of <b>vertices</b> (also called nodes) joined by <b>edges</b>. A road map is a graph: cities are vertices and roads are edges. A <b>tree</b> is a special graph with a single top vertex and no loops. Search problems in AI are drawn as graphs and trees, so we need their vocabulary.</p>
+<div class="card try"><h3>Click a vertex: neighbours and degree</h3><p class="small muted">Two vertices are <b>neighbours</b> (adjacent) when one edge joins them. The <b>degree</b> of a vertex is its number of neighbours. This is the graph we use for BFS in the next lesson.</p><div class="gw"><div id="gv"></div><div id="gi"></div></div></div>
+<div class="grid2"><div class="card"><h3>Graph words</h3><ul class="small"><li><b>Vertex</b>: a point, drawn as a circle.</li><li><b>Edge</b>: a line between two vertices.</li><li><b>Path</b>: vertices reached by following edges, for example A, E, C, G.</li><li><b>Cycle</b>: a path that comes back to its starting vertex, for example A, E, B, A.</li><li><b>Connected</b>: there is a path between every pair of vertices.</li><li><b>Directed</b> graph: edges have an arrow (one-way streets). <b>Undirected</b>: edges work both ways.</li><li><b>Weighted</b> graph: each edge has a cost, such as a distance.</li></ul></div>
+<div class="card"><h3>Tree words</h3><ul class="small"><li><b>Root</b>: the top vertex, with no parent.</li><li><b>Parent</b> and <b>child</b>: the vertex above and the vertices below an edge.</li><li><b>Siblings</b>: children of the same parent.</li><li><b>Leaf</b>: a vertex with no children.</li><li><b>Level</b> (depth): number of edges from the root.</li><li><b>Height</b>: the largest level in the tree.</li></ul><p class="small"><b>Rule:</b> a tree is a connected graph with no cycle. A tree with n vertices has exactly n - 1 edges.</p></div></div>
+<div class="card try"><h3>Click a vertex of the tree</h3><div class="grid2"><div id="tv"></div><div id="ti"></div></div></div>
+<div class="card try"><h3>Is it a tree? Switch edges on and off</h3><p class="small muted">Click an edge (or its button) to add or remove it. The test for a tree: connected, and no cycle, which means edges = vertices - 1.</p><div class="grid2"><div id="cv"></div><div id="ci"></div></div></div>
+<div class="card"><h3>How a graph is stored</h3><p class="small">A program stores a graph in one of two ways. The <b>adjacency list</b> keeps, for each vertex, the list of its neighbours. The <b>adjacency matrix</b> is a table with a 1 where two vertices are joined. For the graph above, both are shown under "Click a vertex". BFS uses the list, because it asks one question again and again: "who are the neighbours of this vertex?"</p>${CODE(`graph = {
+    "A": ["D", "E", "B"],
+    "B": ["A", "C", "E"],
+    "C": ["B", "E", "F", "G"],
+    "D": ["A", "E"],
+    "E": ["A", "B", "C", "D", "F"],
+    "F": ["C", "E"],
+    "G": ["C"],
+}
+print(graph["E"])     # neighbours of E
+print(len(graph["E"]))  # degree of E: 5`)}</div>
+${quiz("i3s5","A tree has 10 vertices. How many edges does it have?",["9","10","11"],0,"A tree with n vertices has n - 1 edges, so 9.")}
+${quiz("i3s6","Which statement is true of a tree but not of every graph?",["It has vertices","It has no cycle","It has edges"],1,"A tree is connected and has no cycle. A general graph may have cycles.")}`,
+mount(r){
+  /* graph explorer */
+  let sel="E";function g1(){const nb=new Set(IMG.adj[sel]);
+    $("#gv",r).innerHTML=ugSvg(IMG,{label:"example graph",node:n=>n===sel?"cur":nb.has(n)?"front":"",edge:(a,b)=>(a===sel||b===sel)?"sel":"",click:true});
+    const ns=Object.keys(IMG.adj);
+    $("#gi",r).innerHTML=`<div class="callout i"><b>${sel}</b> has ${nb.size} neighbour${nb.size===1?"":"s"}: <b>${J(IMG.adj[sel])}</b>.<br>Degree of ${sel} = ${nb.size}.</div><div class="small"><b>Adjacency list</b></div><table class="tt" style="margin:4px 0 10px"><tbody>${ns.map(n=>`<tr><th>${n}</th><td class="${n===sel?"T":""}" style="text-align:left">${J(IMG.adj[n])}</td></tr>`).join("")}</tbody></table><div class="small"><b>Adjacency matrix</b> (1 = joined)</div><div class="tw"><table class="tt" style="margin-top:4px"><thead><tr><th></th>${ns.map(n=>`<th>${n}</th>`).join("")}</tr></thead><tbody>${ns.map(a=>`<tr><th>${a}</th>${ns.map(b=>`<td class="${a===sel&&IMG.adj[a].includes(b)?"T":""}">${IMG.adj[a].includes(b)?1:0}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    $$("circle[data-n]",$("#gv",r)).forEach(c=>c.onclick=()=>{sel=c.dataset.n;g1()})}
+  g1();
+  /* tree explorer */
+  let ts="B";const par={};TREE_E.forEach(([p,c])=>par[c]=p);const lvl=n=>par[n]?1+lvl(par[n]):0;
+  const sub=n=>[n,...TREE.kids[n].flatMap(sub)];
+  function t1(){const kids=TREE.kids[ts],p=par[ts],sib=p?TREE.kids[p].filter(x=>x!==ts):[],path=[];for(let x=ts;x;x=par[x])path.unshift(x);
+    $("#tv",r).innerHTML=ugSvg(TREE,{w:480,h:270,label:"example tree",edges:TREE_E,max:480,node:n=>n===ts?"cur":n===p||kids.includes(n)?"front":"",edge:(a,b)=>(a===ts||b===ts)?"sel":"",click:true});
+    $("#ti",r).innerHTML=`<table class="dt"><tbody><tr><th style="text-align:left">Vertex</th><td>${ts}${ts==="A"?" (the root)":""}</td></tr><tr><th style="text-align:left">Parent</th><td>${p||"none (it is the root)"}</td></tr><tr><th style="text-align:left">Children</th><td>${kids.length?J(kids):"none"}</td></tr><tr><th style="text-align:left">Siblings</th><td>${sib.length?J(sib):"none"}</td></tr><tr><th style="text-align:left">Level</th><td>${lvl(ts)}</td></tr><tr><th style="text-align:left">Leaf?</th><td>${kids.length?"no":"yes, it has no children"}</td></tr><tr><th style="text-align:left">Path from root</th><td>${path.join(" &rarr; ")}</td></tr><tr><th style="text-align:left">Subtree</th><td>${J(sub(ts))}</td></tr></tbody></table><p class="small muted">The tree has 8 vertices and 7 edges: n - 1.</p>`;
+    $$("circle[data-n]",$("#tv",r)).forEach(c=>c.onclick=()=>{ts=c.dataset.n;t1()})}
+  t1();
+  /* tree or graph checker */
+  const on=new Set(["PQ","QR","PS","QT","RU"]);
+  function c1(){const ns=Object.keys(CHK.pos),N=ns.length,E=on.size,uf={};ns.forEach(n=>uf[n]=n);const f=x=>uf[x]===x?x:(uf[x]=f(uf[x]));
+    CHK.edges.forEach(([a,b])=>{if(on.has(a+b))uf[f(a)]=f(b)});const comp=new Set(ns.map(f)).size,cyc=E-N+comp,tree=comp===1&&E===N-1;
+    const msg=tree?`This is a <b>tree</b>: connected, no cycle, and edges = ${E} = vertices - 1.`:comp===1?`Connected, but it has ${cyc} cycle${cyc>1?"s":""}. It is a graph, not a tree. Remove an edge that lies on a cycle to get a tree.`:cyc>0?`It is in ${comp} separate pieces, and one piece has a cycle. A tree must be connected and have no cycle.`:`It is in ${comp} separate pieces. A tree must be connected. Add an edge to join the pieces.`;
+    $("#cv",r).innerHTML=ugSvg(CHK,{w:420,h:225,max:440,label:"tree or graph test",edges:CHK.edges,hit:true,edge:(a,b)=>on.has(a+b)?"on":"off"});
+    $("#ci",r).innerHTML=`<div class="row">${CHK.edges.map(([a,b])=>`<button type="button" class="opt2" data-e="${a}${b}" aria-pressed="${on.has(a+b)}">${a}-${b}</button>`).join("")}</div><div class="grid3"><div class="kpi"><span class="small muted">Vertices</span><b>${N}</b></div><div class="kpi"><span class="small muted">Edges on</span><b>${E}</b></div><div class="kpi"><span class="small muted">Separate pieces</span><b>${comp}</b></div></div><div class="callout ${tree?"i":"k"}" style="margin-top:10px">${msg}</div>`;
+    const tg=k=>{on.has(k)?on.delete(k):on.add(k);c1()};
+    $$("[data-e]",$("#cv",r)).forEach(e=>e.onclick=()=>tg(e.dataset.e));$$("[data-e]",$("#ci",r)).forEach(e=>e.onclick=()=>tg(e.dataset.e))}
+  c1()}});
+
+/* ---------- BFS: trace, drawing, worked example widget ---------- */
+function bfsTrace(g,start){
+  const q=[start],vis=[start],order=[],tree=[],lvl={[start]:0},S=[];
+  const snap=o=>S.push(Object.assign({q:[...q],vis:[...vis],order:[...order],tree:tree.map(t=>[...t]),lvl:{...lvl},look:[],added:[]},o));
+  snap({k:"ini",cur:null,line:[0],text:`Choose ${start} as the starting vertex. Mark it visited and put it in the queue.`});
+  while(q.length){const cur=q.shift();order.push(cur);
+    snap({k:"deq",cur,line:[1,2],text:`Remove the front of the queue: ${cur}. Next we look at every neighbour of ${cur}.`});
+    const nw=[],old=[],look=[];
+    for(const nb of g.adj[cur]){if(vis.includes(nb)){old.push(nb);look.push({a:cur,b:nb,n:0})}else{vis.push(nb);q.push(nb);tree.push([cur,nb]);lvl[nb]=lvl[cur]+1;nw.push(nb);look.push({a:cur,b:nb,n:1})}}
+    const oldT=old.length?`${J(old)} ${old.length>1?"are":"is"} already visited, so ${old.length>1?"they are":"it is"} skipped. `:"";
+    snap({k:"enq",cur,added:nw,look,line:[3,4,5],text:`The neighbours of ${cur} are ${J(g.adj[cur])}. `+(nw.length?`${oldT}Mark ${J(nw)} as visited and add ${nw.length>1?"them":"it"} to the rear of the queue, in this order.`:`All of them are already visited, so nothing is added to the queue.`)})}
+  snap({k:"end",cur:null,line:[1],text:`The queue is empty, so the search stops. Every vertex reachable from ${start} has been visited. The visiting order is ${order.join(", ")}. The green edges form the BFS tree.`});
+  return S}
+const BFS_CODE=["queue = [start]; visited = {start}","while queue is not empty:","  node = remove front of queue","  for each neighbour of node:","    if not visited:","      mark visited, add to rear"];
+function bfsTreeSvg(s){const L={};s.order.forEach(n=>{(L[s.lvl[n]]=L[s.lvl[n]]||[]).push(n)});const D=Math.max(...Object.keys(L).map(Number)),W=480,H=50+D*54,pos={};
+  Object.keys(L).forEach(d=>L[d].forEach((n,k)=>pos[n]=[90+(k+1)*(W-110)/(L[d].length+1),28+d*54]));
+  let o=svgOpen(W,H,"BFS tree",480);s.tree.forEach(([p,c])=>o+=`<line class="edge tree" x1="${pos[p][0]}" y1="${pos[p][1]}" x2="${pos[c][0]}" y2="${pos[c][1]}"/>`);
+  Object.keys(L).forEach(d=>o+=stxt(36,28+d*54,"level "+d));
+  for(const n in pos)o+=`<circle class="fnode exp" cx="${pos[n][0]}" cy="${pos[n][1]}" r="19"/><text x="${pos[n][0]}" y="${pos[n][1]}">${n}</text>`;return o+"</svg>"}
+function workedBfs(r){
+  const g=IMG,N=Object.keys(g.adj).length;let start="A",i=0,S=bfsTrace(g,start),timer=null;const box=$("#wx",r);
+  box.innerHTML=`<div class="row"><b>Start from:</b> ${chips("wst",Object.keys(g.adj),0)}</div><div class="row"><button class="btn sm" type="button" data-a="b">Back</button><button class="btn pri sm" type="button" data-a="n">Next step</button><button class="btn sm" type="button" data-a="p">Play</button><button class="btn sm" type="button" data-a="r">Reset</button><span class="small muted" data-a="c"></span></div><div data-a="v"></div>`;
+  const v=$("[data-a=v]",box),c=$("[data-a=c]",box),pb=$("[data-a=p]",box);
+  const stop=()=>{if(timer){clearInterval(timer);timer=null}pb.textContent="Play"};
+  function draw(){const s=S[i];c.textContent=`step ${i} of ${S.length-1}`;
+    const T=new Set(s.tree.map(([a,b])=>ekey(a,b))),K=new Set(s.look.filter(l=>!l.n).map(l=>ekey(l.a,l.b)));
+    const badge={ini:["ini","Start"],deq:["deq","Dequeue"],enq:["enq",s.added.length?"Enqueue":"Nothing to add"],end:["end","Done"]}[s.k];
+    const slots=Array.from({length:N},(_,k)=>k<s.q.length?`<div class="qs f">${s.q[k]}${s.q.length===1?"<small>front / rear</small>":k===0?"<small>front</small>":k===s.q.length-1?"<small>rear</small>":""}</div>`:'<div class="qs"></div>').join("");
+    v.innerHTML=`<div class="callout i" aria-live="polite"><span class="opbadge ${badge[0]}">${badge[1]}</span>${esc(s.text)}</div>
+    <div class="gw"><div>${ugSvg(g,{label:"BFS on the example graph, step "+i,node:n=>s.k==="end"?"exp":n===s.cur?"cur":s.q.includes(n)?"front":s.order.includes(n)?"exp":"",edge:(a,b)=>{const k=ekey(a,b);return T.has(k)?"tree":K.has(k)?"skip":""}})}
+    <div class="small muted legend"><span><i class="lg"></i>not seen yet</span><span><i class="lg" style="background:var(--warn-soft);border-color:var(--warn)"></i>in the queue</span><span><i class="lg" style="background:var(--pri);border-color:var(--pri)"></i>being processed</span><span><i class="lg" style="background:var(--good-soft);border-color:var(--good)"></i>finished</span><span><i class="lgl"></i>edge used to discover a vertex (BFS tree)</span><span><i class="lgl d"></i>edge checked, neighbour already visited</span></div></div>
+    <div><div class="small"><b>Queue</b> (front on the left, rear on the right)</div><div class="qrow">${slots}</div>
+    <div class="small"><b>Removed from the queue, being processed</b></div><div class="qrow"><div class="qs ${s.cur?"cur":""}">${s.cur||""}</div></div>
+    <div class="small"><b>Visited</b> (with level)</div><div class="vis">${Object.keys(g.adj).map(n=>s.vis.includes(n)?`<span class="on">${n}<small>L${s.lvl[n]}</small></span>`:`<span>${n}</span>`).join("")}</div>
+    <div class="small"><b>Order of processing so far</b></div><div class="t" style="margin:4px 0 12px;font-size:15px">${s.order.length?s.order.join(" &rarr; "):"(none yet)"}</div>
+    <div class="cmark" aria-label="pseudocode with the current line marked">${BFS_CODE.map((l,k)=>`<span class="ln ${s.line.includes(k)?"on":""}">${esc(l)}</span>`).join("")}</div></div></div>`
+    +(s.k==="end"?`<div class="card" style="margin-top:12px"><h3>Result: the BFS tree (a spanning tree)</h3><p class="small muted">Every vertex appears once, joined to the vertex that discovered it. It has ${N} vertices and ${s.tree.length} edges (n - 1), no cycle, so it is a tree. The rows are the levels: the number of edges from the start. BFS always finds the shortest path, counted in edges.</p>${bfsTreeSvg(s)}</div>`:"");
+    $("[data-a=b]",box).disabled=i===0;$("[data-a=n]",box).disabled=i===S.length-1}
+  $("[data-a=b]",box).onclick=()=>{stop();if(i>0){i--;draw()}};
+  $("[data-a=n]",box).onclick=()=>{stop();if(i<S.length-1){i++;draw()}};
+  $("[data-a=r]",box).onclick=()=>{stop();i=0;draw()};
+  pb.onclick=()=>{if(timer){stop();return}if(i>=S.length-1)i=0;draw();pb.textContent="Pause";timer=setInterval(()=>{if(!document.body.contains(box)){stop();return}if(i<S.length-1){i++;draw()}if(i>=S.length-1)stop()},1500)};
+  bindChips(r,"wst",x=>{stop();start=x;S=bfsTrace(g,start);i=0;draw()});
+  draw()}
+
 /* 5 BFS */
 const GR={"Notebook graph (directed)":{dir:true,start:"S",goals:["G","C","E"],pos:{S:[60,160],A:[190,70],B:[190,250],C:[330,30],D:[330,160],E:[330,290],G:[470,160]},adj:{S:["A","B"],A:["C","D"],B:["D","E"],C:[],D:["G"],E:["G"],G:[]}},
  "Graph with a cycle (undirected)":{dir:false,start:"A",goals:["F","E","D"],pos:{A:[60,160],B:[190,60],C:[190,260],D:[330,60],E:[460,160],F:[330,260]},adj:{A:["B","C"],B:["A","D"],C:["A","D","F"],D:["B","C","E"],E:["D","F"],F:["C","E"]}}};
@@ -587,16 +827,28 @@ function graphSvg(g,s){let o=`<svg class="g chart" viewBox="0 0 540 330" role="i
   for(const n in g.pos){const[x,y]=g.pos[n];const cls=s.path&&s.path.includes(n)?"path":s.cur===n?"cur":s.exp.includes(n)?"exp":s.front.includes(n)?"front":"";o+=`<circle class="fnode ${cls}" cx="${x}" cy="${y}" r="${R}"/><text class="${cls==="cur"?"cur":""}" x="${x}" y="${y}">${n}</text>`}
   return o+"</svg>"}
 lesson({hero:true,nav:"Breadth-first search",title:"Breadth-first search: queue, worked example and complexity",syl:"Breadth-first search; BFS worked example with the frontier queue; BFS time and space complexity",
+liveT:"Quick reference: BFS",live:()=>`<div class="code">queue = [start]; visited = {start}
+while queue is not empty:
+    node = remove the front
+    for each neighbour of node:
+        if not visited:
+            mark visited
+            add to the rear</div><p class="small muted">Queue = FIFO. Replace the queue with a stack and the same code becomes depth-first search.</p><p class="small"><b>On a graph:</b> time O(V + E).</p>`,
 html:()=>`<p class="lead"><b>Breadth-first search (BFS)</b> explores level by level: all nodes 1 step from the start, then 2 steps, and so on. It uses a <b>queue</b> (first in, first out) called the <b>frontier</b>, plus a set of nodes already discovered so it never repeats work. Because it goes outward evenly, the first time it reaches the goal it has used the <b>fewest steps</b>.</p>
-<div class="card try"><h3>Step through the search</h3><div class="row"><b>Graph:</b> ${chips("gsel",Object.keys(GR),0)}</div><div class="row"><b>Goal:</b> <span id="goals"></span> &nbsp; <b>Frontier is a:</b> ${seg("kd",[["bfs","Queue (BFS)"],["dfs","Stack (for comparison)"]])}</div>
+<div class="callout i small"><b>In this lesson:</b> the BFS rule, a full worked example with the queue shown at every step, a search for a goal on other graphs, and the cost of BFS. <b>Needs:</b> the queue (lesson 6) and the graph (lesson 7).</div>
+<div class="card"><h3>The rule in plain words</h3><ol class="small"><li>Put the start vertex in the queue and mark it visited.</li><li>While the queue is not empty, remove the vertex at the front.</li><li>Look at each of its neighbours. If a neighbour is not visited, mark it visited and add it to the rear of the queue.</li><li>When the queue is empty, stop.</li></ol><p class="small"><b>Why mark a vertex visited when it is added, and not when it is removed?</b> So that no vertex enters the queue twice, even when two different vertices reach it before it comes to the front.</p></div>
+<div class="card try"><h3>Worked example: BFS on a 7-vertex graph</h3><p class="small muted">Each vertex takes two steps: first it is removed from the queue, then its neighbours are checked. Watch the queue, the visited list and the highlighted edges. The green edges build the BFS tree. Choose a different start vertex to see how the order changes.</p><div id="wx"></div></div>
+<div class="card try"><h3>Try it on other graphs: search for a goal</h3><div class="row"><b>Graph:</b> ${chips("gsel",Object.keys(GR),0)}</div><div class="row"><b>Goal:</b> <span id="goals"></span> &nbsp; <b>Frontier is a:</b> ${seg("kd",[["bfs","Queue (BFS)"],["dfs","Stack (for comparison)"]])}</div>
 <div id="bst"></div><p class="small muted">Colours: blue = being looked at, yellow = in the frontier (waiting), green = already expanded, orange = the path found.</p></div>
 <div class="card try"><h3>Time and space: the b^d problem</h3><p class="small muted">b = branching factor (children per node), d = depth of the shallowest goal. BFS may create about 1 + b + b&sup2; + ... + b<sup>d</sup> nodes, which is O(b<sup>d</sup>) for both time and memory.</p>
 <div class="row">b = <input type="range" id="bb" min="2" max="10" value="10"> <b id="bbv">10</b></div><div id="cx"></div></div>
-<div class="grid2"><div class="card"><h3>Properties of BFS</h3><ul class="small"><li><b>Complete:</b> finds a solution if one exists (b finite).</li><li><b>Optimal:</b> shortest path when every step costs the same.</li><li><b>Time:</b> O(b<sup>d</sup>).</li><li><b>Space:</b> O(b<sup>d</sup>), the real bottleneck.</li></ul></div><div class="card"><h3>Pseudocode</h3><div class="code">frontier = queue([start]); seen = {start}\nwhile frontier:\n    node = frontier.pop_front()\n    if node is goal: return path\n    for child in neighbours(node):\n        if child not in seen:\n            seen.add(child)\n            frontier.push_back(child)\nreturn failure</div></div></div>
+<div class="grid2"><div class="card"><h3>Properties of BFS</h3><ul class="small"><li><b>Complete:</b> finds a solution if one exists (b finite).</li><li><b>Optimal:</b> shortest path when every step costs the same.</li><li><b>Time:</b> O(b<sup>d</sup>).</li><li><b>Space:</b> O(b<sup>d</sup>), the real bottleneck.</li><li><b>On a graph with V vertices and E edges:</b> O(V + E), because each vertex enters the queue once and each edge is checked a constant number of times.</li></ul></div><div class="card"><h3>Pseudocode</h3><div class="code">frontier = queue([start]); seen = {start}\nwhile frontier:\n    node = frontier.pop_front()\n    if node is goal: return path\n    for child in neighbours(node):\n        if child not in seen:\n            seen.add(child)\n            frontier.push_back(child)\nreturn failure</div></div></div>
 ${quiz("i3q5","For b = 10 and d = 6, BFS may need about how many nodes?",["60","About a million","About 10"],1,"1 + 10 + 100 + ... + 10^6 = 1,111,111 nodes. Memory, not time, usually runs out first.")}
 ${quiz("i3q5b","Which data structure makes a search breadth-first?",["Stack","Queue","Sorted list"],1,"A queue serves the oldest (shallowest) node first. A stack gives depth-first search.")}
+${quiz("i3q5c","In the worked example, vertex C is added to the queue by E and not by B. Why?",["E was removed from the queue before B, and C was not yet visited","C is nearer to E on the page","Edges are used in alphabetical order"],0,"E was ahead of B in the queue, so E was processed first and marked C visited. When B's turn came, C was already visited, so B skipped it.")}
+${quiz("i3q5d","When is a vertex marked visited in BFS?",["When it is added to the queue","Only when it is removed from the queue","After all its neighbours are processed"],0,"Marking at the moment of insertion stops the same vertex from being added twice.")}
 ${NBREF("3.6, 3.7 and 3.8")}`,
-mount(r){let gk="Notebook graph (directed)",goal="G",kind="bfs";const gsel=()=>{const g=GR[gk];$("#goals",r).innerHTML=g.goals.map((x,i)=>`<button type="button" class="opt2" data-g="${x}" aria-pressed="${x===goal}">${x}</button>`).join("")+' <span class="small muted">start: '+g.start+'</span>';$$("[data-g]",r).forEach(b=>b.onclick=()=>{goal=b.dataset.g;gsel();run()})};
+mount(r){workedBfs(r);let gk="Notebook graph (directed)",goal="G",kind="bfs";const gsel=()=>{const g=GR[gk];$("#goals",r).innerHTML=g.goals.map((x,i)=>`<button type="button" class="opt2" data-g="${x}" aria-pressed="${x===goal}">${x}</button>`).join("")+' <span class="small muted">start: '+g.start+'</span>';$$("[data-g]",r).forEach(b=>b.onclick=()=>{goal=b.dataset.g;gsel();run()})};
   function run(){const g=GR[gk];stepper(r,"#bst",()=>bfsSteps(g,g.start,goal,kind),(s,i)=>`<div class="grid2"><div>${graphSvg(g,s)}</div><div><div class="small"><b>${kind==="bfs"?"Frontier (queue, front on the left)":"Frontier (stack, top on the right)"}</b></div><div class="boxes">${s.front.map(n=>`<div class="bx cur">${n}</div>`).join("")||'<span class="muted">(empty)</span>'}</div><div class="small"><b>Discovered set</b></div><div class="boxes">${s.seen.map(n=>`<div class="bx">${n}</div>`).join("")}</div><div class="small"><b>Expanded, in order</b></div><div class="boxes">${s.exp.map(n=>`<div class="bx ok">${n}</div>`).join("")||'<span class="muted">(none yet)</span>'}</div></div></div><div class="callout ${s.path?"k":"i"}">${esc(s.note)}</div>`)}
   bindChips(r,"gsel",v=>{gk=v;goal=GR[gk].goals[0];gsel();run()});bindSeg(r,"kd",v=>{kind=v;run()});gsel();run();
   function cx(){const b=+$("#bb",r).value;$("#bbv",r).textContent=b;const rows=[];for(let d=0;d<=10;d+=1){const nodes=Array.from({length:d+1},(_,i)=>b**i).reduce((x,y)=>x+y,0);const gb=nodes*1000/1e9;rows.push({d,nodes,mem:gb<1e-3?(nodes).toFixed(0)+" KB":gb<1?(gb*1000).toFixed(1)+" MB":gb<1000?gb.toFixed(1)+" GB":(gb/1000).toFixed(1)+" TB",t:nodes/1e6<60?(nodes/1e6).toFixed(2)+" s":nodes/1e6<3600?(nodes/1e6/60).toFixed(1)+" min":(nodes/1e6/3600).toFixed(1)+" h"})}
@@ -623,6 +875,7 @@ mount(r){let seed=42;function run(){const ra=+$("#ra",r).value,rb=+$("#rb",r).va
 /* live pane */
 function renderLive(){$("#livebox").innerHTML=`<p class="small muted" style="margin:0 0 8px">Compare the agent types at a glance.</p><table class="dt"><thead><tr><th>Agent</th><th>Decides using</th></tr></thead><tbody><tr><td><b>Simple reflex</b></td><td class="small" style="white-space:normal">current percept and if-then rules</td></tr><tr><td><b>Model-based</b></td><td class="small" style="white-space:normal">percept plus remembered state and a model of the world</td></tr><tr><td><b>Goal-based</b></td><td class="small" style="white-space:normal">look-ahead: will this action reach the goal?</td></tr><tr><td><b>Utility-based</b></td><td class="small" style="white-space:normal">look-ahead plus a score for how good the result is</td></tr><tr><td><b>Learning</b></td><td class="small" style="white-space:normal">critic feedback improves any of the above</td></tr></tbody></table><h4 style="margin:12px 0 6px">BFS in one line</h4><div class="code">queue (FIFO), expand shallowest\nfirst, complete, optimal for\nequal step costs, O(b^d)</div>`}
 
+function setLive(l){const h=document.querySelector(".live h3");if(h)h.textContent=l.liveT||"Quick reference: agent types";if(l.live)$("#livebox").innerHTML=l.live();else renderLive()}
 renderLive();go(0);
 
 </script>
